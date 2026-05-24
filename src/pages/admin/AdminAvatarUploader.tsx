@@ -26,7 +26,7 @@ export function AdminAvatarUploader({ token, children, onUploaded }: AdminAvatar
     if (!file) return
 
     if (!token) {
-      emitIslandToast({ type: 'info', title: '??????????' })
+      emitIslandToast({ type: 'info', title: '请先登录后台再上传。' })
       return
     }
 
@@ -39,11 +39,11 @@ export function AdminAvatarUploader({ token, children, onUploaded }: AdminAvatar
       })
 
       onUploaded(asset)
-      emitIslandToast({ type: 'success', title: '??????' })
+      emitIslandToast({ type: 'success', title: '头像已上传。' })
     } catch (error) {
       emitIslandToast({
         type: 'error',
-        title: '????',
+        title: '上传失败',
         description: getErrorMessage(error),
       })
     } finally {
@@ -56,8 +56,9 @@ export function AdminAvatarUploader({ token, children, onUploaded }: AdminAvatar
       <input ref={inputRef} className="island-admin-uploader__input" type="file" accept="image/*" onChange={handleChange} />
       {children}
       <span className="island-admin-avatar-upload__overlay" aria-hidden="true">
-        {uploading ? <LoaderCircle className="island-admin-avatar-upload__spin" size={18} strokeWidth={3} /> : <UploadCloud size={18} strokeWidth={3} />}
-        <small>{uploading ? '???' : '????'}</small>
+        {uploading ?
+          <LoaderCircle className="island-admin-avatar-upload__spin" size={18} strokeWidth={3} />
+        : <UploadCloud size={18} strokeWidth={3} />}
       </span>
     </button>
   )

@@ -16,6 +16,10 @@ type CloudinaryAssetListInput = CloudinarySignatureInput & {
   maxResults?: unknown
 }
 
+type CloudinaryDeleteAssetInput = CloudinarySignatureInput & {
+  publicId?: unknown
+}
+
 type CloudinaryAdminResource = {
   public_id?: string
   secure_url?: string
@@ -31,6 +35,13 @@ type CloudinaryAdminResource = {
 type CloudinaryAdminResourcesResponse = {
   resources?: CloudinaryAdminResource[]
   next_cursor?: string
+  error?: {
+    message?: string
+  }
+}
+
+type CloudinaryDestroyResponse = {
+  result?: string
   error?: {
     message?: string
   }
@@ -176,5 +187,63 @@ export async function listCloudinaryUploadAssets(input: CloudinaryAssetListInput
         createdAt: asset.created_at,
       })),
     nextCursor: data.next_cursor ?? '',
+  }
+}
+
+export async function deleteCloudinaryUploadAsset(input: CloudinaryDeleteAssetInput) {
+  const env = getEnv()
+  const cloudName = cleanText(env.CLOUDINARY_CLOUD_NAME)
+  const apiKey = cleanText(env.CLOUDINARY_API_KEY)
+  const apiSecret = cleanText(env.CLOUDINARY_API_SECRET)
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new HttpError(500, '请先配置 Cloudinary 上传环境变量')
+  }
+
+  const purpose = normalizePurpose(input.purpose)
+  const resourceType = normalizeResourceType(input.resourceType, purpose)
+  const folder = getUploadFolder(purpose)
+  const publicId = cleanText(input.publicId)
+
+  if (!publicId) throw new HttpError(400, '缺少要删除的资源 ID')
+
+  if (!publicId.startsWith(`${folder}/`)) {
+    throw new HttpError(403, '只能删除当前小岛上传目录里的资源')
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000)
+  const invalidate = 'true'
+  const signaturePayload = stringifySignatureParams({
+    invalidate,
+    public_id: publicId,
+    timestamp,
+  })
+  const signature = await sha1Hex(`${signaturePayload}${apiSecret}`)
+  const formData = new FormData()
+
+  formData.set('public_id', publicId)
+  formData.set('api_key', apiKey)
+  formData.set('timestamp', String(timestamp))
+  formData.set('invalidate', invalidate)
+  formData.set('signature', signature)
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`, {
+    method: 'POST',
+    body: formData,
+  })
+  const data = await response.json() as CloudinaryDestroyResponse
+
+  if (!response.ok) {
+    throw new HttpError(response.status, data.error?.message || '头像删除失败')
+  }
+
+  if (data.result !== 'ok' && data.result !== 'not found') {
+    throw new HttpError(422, data.error?.message || '头像删除失败')
+  }
+
+  return {
+    ok: true,
+    publicId,
+    result: data.result,
   }
 }

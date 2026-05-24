@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import type { FormEventHandler } from 'react'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
-import { CalendarDays, ImagePlus, MapPin, Pencil, Plus, RefreshCw, Save, Tags, Trash2 } from 'lucide-react'
+import { CalendarDays, ImagePlus, Images, MapPin, Pencil, Plus, RefreshCw, Save, Tags, Trash2 } from 'lucide-react'
 
 import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from './AdminCloudinaryUploader'
+import { AdminMediaLibraryModal } from './AdminMediaLibraryModal'
 import type { PostForm, SetPostForm } from './types'
 
 type AdminPostsPanelProps = {
@@ -37,6 +39,8 @@ export function AdminPostsPanel({
   onDeletePost,
   onSave,
 }: AdminPostsPanelProps) {
+  const [mediaLibraryMode, setMediaLibraryMode] = useState<'cover' | 'gallery' | null>(null)
+
   function appendImageUrl(currentText: string, url: string) {
     const urls = currentText
       .split(/[\n,，]/)
@@ -48,9 +52,17 @@ export function AdminPostsPanel({
     return urls.join('\n')
   }
 
+  function getImageUrls(text: string) {
+    return text
+      .split(/[\n,，]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
   return (
-    <section className="island-admin-workbench">
-      <aside className="island-admin-sidebar">
+    <>
+      <section className="island-admin-workbench">
+        <aside className="island-admin-sidebar">
         <div className="island-admin-sidebar__toolbar">
           <Button type="primary" size="small" htmlType="button" icon={<Plus size={14} strokeWidth={3} />} onClick={onNewPost}>
             新建
@@ -76,10 +88,10 @@ export function AdminPostsPanel({
             </button>
           ))}
         </div>
-      </aside>
+        </aside>
 
-      <form className="island-admin-editor" onSubmit={onSave}>
-        <Card className="island-admin-editor__card">
+        <form className="island-admin-editor" onSubmit={onSave}>
+          <Card className="island-admin-editor__card">
           <div className="island-admin-editor__header">
             <div>
               <span className="island-admin-editor__eyebrow">{selectedPost ? '编辑文章' : '新建文章'}</span>
@@ -155,6 +167,9 @@ export function AdminPostsPanel({
                   }))
                 }
               />
+              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} onClick={() => setMediaLibraryMode('cover')}>
+                图片库
+              </Button>
             </div>
           </div>
 
@@ -167,19 +182,24 @@ export function AdminPostsPanel({
             <div className="island-admin-field island-admin-field--stretch">
               <div className="island-admin-field__label-row">
                 <span>多图地址</span>
-                <AdminCloudinaryUploader
-                  token={token}
-                  purpose="post-image"
-                  label="上传多图"
-                  multiple
-                  onUploaded={(asset) =>
-                    setForm((current) => ({
-                      ...current,
-                      imageSrc: current.imageSrc || asset.secureUrl,
-                      imagesText: appendImageUrl(current.imagesText, asset.secureUrl),
-                    }))
-                  }
-                />
+                <span className="island-admin-upload-actions">
+                  <AdminCloudinaryUploader
+                    token={token}
+                    purpose="post-image"
+                    label="上传多图"
+                    multiple
+                    onUploaded={(asset) =>
+                      setForm((current) => ({
+                        ...current,
+                        imageSrc: current.imageSrc || asset.secureUrl,
+                        imagesText: appendImageUrl(current.imagesText, asset.secureUrl),
+                      }))
+                    }
+                  />
+                  <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} onClick={() => setMediaLibraryMode('gallery')}>
+                    图片库
+                  </Button>
+                </span>
               </div>
               <textarea
                 className="island-admin-textarea island-admin-textarea--small"
@@ -215,8 +235,37 @@ export function AdminPostsPanel({
               <Switch size="small" checked={form.pinned} checkedChildren="ON" unCheckedChildren="OFF" onChange={(checked) => setForm((current) => ({ ...current, pinned: checked }))} />
             </label>
           </div>
-        </Card>
-      </form>
-    </section>
+          </Card>
+        </form>
+      </section>
+
+      <AdminMediaLibraryModal
+        open={Boolean(mediaLibraryMode)}
+        token={token}
+        title="图片库"
+        description={mediaLibraryMode === 'cover' ? '选择一张图片作为封面' : '选择一张图片加入多图'}
+        emptyText="图片库还是空的，先上传文章图片吧。"
+        assetLabel="图片"
+        purpose="post-image"
+        resourceType="image"
+        currentUrl={form.imageSrc}
+        currentUrls={getImageUrls(form.imagesText)}
+        onClose={() => setMediaLibraryMode(null)}
+        onSelect={(asset) =>
+          setForm((current) =>
+            mediaLibraryMode === 'cover' ?
+              {
+                ...current,
+                imageSrc: asset.secureUrl,
+              }
+            : {
+                ...current,
+                imageSrc: current.imageSrc || asset.secureUrl,
+                imagesText: appendImageUrl(current.imagesText, asset.secureUrl),
+              },
+          )
+        }
+      />
+    </>
   )
 }

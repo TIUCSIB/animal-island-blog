@@ -414,6 +414,21 @@ export async function fetchCloudinaryUploadAssets(
   })
 }
 
+export async function deleteCloudinaryUploadAsset(
+  token: string,
+  input: {
+    publicId: string
+    purpose: CloudinaryUploadPurpose
+    resourceType?: CloudinaryResourceType
+  },
+) {
+  return requestJson<{ ok: boolean; publicId: string; result: string }>('/api/admin/uploads/assets', {
+    method: 'DELETE',
+    token,
+    body: JSON.stringify(input),
+  })
+}
+
 export async function createGalleryPost(token: string, post: GalleryPost) {
   const data = await requestJson<{ post: GalleryPost }>('/api/posts', {
     method: 'POST',

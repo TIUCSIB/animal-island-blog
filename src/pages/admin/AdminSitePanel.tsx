@@ -73,7 +73,7 @@ export function AdminSitePanel({ saving, token, siteProfileForm, setSiteProfileF
 
             <div className="island-admin-profile-form__fields">
               <div className="island-admin-field">
-                <span>头像地址</span>
+                <span>头像</span>
                 <Input
                   value={siteProfileForm.avatarUrl}
                   placeholder="https://..."
@@ -82,7 +82,6 @@ export function AdminSitePanel({ saving, token, siteProfileForm, setSiteProfileF
                   onChange={(event) => setSiteProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))}
                   onClear={() => setSiteProfileForm((current) => ({ ...current, avatarUrl: '' }))}
                 />
-                <small className="island-admin-field__hint">点击左侧头像可直接上传新头像，也可以从头像库选择历史头像。</small>
               </div>
 
               <div className="island-admin-account-form__grid">

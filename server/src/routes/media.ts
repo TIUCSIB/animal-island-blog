@@ -1,8 +1,8 @@
 import { Elysia } from 'elysia'
 
 import { assertAdmin } from '../services/auth'
-import { createCloudinaryUploadSignature, listCloudinaryUploadAssets } from '../services/media'
-import { CloudinaryUploadAssetsQuery, CloudinaryUploadSignatureBody } from '../validation'
+import { createCloudinaryUploadSignature, deleteCloudinaryUploadAsset, listCloudinaryUploadAssets } from '../services/media'
+import { CloudinaryDeleteAssetBody, CloudinaryUploadAssetsQuery, CloudinaryUploadSignatureBody } from '../validation'
 
 export const mediaRoutes = new Elysia()
   .post(
@@ -25,5 +25,16 @@ export const mediaRoutes = new Elysia()
     },
     {
       query: CloudinaryUploadAssetsQuery,
+    },
+  )
+  .delete(
+    '/api/admin/uploads/assets',
+    async ({ body, request }) => {
+      await assertAdmin(request)
+
+      return deleteCloudinaryUploadAsset(body)
+    },
+    {
+      body: CloudinaryDeleteAssetBody,
     },
   )

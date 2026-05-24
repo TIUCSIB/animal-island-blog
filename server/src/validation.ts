@@ -84,3 +84,9 @@ export const CloudinaryUploadAssetsQuery = t.Object({
   nextCursor: t.Optional(t.String()),
   maxResults: t.Optional(t.String()),
 })
+
+export const CloudinaryDeleteAssetBody = t.Object({
+  publicId: t.String(),
+  purpose: t.Optional(t.String()),
+  resourceType: t.Optional(t.String()),
+})
