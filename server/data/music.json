@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "platform": "netease",
+  "sourceType": "song",
+  "musicId": "1368133153",
+  "tracks": [
+    {
+      "title": "1026",
+      "author": "安约翰",
+      "pic": "https://p2.music.126.net/Qp3aSADfCWjmODanbijnkA==/109951164103684094.jpg",
+      "url": "https://music.030456.xyz/api?server=netease&type=url&id=1368133153",
+      "lrc": "https://music.030456.xyz/api?server=netease&type=lrc&id=1368133153"
+    }
+  ],
+  "updatedAt": "2026-05-23T06:45:18.413Z"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "shlii-api",
+  "main": "server/src/worker.ts",
+  "compatibility_date": "2026-05-23",
+  "vars": {
+    "ADMIN_PASSWORD": "island-admin",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "animal-island-db",
+      "database_id": "b28cb71f-3c13-4d49-996f-7322882355da",
+      "migrations_dir": "server/drizzle/migrations",
+    },
+  ],
+}

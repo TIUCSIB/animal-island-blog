@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1050" fill="none">
+
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd4bf"/>
+      <stop offset="100%" stop-color="#ff9e8e"/>
+    </linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.88)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="1500" height="1050" fill="url(#sky)"/>
+  <circle cx="1170.0" cy="231.0" r="126.0" fill="#fff4cd" opacity="0.88"/>
+  <ellipse cx="525.0" cy="210.0" rx="390.0" ry="84.0" fill="#fff" opacity="0.24" filter="url(#soft)"/>
+  <path d="M0 609.0 C 270.0 525.0, 510.0 514.5, 780.0 588.0 C 1080.0 672.0, 1290.0 567.0, 1500 504.0 L 1500 1050 L 0 1050 Z" fill="#ffbe8e"/>
+  <path d="M0 703.5 C 240.0 672.0, 510.0 609.0, 810.0 672.0 C 1110.0 735.0, 1290.0 672.0, 1500 630.0 L 1500 1050 L 0 1050 Z" fill="#db7f72"/>
+  <path d="M0 861.0 C 360.0 777.0, 720.0 798.0, 1080.0 882.0 C 1320.0 945.0, 1425.0 924.0, 1500 892.5 L 1500 1050 L 0 1050 Z" fill="#7f5263"/>
+  <path d="M840.0 630.0 C 960.0 598.5, 1035.0 609.0, 1110.0 661.5" stroke="#fff" stroke-width="14" stroke-linecap="round" opacity="0.55"/>
+  <path d="M450.0 913.5 C 690.0 840.0, 930.0 829.5, 1260.0 903.0" stroke="#f7eee3" stroke-width="10" stroke-linecap="round" opacity="0.42"/>
+
+</svg>

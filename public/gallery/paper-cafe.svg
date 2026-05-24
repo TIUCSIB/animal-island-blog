@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" fill="none">
+
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#efe1c3"/>
+      <stop offset="100%" stop-color="#d5b690"/>
+    </linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.88)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#sky)"/>
+  <rect x="144.0" y="216.0" width="912.0" height="696.0" rx="34" fill="#fff6e3" opacity="0.78"/>
+  <rect x="240.0" y="288.0" width="312.0" height="264.0" rx="20" fill="#f5e6c8"/>
+  <rect x="648.0" y="336.0" width="216.0" height="192.0" rx="18" fill="#f0d7b2"/>
+  <ellipse cx="600.0" cy="960.0" rx="360.0" ry="96.0" fill="#d0a571" opacity="0.75"/>
+  <circle cx="528.0" cy="804.0" r="108.0" fill="#fff8ea" stroke="#8d6342" stroke-width="10"/>
+  <rect x="468.0" y="804.0" width="120.0" height="120.0" rx="16" fill="#fff8ea" stroke="#8d6342" stroke-width="10"/>
+  <path d="M612.0 828.0 C 684.0 768.0, 732.0 792.0, 732.0 864.0" stroke="#8d6342" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M504.0 672.0 C 480.0 600.0, 528.0 576.0, 540.0 504.0" stroke="#fff" stroke-width="10" opacity="0.72" fill="none" stroke-linecap="round"/>
+  <path d="M600.0 648.0 C 576.0 576.0, 636.0 552.0, 648.0 480.0" stroke="#fff" stroke-width="10" opacity="0.62" fill="none" stroke-linecap="round"/>
+
+</svg>

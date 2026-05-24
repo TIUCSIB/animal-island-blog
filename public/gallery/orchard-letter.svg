@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1450 1000" fill="none">
+
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff0d5"/>
+      <stop offset="100%" stop-color="#b7dc98"/>
+    </linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.88)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.08)"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="1450" height="1000" fill="url(#sky)"/>
+  <circle cx="1073.0" cy="180.0" r="110.0" fill="#fff7d8" opacity="0.9"/>
+  <rect y="680.0" width="1450" height="320.0" fill="#dcb565"/>
+  <path d="M0 840.0 C 290.0 760.0, 667.0 760.0, 986.0 840.0 C 1247.0 900.0, 1392.0 900.0, 1450 860.0" stroke="#fff4d8" stroke-width="10" opacity="0.5" fill="none"/>
+  <rect x="203.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="203.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/><rect x="406.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="406.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/><rect x="609.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="609.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/><rect x="841.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="841.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/><rect x="1044.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="1044.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/><rect x="1247.0" y="460.0" width="18" height="240.0" rx="8" fill="#4c6a34"/><circle cx="1247.0" cy="420.0" r="79.8" fill="#8eaa56" opacity="0.96"/>
+
+</svg>
