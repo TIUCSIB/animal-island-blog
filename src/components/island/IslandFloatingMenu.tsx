@@ -3,6 +3,7 @@ import { Button } from 'animal-island-ui'
 import './island.css'
 
 export interface IslandFloatingMenuProps {
+  signedIn?: boolean
   userName?: string | null
   musicAvailable?: boolean
   musicEnabled?: boolean
@@ -14,6 +15,7 @@ export interface IslandFloatingMenuProps {
 }
 
 export function IslandFloatingMenu({
+  signedIn,
   userName,
   musicAvailable = true,
   musicEnabled = false,
@@ -23,7 +25,7 @@ export function IslandFloatingMenu({
   onLoginClick,
   onAdminClick,
 }: IslandFloatingMenuProps) {
-  const signedIn = Boolean(userName)
+  const isSignedIn = signedIn ?? Boolean(userName)
   const menuClassName = [
     'island-floating-menu',
     musicEnabled && 'island-floating-menu--music-on',
@@ -58,13 +60,13 @@ export function IslandFloatingMenu({
         </Button>
       ) : null}
 
-      {signedIn ? (
+      {isSignedIn ? (
         <Button
           className="island-floating-menu__item island-floating-menu__item--signed"
           type="primary"
           size="small"
           htmlType="button"
-          aria-label={`${userName} 已登岛，进入后台`}
+          aria-label={userName ? `${userName} 已登岛，进入后台` : '已登岛，进入后台'}
           title="进入后台"
           onClick={onAdminClick}
         >

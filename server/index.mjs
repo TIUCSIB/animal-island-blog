@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const port = Number(process.env.PORT ?? 8787)
 const adminPassword = process.env.ADMIN_PASSWORD ?? 'island-admin'
+const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true'
+const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY ?? ''
 const sessionToken = randomBytes(32).toString('hex')
 const dataFile = process.env.POSTS_FILE ? resolve(process.env.POSTS_FILE) : join(__dirname, 'data', 'posts.json')
 const musicFile = process.env.MUSIC_FILE ? resolve(process.env.MUSIC_FILE) : join(__dirname, 'data', 'music.json')
@@ -125,6 +127,44 @@ async function writeMusic(music) {
 
 function cleanText(value) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+async function verifyTurnstileToken(token, request) {
+  if (!turnstileEnabled) return
+
+  const secret = cleanText(turnstileSecretKey)
+
+  if (!secret) return
+
+  if (!token) {
+    throw createHttpError(400, '请先完成人机验证')
+  }
+
+  const formData = new FormData()
+  const forwardedFor = cleanText(request.headers['x-forwarded-for']).split(',')[0]
+  const remoteIp = cleanText(request.headers['cf-connecting-ip']) || cleanText(forwardedFor)
+
+  formData.set('secret', secret)
+  formData.set('response', token)
+
+  if (remoteIp) {
+    formData.set('remoteip', remoteIp)
+  }
+
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw createHttpError(502, '人机验证服务暂时不可用')
+  }
+
+  const result = await response.json()
+
+  if (!result.success) {
+    throw createHttpError(403, '人机验证未通过，请重试')
+  }
 }
 
 function toStringList(value) {
@@ -270,6 +310,8 @@ async function handleRequest(request, response) {
 
   if (url.pathname === '/api/admin/login' && request.method === 'POST') {
     const body = await readBody(request)
+
+    await verifyTurnstileToken(cleanText(body.turnstileToken), request)
 
     if (cleanText(body.password) !== adminPassword) {
       throw createHttpError(401, '后台密码不正确')

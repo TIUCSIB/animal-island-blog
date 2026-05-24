@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { Cursor } from 'animal-island-ui'
 import { emitIslandToast, IslandFloatingMenu, IslandFloatingSwitch, IslandLoginModal, IslandMusicPlayer, IslandToastViewport } from '@/components/island'
-import { loginAdmin } from '@/lib/posts-api'
-import type { MusicConfig } from '@/lib/posts-api'
-import { useMusicConfigQuery } from '@/lib/query-hooks'
+import { clearAdminSession, ensureAdminAccessToken, getStoredAdminAccessToken, getStoredAdminRefreshToken, loginAdmin, storeAdminSession } from '@/lib/posts-api'
+import type { AdminProfile, MusicConfig } from '@/lib/posts-api'
+import { queryKeys } from '@/lib/query-client'
+import { useAdminProfileQuery, useMusicConfigQuery } from '@/lib/query-hooks'
 
 const ISLAND_MODE_STORAGE_KEY = 'island-mode-enabled'
-const ISLAND_USER_STORAGE_KEY = 'island-user-name'
 const ISLAND_OPEN_LOGIN_EVENT = 'island-open-login'
 
 const defaultMusicConfig: MusicConfig = {
@@ -30,37 +31,28 @@ function readStoredBoolean(key: string) {
   return localStorage.getItem(key) === 'true'
 }
 
-function readStoredUserName() {
-  const token = localStorage.getItem('island-admin-token')
-  const userName = localStorage.getItem(ISLAND_USER_STORAGE_KEY)
-
-  if (!token) {
-    localStorage.removeItem(ISLAND_USER_STORAGE_KEY)
-    return null
-  }
-
-  return userName || null
+function readStoredAdminToken() {
+  return getStoredAdminAccessToken()
 }
 
 export default function App() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [isIslandMode, setIsIslandMode] = useState(() => readStoredBoolean(ISLAND_MODE_STORAGE_KEY))
   const [loginOpen, setLoginOpen] = useState(false)
   const [musicEnabled, setMusicEnabled] = useState(false)
-  const [userName, setUserName] = useState<string | null>(() => readStoredUserName())
+  const [adminToken, setAdminToken] = useState(() => readStoredAdminToken())
+  const adminProfileQuery = useAdminProfileQuery(adminToken)
   const musicConfigQuery = useMusicConfigQuery()
+  const adminUserName = adminProfileQuery.data?.account ?? null
+  const isAdminSignedIn = Boolean(adminToken && adminProfileQuery.isSuccess && adminProfileQuery.data)
   const musicConfig = musicConfigQuery.data ?? defaultMusicConfig
   const musicAvailable = !musicConfigQuery.isPending && musicConfig.enabled && musicConfig.tracks.length > 0
-
-  useEffect(() => {
-    if (!musicAvailable) {
-      setMusicEnabled(false)
-    }
-  }, [musicAvailable])
+  const visibleMusicEnabled = musicEnabled && musicAvailable
 
   useEffect(() => {
     function syncAdminAuth() {
-      setUserName(readStoredUserName())
+      setAdminToken(readStoredAdminToken())
     }
 
     syncAdminAuth()
@@ -72,6 +64,41 @@ export default function App() {
       window.removeEventListener('storage', syncAdminAuth)
     }
   }, [])
+
+  useEffect(() => {
+    if (adminToken || !getStoredAdminRefreshToken()) return
+
+    let cancelled = false
+
+    async function restoreAccessToken() {
+      try {
+        const nextToken = await ensureAdminAccessToken('')
+
+        if (cancelled) return
+
+        setAdminToken(nextToken)
+      } catch {
+        if (cancelled) return
+
+        queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
+        setAdminToken('')
+      }
+    }
+
+    void restoreAccessToken()
+
+    return () => {
+      cancelled = true
+    }
+  }, [adminToken, queryClient])
+
+  useEffect(() => {
+    if (!adminToken || !adminProfileQuery.isError) return
+
+    clearAdminSession()
+    queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
+    setAdminToken('')
+  }, [adminProfileQuery.isError, adminToken, queryClient])
 
   useEffect(() => {
     function openLoginFromPage() {
@@ -103,14 +130,18 @@ export default function App() {
     navigate('/admin')
   }
 
-  async function handleLogin(userNameValue: string, password: string) {
-    const { token, profile } = await loginAdmin(userNameValue, password)
-    const nextUserName = profile?.account || userNameValue.trim() || 'mewbarkjoy'
+  async function handleLogin(userNameValue: string, password: string, turnstileToken?: string) {
+    const session = await loginAdmin(userNameValue, password, turnstileToken)
+    const token = session.accessToken
+    const { profile } = session
+    const nextProfile: AdminProfile = profile ?? {
+      account: userNameValue.trim() || 'mewbarkjoy',
+      initialized: false,
+    }
 
-    localStorage.setItem('island-admin-token', token)
-    localStorage.setItem(ISLAND_USER_STORAGE_KEY, nextUserName)
-    window.dispatchEvent(new Event('island-admin-auth-change'))
-    setUserName(nextUserName)
+    storeAdminSession(session)
+    queryClient.setQueryData(queryKeys.adminProfile(token), nextProfile)
+    setAdminToken(token)
     emitIslandToast({
       type: 'success',
       title: '登录成功',
@@ -120,14 +151,15 @@ export default function App() {
   }
 
   return (
-    <section className={['island-app', isIslandMode && 'island-app--island-mode', isIslandMode && 'island-app--footer-animated', musicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
+    <section className={['island-app', isIslandMode && 'island-app--island-mode', isIslandMode && 'island-app--footer-animated', visibleMusicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
       <Cursor>
         <Outlet />
         {isIslandMode ?
           <IslandFloatingMenu
-            userName={userName}
+            signedIn={isAdminSignedIn}
+            userName={adminUserName}
             musicAvailable={musicAvailable}
-            musicEnabled={musicEnabled}
+            musicEnabled={visibleMusicEnabled}
             onAboutClick={openAboutPage}
             onMusicClick={() => {
               if (musicAvailable) {
@@ -141,14 +173,14 @@ export default function App() {
         <IslandFloatingSwitch
           checked={isIslandMode}
           uncheckedLabel="小憩中"
-          checkedLabel={userName ? '已登岛' : '营业中'}
+          checkedLabel={isAdminSignedIn ? '已登岛' : '营业中'}
           unCheckedChildren="OFF"
           checkedChildren="ON"
           onChange={handleIslandModeChange}
         />
         <IslandMusicPlayer
           tracks={musicConfig.tracks}
-          open={musicEnabled && musicAvailable}
+          open={visibleMusicEnabled}
           onClose={() => setMusicEnabled(false)}
         />
         <IslandLoginModal open={loginOpen} onOpenChange={setLoginOpen} onLogin={handleLogin} />

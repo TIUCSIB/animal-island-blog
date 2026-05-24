@@ -10,6 +10,16 @@ export type AdminStatus = {
   text: string
 } | null
 
+export type SystemCheckStatus = 'success' | 'error' | 'info'
+
+export type SystemCheckItem = {
+  id: 'api' | 'posts' | 'profile' | 'music' | 'auth'
+  label: string
+  value: string
+  status: SystemCheckStatus
+  detail?: string
+}
+
 export type PostForm = {
   id: string
   title: string

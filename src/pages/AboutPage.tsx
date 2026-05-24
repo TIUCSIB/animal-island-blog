@@ -1,15 +1,11 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router'
-import { Button, Card, Collapse, Divider, Typewriter } from 'animal-island-ui'
+import { Card, Collapse, Divider, Typewriter } from 'animal-island-ui'
 import { Camera, Cat, Globe2, Mail, Tv } from 'lucide-react'
 
 import { IslandBadge, IslandText } from '@/components/island'
 import { defaultAboutContent } from '@/data/about-content'
 import type { AboutContent, ContactIconName } from '@/data/about-content'
-import { defaultSiteProfile } from '@/data/site-profile'
-import { useAboutContentQuery, useSiteProfileQuery } from '@/lib/query-hooks'
-import { SiteFooter } from './components/SiteFooter'
-import { SiteHeader } from './components/SiteHeader'
+import { useAboutContentQuery } from '@/lib/query-hooks'
 
 import '@/components/island/island.css'
 
@@ -22,10 +18,7 @@ const contactIconMap = {
 } satisfies Record<ContactIconName, typeof Globe2>
 
 export default function AboutPage() {
-  const navigate = useNavigate()
-  const siteProfileQuery = useSiteProfileQuery()
   const aboutContentQuery = useAboutContentQuery()
-  const siteProfile = siteProfileQuery.data ?? (siteProfileQuery.isError ? defaultSiteProfile : null)
   const aboutContent: AboutContent | null = aboutContentQuery.data ?? (aboutContentQuery.isError ? defaultAboutContent : null)
   const enabledContacts = useMemo(() => (aboutContent?.contacts ?? []).filter((contact) => contact.enabled).sort((left, right) => left.sortOrder - right.sortOrder), [aboutContent?.contacts])
   const enabledCollapseItems = useMemo(
@@ -34,25 +27,8 @@ export default function AboutPage() {
   )
 
   return (
-    <div className="island-about-shell m-auto max-w-lg px-5 pt-7.5">
-      <Button className="island-about-page__back" type="primary" size="small" onClick={() => navigate('/')}>
-        ← 返回首页
-      </Button>
-      {siteProfile ?
-        <SiteHeader profile={siteProfile}></SiteHeader>
-      : <>
-          <header className="island-site-header-loading" aria-label="正在读取站点资料">
-            <span className="island-site-header-loading__avatar" />
-            <span className="island-site-header-loading__text">
-              <strong>正在读取岛主资料</strong>
-              <small>小岛头像连线中...</small>
-            </span>
-          </header>
-          <Divider type="line-white" className="mt-5" />
-        </>
-      }
-
-      <main className="island-about-page">
+    <div className="island-about-shell">
+      <section className="island-about-page">
         <IslandBadge dot tone="green">
           <div className="island-about-page__intro">关于小岛</div>
         </IslandBadge>
@@ -124,9 +100,7 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-      </main>
-
-      <SiteFooter />
+      </section>
     </div>
   )
 }

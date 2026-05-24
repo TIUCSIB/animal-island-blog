@@ -51,13 +51,6 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
           </span>
         </button>
       </Card>
-
-      {/* <Card className="island-admin-summary">
-        <strong>{postsCount}</strong>
-        <span>篇文章</span>
-        <strong>{pinnedCount}</strong>
-        <span>个置顶</span>
-      </Card> */}
     </aside>
   )
 }

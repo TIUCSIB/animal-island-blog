@@ -3,6 +3,10 @@ export type WorkerEnv = {
   ADMIN_PASSWORD?: string
   TURNSTILE_ENABLED?: string
   TURNSTILE_SECRET_KEY?: string
+  CLOUDINARY_CLOUD_NAME?: string
+  CLOUDINARY_API_KEY?: string
+  CLOUDINARY_API_SECRET?: string
+  CLOUDINARY_UPLOAD_FOLDER?: string
 }
 
 export type GalleryPost = {

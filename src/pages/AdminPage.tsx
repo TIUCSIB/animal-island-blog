@@ -14,12 +14,14 @@ import { useAdminDashboard } from './admin/useAdminDashboard'
 export default function AdminPage() {
   const navigate = useNavigate()
   const admin = useAdminDashboard()
+  const showAdminShell = admin.isLoggedIn || admin.isRestoringSession
+  const showLoginView = !showAdminShell
 
   return (
-    <div className={['island-admin-page', !admin.isLoggedIn && 'island-admin-page--login'].filter(Boolean).join(' ')}>
+    <div className={['island-admin-page', showLoginView && 'island-admin-page--login'].filter(Boolean).join(' ')}>
       <div className="island-admin-page__shell">
         <main className="island-admin-page__main">
-          {!admin.isLoggedIn ?
+          {!showAdminShell ?
             <AdminLoginGate onLoginClick={admin.openLoginModal} onHomeClick={() => navigate('/')} />
           : <>
               <AdminTopbar account={admin.adminProfile?.account ?? admin.accountForm.account} profile={admin.siteProfileForm} onHomeClick={() => navigate('/')} onLogout={admin.handleLogout} />
@@ -34,6 +36,7 @@ export default function AdminPage() {
                       selectedId={admin.selectedId}
                       selectedPost={admin.selectedPost}
                       form={admin.form}
+                      token={admin.token}
                       loadingPosts={admin.loadingPosts}
                       saving={admin.saving}
                       setForm={admin.setForm}
@@ -50,7 +53,7 @@ export default function AdminPage() {
                   : null}
 
                   {admin.activeSection === 'site' ?
-                    <AdminSitePanel saving={admin.saving} siteProfileForm={admin.siteProfileForm} setSiteProfileForm={admin.setSiteProfileForm} onSaveSiteProfile={admin.handleSaveSiteProfile} />
+                    <AdminSitePanel token={admin.token} saving={admin.saving} siteProfileForm={admin.siteProfileForm} setSiteProfileForm={admin.setSiteProfileForm} onSaveSiteProfile={admin.handleSaveSiteProfile} />
                   : null}
 
                   {admin.activeSection === 'about' ?
@@ -67,11 +70,12 @@ export default function AdminPage() {
                       accountForm={admin.accountForm}
                       adminProfile={admin.adminProfile}
                       postsCount={admin.posts.length}
-                      isLoggedIn={admin.isLoggedIn}
-                      loadingPosts={admin.loadingPosts}
+                      isLoggedIn={showAdminShell}
+                      checkingSystem={admin.checkingSystem}
+                      systemChecks={admin.systemChecks}
                       saving={admin.saving}
                       setAccountForm={admin.setAccountForm}
-                      onCheck={() => void admin.loadPosts()}
+                      onCheck={() => void admin.handleSystemCheck()}
                       onSaveAccount={admin.handleSaveAdminAccount}
                     />
                   : null}

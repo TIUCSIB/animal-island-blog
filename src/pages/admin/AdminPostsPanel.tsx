@@ -3,6 +3,7 @@ import { Button, Card, Input, Switch } from 'animal-island-ui'
 import { CalendarDays, ImagePlus, MapPin, Pencil, Plus, RefreshCw, Save, Tags, Trash2 } from 'lucide-react'
 
 import type { GalleryPost } from '@/data/gallery'
+import { AdminCloudinaryUploader } from './AdminCloudinaryUploader'
 import type { PostForm, SetPostForm } from './types'
 
 type AdminPostsPanelProps = {
@@ -10,6 +11,7 @@ type AdminPostsPanelProps = {
   selectedId: string | null
   selectedPost: GalleryPost | null
   form: PostForm
+  token: string
   loadingPosts: boolean
   saving: boolean
   setForm: SetPostForm
@@ -25,6 +27,7 @@ export function AdminPostsPanel({
   selectedId,
   selectedPost,
   form,
+  token,
   loadingPosts,
   saving,
   setForm,
@@ -34,6 +37,17 @@ export function AdminPostsPanel({
   onDeletePost,
   onSave,
 }: AdminPostsPanelProps) {
+  function appendImageUrl(currentText: string, url: string) {
+    const urls = currentText
+      .split(/[\n,，]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+    if (!urls.includes(url)) urls.push(url)
+
+    return urls.join('\n')
+  }
+
   return (
     <section className="island-admin-workbench">
       <aside className="island-admin-sidebar">
@@ -121,7 +135,7 @@ export function AdminPostsPanel({
             </label>
           </div>
 
-          <label className="island-admin-field">
+          <div className="island-admin-field">
             <span>封面图片</span>
             <Input
               value={form.imageSrc}
@@ -129,7 +143,20 @@ export function AdminPostsPanel({
               prefix={<ImagePlus size={15} strokeWidth={3} />}
               onChange={(event) => setForm((current) => ({ ...current, imageSrc: event.target.value }))}
             />
-          </label>
+            <div className="island-admin-upload-actions">
+              <AdminCloudinaryUploader
+                token={token}
+                purpose="post-image"
+                label="上传封面"
+                onUploaded={(asset) =>
+                  setForm((current) => ({
+                    ...current,
+                    imageSrc: asset.secureUrl,
+                  }))
+                }
+              />
+            </div>
+          </div>
 
           <div className="island-admin-editor__media-row">
             <div className="island-admin-preview">
@@ -137,15 +164,30 @@ export function AdminPostsPanel({
                 <img src={form.imageSrc} alt="封面预览" />
               : <span>封面预览</span>}
             </div>
-            <label className="island-admin-field island-admin-field--stretch">
-              <span>多图地址</span>
+            <div className="island-admin-field island-admin-field--stretch">
+              <div className="island-admin-field__label-row">
+                <span>多图地址</span>
+                <AdminCloudinaryUploader
+                  token={token}
+                  purpose="post-image"
+                  label="上传多图"
+                  multiple
+                  onUploaded={(asset) =>
+                    setForm((current) => ({
+                      ...current,
+                      imageSrc: current.imageSrc || asset.secureUrl,
+                      imagesText: appendImageUrl(current.imagesText, asset.secureUrl),
+                    }))
+                  }
+                />
+              </div>
               <textarea
                 className="island-admin-textarea island-admin-textarea--small"
                 value={form.imagesText}
                 placeholder="一行一张图片地址；不填时会只使用封面图"
                 onChange={(event) => setForm((current) => ({ ...current, imagesText: event.target.value }))}
               />
-            </label>
+            </div>
           </div>
 
           <label className="island-admin-field">

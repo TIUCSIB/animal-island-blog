@@ -72,3 +72,15 @@ export const MusicBody = t.Object({
   sourceType: t.String(),
   musicId: t.String(),
 })
+
+export const CloudinaryUploadSignatureBody = t.Object({
+  purpose: t.Optional(t.String()),
+  resourceType: t.Optional(t.String()),
+})
+
+export const CloudinaryUploadAssetsQuery = t.Object({
+  purpose: t.Optional(t.String()),
+  resourceType: t.Optional(t.String()),
+  nextCursor: t.Optional(t.String()),
+  maxResults: t.Optional(t.String()),
+})

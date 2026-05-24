@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import type { FormEventHandler } from 'react'
 import { Button, Card, Input, Select, Switch } from 'animal-island-ui'
-import { AtSign, Heart, ImageIcon, MessageCircle, UserRound } from 'lucide-react'
+import { Citrus, Heart, ImageIcon, Images, MessageCircle, UserRound } from 'lucide-react'
 
 import { IslandAvatar } from '@/components/island'
+import { AdminAvatarLibraryModal } from './AdminAvatarLibraryModal'
+import { AdminAvatarUploader } from './AdminAvatarUploader'
 import type { SetSiteProfileForm, SiteProfileForm } from './types'
 
 const avatarStatusOptions = [
@@ -14,12 +17,15 @@ const avatarStatusOptions = [
 
 type AdminSitePanelProps = {
   saving: boolean
+  token: string
   siteProfileForm: SiteProfileForm
   setSiteProfileForm: SetSiteProfileForm
   onSaveSiteProfile: FormEventHandler<HTMLFormElement>
 }
 
-export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, onSaveSiteProfile }: AdminSitePanelProps) {
+export function AdminSitePanel({ saving, token, siteProfileForm, setSiteProfileForm, onSaveSiteProfile }: AdminSitePanelProps) {
+  const [avatarLibraryOpen, setAvatarLibraryOpen] = useState(false)
+
   return (
     <section className="island-admin-panel island-admin-site-panel">
       <Card className="island-admin-editor__card">
@@ -33,28 +39,40 @@ export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, on
         <form className="island-admin-profile-form" onSubmit={onSaveSiteProfile}>
           <div className="island-admin-account-form__title">
             <strong>个人资料</strong>
-            <span>首页、关于页和文章详情都会读取这里。</span>
           </div>
 
           <div className="island-admin-profile-form__body">
             <div className="island-admin-profile-form__preview">
-              <IslandAvatar
-                badge={siteProfileForm.badgeEnabled ? siteProfileForm.badge : undefined}
-                status={siteProfileForm.avatarStatus || undefined}
-                src={siteProfileForm.avatarUrl}
-                name={siteProfileForm.nickname}
-                alt={siteProfileForm.nickname}
-                shape="circle"
-                className="size-18"
-              />
+              <AdminAvatarUploader
+                token={token}
+                onUploaded={(asset) =>
+                  setSiteProfileForm((current) => ({
+                    ...current,
+                    avatarUrl: asset.secureUrl,
+                  }))
+                }
+              >
+                <IslandAvatar
+                  badge={siteProfileForm.badgeEnabled ? siteProfileForm.badge : undefined}
+                  status={siteProfileForm.avatarStatus || undefined}
+                  src={siteProfileForm.avatarUrl}
+                  name={siteProfileForm.nickname}
+                  alt={siteProfileForm.nickname}
+                  shape="circle"
+                  className="size-18"
+                />
+              </AdminAvatarUploader>
               <div>
                 <strong>{siteProfileForm.nickname || 'mewbarkjoy'}</strong>
                 <span>{siteProfileForm.handle || '@mewbarkjoy'}</span>
               </div>
+              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} onClick={() => setAvatarLibraryOpen(true)}>
+                头像库
+              </Button>
             </div>
 
             <div className="island-admin-profile-form__fields">
-              <label className="island-admin-field">
+              <div className="island-admin-field">
                 <span>头像地址</span>
                 <Input
                   value={siteProfileForm.avatarUrl}
@@ -64,7 +82,8 @@ export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, on
                   onChange={(event) => setSiteProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))}
                   onClear={() => setSiteProfileForm((current) => ({ ...current, avatarUrl: '' }))}
                 />
-              </label>
+                <small className="island-admin-field__hint">点击左侧头像可直接上传新头像，也可以从头像库选择历史头像。</small>
+              </div>
 
               <div className="island-admin-account-form__grid">
                 <label className="island-admin-field">
@@ -81,14 +100,14 @@ export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, on
                   <span>账号</span>
                   <Input
                     value={siteProfileForm.handle}
-                    placeholder="@mewbarkjoy"
-                    prefix={<AtSign size={15} strokeWidth={3} />}
+                    placeholder="@biscuit"
+                    prefix={<Citrus size={15} strokeWidth={3} />}
                     onChange={(event) => setSiteProfileForm((current) => ({ ...current, handle: event.target.value }))}
                   />
                 </label>
 
                 <label className="island-admin-field">
-                  <span>头像角标</span>
+                  <span>小小徽章</span>
                   <Input
                     value={siteProfileForm.badge}
                     placeholder="♥"
@@ -102,15 +121,15 @@ export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, on
               <div className="island-admin-profile-options">
                 <div className="island-admin-profile-option">
                   <span className="island-admin-profile-option__text">
-                    <strong>头像角标</strong>
-                    <small>{siteProfileForm.badgeEnabled ? '正在显示角标' : '已隐藏角标'}</small>
+                    <strong>小小徽章</strong>
+                    <small>{siteProfileForm.badgeEnabled ? '正在显示徽章' : '已隐藏徽章'}</small>
                   </span>
                   <Switch size="small" checked={siteProfileForm.badgeEnabled} onChange={(checked) => setSiteProfileForm((current) => ({ ...current, badgeEnabled: checked }))} />
                 </div>
 
                 <div className="island-admin-profile-option island-admin-profile-option--select">
                   <span className="island-admin-profile-option__text">
-                    <strong>头像状态</strong>
+                    <strong>在线状态</strong>
                     <small>{siteProfileForm.avatarStatus ? '显示状态点' : '不显示状态点'}</small>
                   </span>
                   <Select
@@ -145,6 +164,19 @@ export function AdminSitePanel({ saving, siteProfileForm, setSiteProfileForm, on
           </div>
         </form>
       </Card>
+
+      <AdminAvatarLibraryModal
+        open={avatarLibraryOpen}
+        token={token}
+        currentUrl={siteProfileForm.avatarUrl}
+        onClose={() => setAvatarLibraryOpen(false)}
+        onSelect={(asset) =>
+          setSiteProfileForm((current) => ({
+            ...current,
+            avatarUrl: asset.secureUrl,
+          }))
+        }
+      />
     </section>
   )
 }

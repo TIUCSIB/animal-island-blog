@@ -3,6 +3,7 @@ import App from '@/App'
 import AboutPage from '@/pages/AboutPage'
 import AdminPage from '@/pages/AdminPage'
 import HomePage from '@/pages/HomePage'
+import { SiteLayout } from '@/pages/components/SiteLayout'
 
 export const routes: RouteObject[] = [
   {
@@ -10,13 +11,19 @@ export const routes: RouteObject[] = [
     element: <App />,
     children: [
       {
-        index: true,
-        element: <HomePage />,
+        element: <SiteLayout />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+          {
+            path: 'about',
+            element: <AboutPage />,
+          },
+        ],
       },
-      {
-        path: 'about',
-        element: <AboutPage />,
-      },
+
       {
         path: 'admin',
         element: <AdminPage />,

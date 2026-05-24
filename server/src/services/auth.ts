@@ -24,6 +24,10 @@ type AdminAccountInput = {
   newPassword?: unknown
 }
 
+function normalizeAdminAccount(value: unknown) {
+  return cleanText(value)
+}
+
 export async function verifyTurnstileToken(token: string, request: Request) {
   if (getEnv().TURNSTILE_ENABLED !== 'true') return
 
@@ -101,7 +105,7 @@ export async function getAdminProfile() {
   const user = await getAdminUser()
 
   return {
-    account: user?.account ?? 'mewbarkjoy',
+    account: user ? normalizeAdminAccount(user.account) : 'mewbarkjoy',
     initialized: Boolean(user),
     updatedAt: user?.updatedAt,
   }
@@ -164,7 +168,7 @@ export async function assertAdmin(request: Request) {
 }
 
 export async function loginAdmin(input: AdminLoginInput, request: Request) {
-  const account = cleanText(input.account)
+  const account = normalizeAdminAccount(input.account)
   const password = cleanText(input.password)
   const turnstileToken = cleanText(input.turnstileToken)
   const user = await getAdminUser()
@@ -172,7 +176,7 @@ export async function loginAdmin(input: AdminLoginInput, request: Request) {
   await verifyTurnstileToken(turnstileToken, request)
 
   if (user) {
-    const accountMatched = account.toLowerCase() === user.account.toLowerCase()
+    const accountMatched = account.toLowerCase() === normalizeAdminAccount(user.account).toLowerCase()
     const passwordMatched = await verifyPassword(password, user.passwordHash, user.passwordSalt)
 
     if (!accountMatched || !passwordMatched) {
@@ -184,7 +188,7 @@ export async function loginAdmin(input: AdminLoginInput, request: Request) {
 
   return {
     ...(await createAdminSession()),
-    profile: user ? { account: user.account, initialized: true, updatedAt: user.updatedAt } : { account: account || 'mewbarkjoy', initialized: false },
+    profile: user ? { account: normalizeAdminAccount(user.account), initialized: true, updatedAt: user.updatedAt } : { account: account || 'mewbarkjoy', initialized: false },
   }
 }
 
@@ -202,7 +206,7 @@ export async function refreshAdminSession(refreshToken: unknown) {
 }
 
 export async function updateAdminAccount(input: AdminAccountInput) {
-  const account = cleanText(input.account)
+  const account = normalizeAdminAccount(input.account)
   const currentPassword = cleanText(input.currentPassword)
   const newPassword = cleanText(input.newPassword)
   const db = getDb()

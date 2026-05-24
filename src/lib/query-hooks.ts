@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { fetchAboutContent, fetchGalleryPosts, fetchMusicConfig, fetchSiteProfile } from '@/lib/posts-api'
+import { fetchAboutContent, fetchAdminProfile, fetchGalleryPosts, fetchMusicConfig, fetchSiteProfile } from '@/lib/posts-api'
 import { queryKeys } from '@/lib/query-client'
 
 export function useSiteProfileQuery() {
@@ -14,6 +14,15 @@ export function useAboutContentQuery() {
   return useQuery({
     queryKey: queryKeys.aboutContent,
     queryFn: ({ signal }) => fetchAboutContent(signal),
+  })
+}
+
+export function useAdminProfileQuery(token: string) {
+  return useQuery({
+    queryKey: queryKeys.adminProfile(token),
+    queryFn: () => fetchAdminProfile(token),
+    enabled: Boolean(token),
+    retry: false,
   })
 }
 

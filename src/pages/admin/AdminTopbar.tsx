@@ -4,6 +4,7 @@ import { ChevronDown, Home, LogOut, Sprout } from 'lucide-react'
 
 import { IslandAvatar, IslandText } from '@/components/island'
 import type { SiteProfile } from '@/data/site-profile'
+import { formatIslandAccountDisplay } from '@/lib/account'
 
 type AdminTopbarProps = {
   account?: string
@@ -51,7 +52,7 @@ export function AdminTopbar({ account, profile, onHomeClick, onLogout }: AdminTo
   }
 
   const displayName = profile.nickname || account || '岛主'
-  const displayHandle = profile.handle || (account ? `@${account}` : '@island-admin')
+  const displayHandle = profile.handle || formatIslandAccountDisplay(account)
 
   return (
     <Card className="island-admin-topbar">

@@ -3,21 +3,26 @@ import { Button, Card, Input } from 'animal-island-ui'
 import { AtSign, Database, KeyRound, RefreshCw, Server, ShieldCheck } from 'lucide-react'
 
 import type { AdminProfile } from '@/lib/posts-api'
-import type { AdminAccountForm, SetAdminAccountForm } from './types'
+import type { AdminAccountForm, SetAdminAccountForm, SystemCheckItem, SystemCheckStatus } from './types'
 
 type AdminSystemPanelProps = {
   accountForm: AdminAccountForm
   adminProfile: AdminProfile | null
   postsCount: number
   isLoggedIn: boolean
-  loadingPosts: boolean
+  checkingSystem: boolean
+  systemChecks: SystemCheckItem[]
   saving: boolean
   setAccountForm: SetAdminAccountForm
   onCheck: () => void
   onSaveAccount: FormEventHandler<HTMLFormElement>
 }
 
-export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLoggedIn, loadingPosts, saving, setAccountForm, onCheck, onSaveAccount }: AdminSystemPanelProps) {
+function getCheckClassName(status: SystemCheckStatus) {
+  return ['island-admin-check-item', `island-admin-check-item--${status}`].join(' ')
+}
+
+export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLoggedIn, checkingSystem, systemChecks, saving, setAccountForm, onCheck, onSaveAccount }: AdminSystemPanelProps) {
   return (
     <section className="island-admin-panel">
       <Card className="island-admin-editor__card">
@@ -26,7 +31,7 @@ export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLogg
             <span className="island-admin-editor__eyebrow">系统管理</span>
             <h2>小岛状态</h2>
           </div>
-          <Button type="default" size="small" htmlType="button" icon={<RefreshCw size={14} strokeWidth={3} />} loading={loadingPosts} onClick={onCheck}>
+          <Button type="default" size="small" htmlType="button" icon={<RefreshCw size={14} strokeWidth={3} />} loading={checkingSystem} onClick={onCheck}>
             检查
           </Button>
         </div>
@@ -45,8 +50,32 @@ export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLogg
           <div className="island-admin-system-card">
             <Server aria-hidden="true" size={20} strokeWidth={3} />
             <span>API</span>
-            <strong>/api/posts</strong>
+            <strong>/api/health</strong>
           </div>
+        </div>
+
+        <div className="island-admin-check-panel">
+          <div className="island-admin-check-panel__title">
+            <strong>检查结果</strong>
+            <span>{systemChecks.length ? '最近一次系统检查结果' : '点击右上角「检查」开始检测'}</span>
+          </div>
+
+          {systemChecks.length ? (
+            <div className="island-admin-check-list">
+              {systemChecks.map((item) => (
+                <div key={item.id} className={getCheckClassName(item.status)}>
+                  <span className="island-admin-check-item__dot" aria-hidden="true" />
+                  <div>
+                    <strong>{item.label}</strong>
+                    {item.detail ? <small>{item.detail}</small> : null}
+                  </div>
+                  <em>{item.value}</em>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="island-admin-check-panel__empty">会检查 API 心跳、文章数据、站点资料、音乐配置和登录 token 是否有效。</p>
+          )}
         </div>
 
         <form className="island-admin-account-form" onSubmit={onSaveAccount}>

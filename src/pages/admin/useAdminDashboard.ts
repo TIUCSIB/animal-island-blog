@@ -6,12 +6,32 @@ import { emitIslandToast } from '@/components/island'
 import { defaultAboutContent } from '@/data/about-content'
 import type { GalleryPost } from '@/data/gallery'
 import { defaultSiteProfile } from '@/data/site-profile'
-import { createGalleryPost, deleteGalleryPost, fetchAboutContent, fetchAdminProfile, fetchGalleryPosts, fetchMusicConfig, fetchSiteProfile, saveMusicConfig, updateAboutContent, updateAdminAccount, updateGalleryPost, updateSiteProfile } from '@/lib/posts-api'
+import {
+  createGalleryPost,
+  clearAdminSession,
+  deleteGalleryPost,
+  ensureAdminAccessToken,
+  fetchAboutContent,
+  fetchAdminProfile,
+  fetchApiHealth,
+  fetchGalleryPosts,
+  fetchMusicConfig,
+  fetchSiteProfile,
+  getStoredAdminAccessToken,
+  getStoredAdminRefreshToken,
+  saveMusicConfig,
+  updateAboutContent,
+  updateAdminAccount,
+  updateGalleryPost,
+  updateSiteProfile,
+} from '@/lib/posts-api'
 import type { AdminProfile, MusicConfig } from '@/lib/posts-api'
 import { queryKeys } from '@/lib/query-client'
+import { normalizeIslandAccount, toAccountInputValue } from '@/lib/account'
+import { useAdminDashboardStore } from '@/stores/admin-dashboard-store'
 
 import { createEmptyForm, formToPost, getErrorMessage, postToForm } from './post-form'
-import type { AboutContentForm, AdminAccountForm, AdminSection, AdminStatus, MusicForm, PostForm, SiteProfileForm } from './types'
+import type { AboutContentForm, AdminAccountForm, AdminStatus, MusicForm, PostForm, SiteProfileForm, SystemCheckItem } from './types'
 
 type MusicSnapshot = Pick<MusicConfig, 'enabled' | 'platform' | 'sourceType' | 'musicId'>
 
@@ -22,34 +42,50 @@ const defaultMusicSnapshot: MusicSnapshot = {
   musicId: '473403185',
 }
 
+const loadingSiteProfile: SiteProfileForm = {
+  ...defaultSiteProfile,
+  avatarUrl: '',
+  badgeEnabled: false,
+  avatarStatus: '',
+}
+
 export function useAdminDashboard() {
   const queryClient = useQueryClient()
   const musicSnapshotRef = useRef<MusicSnapshot>(defaultMusicSnapshot)
-  const [token, setToken] = useState(() => localStorage.getItem('island-admin-token') ?? '')
-  const [activeSection, setActiveSection] = useState<AdminSection>('posts')
+  const [token, setToken] = useState(() => getStoredAdminAccessToken())
+  const [hasRefreshToken, setHasRefreshToken] = useState(() => Boolean(getStoredAdminRefreshToken()))
+  const cachedAdminProfile = token ? queryClient.getQueryData<AdminProfile>(queryKeys.adminProfile(token)) : null
+  const cachedSiteProfile = queryClient.getQueryData<SiteProfileForm>(queryKeys.siteProfile)
+  const activeSection = useAdminDashboardStore((state) => state.activeSection)
+  const setActiveSection = useAdminDashboardStore((state) => state.setActiveSection)
+  const selectedId = useAdminDashboardStore((state) => state.selectedId)
+  const setSelectedId = useAdminDashboardStore((state) => state.setSelectedId)
   const [posts, setPosts] = useState<GalleryPost[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState<PostForm>(() => createEmptyForm())
   const [musicForm, setMusicForm] = useState<MusicForm>(() => ({
     sourceType: 'song',
     musicId: '473403185',
     enabled: true,
   }))
-  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(() => cachedAdminProfile ?? null)
+  const [authChecking, setAuthChecking] = useState(() => Boolean(token && !cachedAdminProfile))
   const [accountForm, setAccountForm] = useState<AdminAccountForm>(() => ({
-    account: localStorage.getItem('island-user-name') ?? 'mewbarkjoy',
+    account: cachedAdminProfile ? toAccountInputValue(cachedAdminProfile.account) : 'admin',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   }))
-  const [siteProfileForm, setSiteProfileForm] = useState<SiteProfileForm>(defaultSiteProfile)
+  const [siteProfileForm, setSiteProfileForm] = useState<SiteProfileForm>(() => cachedSiteProfile ?? loadingSiteProfile)
   const [aboutContentForm, setAboutContentForm] = useState<AboutContentForm>(defaultAboutContent)
   const [status, setStatus] = useState<AdminStatus>(null)
   const [loadingPosts, setLoadingPosts] = useState(false)
+  const [checkingSystem, setCheckingSystem] = useState(false)
+  const [systemChecks, setSystemChecks] = useState<SystemCheckItem[]>([])
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<GalleryPost | null>(null)
 
-  const isLoggedIn = Boolean(token)
+  const isLoggedIn = Boolean((token || hasRefreshToken) && adminProfile)
+  const isRestoringSession = Boolean(hasRefreshToken && !adminProfile)
   const selectedPost = useMemo(() => posts.find((post) => post.id === selectedId) ?? null, [posts, selectedId])
   const pinnedCount = useMemo(() => posts.filter((post) => post.pinned).length, [posts])
 
@@ -81,80 +117,221 @@ export function useAdminDashboard() {
     }
   }
 
-  async function loadMusic() {
-    try {
-      const music = await fetchMusicConfig()
+  async function handleSystemCheck() {
+    setCheckingSystem(true)
 
-      setMusicForm({
-        sourceType: music.sourceType,
-        musicId: music.musicId,
-        enabled: music.enabled,
+    const [healthResult, postsResult, profileResult, musicResult, authResult] = await Promise.allSettled([
+      fetchApiHealth(),
+      fetchGalleryPosts(),
+      fetchSiteProfile(),
+      fetchMusicConfig(),
+      token ? fetchAdminProfile(token) : Promise.resolve(null),
+    ])
+
+    const nextChecks: SystemCheckItem[] = []
+
+    if (healthResult.status === 'fulfilled' && healthResult.value.ok) {
+      nextChecks.push({
+        id: 'api',
+        label: 'API 心跳',
+        value: '正常',
+        status: 'success',
+        detail: '/api/health 已响应。',
       })
-      musicSnapshotRef.current = {
-        enabled: music.enabled,
-        platform: music.platform,
-        sourceType: music.sourceType,
-        musicId: music.musicId,
-      }
-      queryClient.setQueryData(queryKeys.musicConfig, music)
-    } catch {
-      // 后端未启动或音乐配置不存在时，保留默认配置。
-    }
-  }
-
-  async function loadSiteProfile() {
-    try {
-      const profile = await fetchSiteProfile()
-
-      setSiteProfileForm(profile)
-      queryClient.setQueryData(queryKeys.siteProfile, profile)
-    } catch {
-      setSiteProfileForm(defaultSiteProfile)
-    }
-  }
-
-  async function loadAboutContent() {
-    try {
-      const about = await fetchAboutContent()
-
-      setAboutContentForm(about)
-      queryClient.setQueryData(queryKeys.aboutContent, about)
-    } catch {
-      setAboutContentForm(defaultAboutContent)
-    }
-  }
-
-  async function loadAdminProfile(nextToken = token) {
-    if (!nextToken) {
-      setAdminProfile(null)
-      return
+    } else {
+      nextChecks.push({
+        id: 'api',
+        label: 'API 心跳',
+        value: '异常',
+        status: 'error',
+        detail: healthResult.status === 'rejected' ? getErrorMessage(healthResult.reason) : '接口没有返回 ok。',
+      })
     }
 
-    try {
-      const profile = await fetchAdminProfile(nextToken)
+    if (postsResult.status === 'fulfilled') {
+      setPosts(postsResult.value)
+      queryClient.setQueryData(queryKeys.galleryPosts, postsResult.value)
+      nextChecks.push({
+        id: 'posts',
+        label: '文章数据',
+        value: `${postsResult.value.length} 条`,
+        status: 'success',
+        detail: '文章接口和数据库读取正常。',
+      })
+    } else {
+      nextChecks.push({
+        id: 'posts',
+        label: '文章数据',
+        value: '读取失败',
+        status: 'error',
+        detail: getErrorMessage(postsResult.reason),
+      })
+    }
 
-      setAdminProfile(profile)
+    if (profileResult.status === 'fulfilled') {
+      queryClient.setQueryData(queryKeys.siteProfile, profileResult.value)
+      nextChecks.push({
+        id: 'profile',
+        label: '站点资料',
+        value: profileResult.value.nickname || '已读取',
+        status: 'success',
+        detail: '头像、昵称、签名配置读取正常。',
+      })
+    } else {
+      nextChecks.push({
+        id: 'profile',
+        label: '站点资料',
+        value: '读取失败',
+        status: 'error',
+        detail: getErrorMessage(profileResult.reason),
+      })
+    }
+
+    if (musicResult.status === 'fulfilled') {
+      queryClient.setQueryData(queryKeys.musicConfig, musicResult.value)
+      nextChecks.push({
+        id: 'music',
+        label: '音乐配置',
+        value: musicResult.value.enabled ? `已开启 · ${musicResult.value.tracks.length} 首` : `已关闭 · ${musicResult.value.tracks.length} 首`,
+        status: musicResult.value.tracks.length > 0 ? 'success' : 'info',
+        detail: `${musicResult.value.sourceType === 'playlist' ? '歌单' : '歌曲'} ID：${musicResult.value.musicId}`,
+      })
+    } else {
+      nextChecks.push({
+        id: 'music',
+        label: '音乐配置',
+        value: '读取失败',
+        status: 'error',
+        detail: getErrorMessage(musicResult.reason),
+      })
+    }
+
+    if (!token) {
+      nextChecks.push({
+        id: 'auth',
+        label: '登录状态',
+        value: '未登录',
+        status: 'info',
+        detail: '当前没有后台登录 token。',
+      })
+    } else if (authResult.status === 'fulfilled' && authResult.value) {
+      setAdminProfile(authResult.value)
+      queryClient.setQueryData(queryKeys.adminProfile(token), authResult.value)
       setAccountForm((current) => ({
         ...current,
-        account: profile.account,
+          account: authResult.value ? toAccountInputValue(authResult.value.account) : current.account,
       }))
-      localStorage.setItem('island-user-name', profile.account)
-      window.dispatchEvent(new Event('island-admin-auth-change'))
-    } catch {
-      // token 失效时由具体接口返回错误提示，这里只保持当前页面可用。
+      nextChecks.push({
+        id: 'auth',
+        label: '登录状态',
+        value: '有效',
+        status: 'success',
+        detail: `当前账号：${authResult.value.account}`,
+      })
+    } else {
+      nextChecks.push({
+        id: 'auth',
+        label: '登录状态',
+        value: '可能失效',
+        status: 'error',
+        detail: authResult.status === 'rejected' ? getErrorMessage(authResult.reason) : '无法读取当前账号信息。',
+      })
     }
+
+    setSystemChecks(nextChecks)
+    setCheckingSystem(false)
+
+    const errorCount = nextChecks.filter((item) => item.status === 'error').length
+
+    showStatus({
+      type: errorCount > 0 ? 'error' : 'success',
+      text: errorCount > 0 ? `系统检查完成，发现 ${errorCount} 项异常。` : '系统检查完成，所有项目正常。',
+    })
   }
 
   useEffect(() => {
-    void loadPosts()
-    void loadMusic()
-    void loadSiteProfile()
-    void loadAboutContent()
-  }, [])
+    let cancelled = false
+
+    async function loadInitialData() {
+      const [postsResult, musicResult, siteProfileResult, aboutContentResult] = await Promise.allSettled([fetchGalleryPosts(), fetchMusicConfig(), fetchSiteProfile(), fetchAboutContent()])
+
+      if (cancelled) return
+
+      if (postsResult.status === 'fulfilled') {
+        setPosts(postsResult.value)
+        queryClient.setQueryData(queryKeys.galleryPosts, postsResult.value)
+      } else {
+        const text = getErrorMessage(postsResult.reason)
+
+        setStatus({ type: 'error', text })
+        emitIslandToast({ type: 'error', title: text })
+      }
+
+      if (musicResult.status === 'fulfilled') {
+        const music = musicResult.value
+
+        setMusicForm({
+          sourceType: music.sourceType,
+          musicId: music.musicId,
+          enabled: music.enabled,
+        })
+        musicSnapshotRef.current = {
+          enabled: music.enabled,
+          platform: music.platform,
+          sourceType: music.sourceType,
+          musicId: music.musicId,
+        }
+        queryClient.setQueryData(queryKeys.musicConfig, music)
+      }
+
+      if (siteProfileResult.status === 'fulfilled') {
+        setSiteProfileForm(siteProfileResult.value)
+        queryClient.setQueryData(queryKeys.siteProfile, siteProfileResult.value)
+      } else {
+        setSiteProfileForm(loadingSiteProfile)
+      }
+
+      if (aboutContentResult.status === 'fulfilled') {
+        setAboutContentForm(aboutContentResult.value)
+        queryClient.setQueryData(queryKeys.aboutContent, aboutContentResult.value)
+      } else {
+        setAboutContentForm(defaultAboutContent)
+      }
+    }
+
+    void loadInitialData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [queryClient])
 
   useEffect(() => {
     function syncAdminToken() {
-      setToken(localStorage.getItem('island-admin-token') ?? '')
+      const nextToken = getStoredAdminAccessToken()
+      const nextHasRefreshToken = Boolean(getStoredAdminRefreshToken())
+      const cachedProfile = nextToken ? queryClient.getQueryData<AdminProfile>(queryKeys.adminProfile(nextToken)) : null
+
+      setToken(nextToken)
+      setHasRefreshToken(nextHasRefreshToken)
+
+      if (cachedProfile) {
+        setAdminProfile(cachedProfile)
+      }
+
+      setAuthChecking(Boolean((nextToken && !cachedProfile) || (!nextToken && nextHasRefreshToken)))
+
+      if (cachedProfile) {
+        setAccountForm((current) => ({
+          ...current,
+          account: toAccountInputValue(cachedProfile.account),
+        }))
+      }
+
+      if (!nextToken && !nextHasRefreshToken) {
+        setAdminProfile(null)
+        setAuthChecking(false)
+      }
     }
 
     window.addEventListener('island-admin-auth-change', syncAdminToken)
@@ -164,21 +341,103 @@ export function useAdminDashboard() {
       window.removeEventListener('island-admin-auth-change', syncAdminToken)
       window.removeEventListener('storage', syncAdminToken)
     }
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
-    void loadAdminProfile(token)
-  }, [token])
+    if (!token) {
+      if (!getStoredAdminRefreshToken()) {
+        setAuthChecking(false)
+        setAdminProfile(null)
+        return
+      }
+
+      let cancelled = false
+
+      async function restoreAccessToken() {
+        setAuthChecking(true)
+
+        try {
+          const nextToken = await ensureAdminAccessToken('')
+
+          if (cancelled) return
+
+          setToken(nextToken)
+        } catch (error) {
+          if (cancelled) return
+
+          queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
+          setToken('')
+          setAdminProfile(null)
+          setAuthChecking(false)
+          showStatus({ type: 'error', text: getErrorMessage(error) })
+        }
+      }
+
+      void restoreAccessToken()
+
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const cachedProfile = queryClient.getQueryData<AdminProfile>(queryKeys.adminProfile(token))
+
+    if (cachedProfile) {
+      setAdminProfile(cachedProfile)
+      setAccountForm((current) => ({
+        ...current,
+        account: toAccountInputValue(cachedProfile.account),
+      }))
+    } else {
+      setAdminProfile(null)
+      setAuthChecking(true)
+    }
+
+    let cancelled = false
+
+    async function syncAdminProfile() {
+      try {
+        const profile = await fetchAdminProfile(token)
+
+        if (cancelled) return
+
+        setAdminProfile(profile)
+        setAccountForm((current) => ({
+          ...current,
+          account: toAccountInputValue(profile.account),
+        }))
+        queryClient.setQueryData(queryKeys.adminProfile(token), profile)
+        setAuthChecking(false)
+        window.dispatchEvent(new Event('island-admin-auth-change'))
+      } catch (error) {
+        if (cancelled) return
+
+        clearAdminSession()
+        queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
+        setToken('')
+        setHasRefreshToken(false)
+        setAdminProfile(null)
+        setAuthChecking(false)
+        showStatus({ type: 'error', text: getErrorMessage(error) })
+      }
+    }
+
+    void syncAdminProfile()
+
+    return () => {
+      cancelled = true
+    }
+  }, [queryClient, token])
 
   function openLoginModal() {
     window.dispatchEvent(new Event('island-open-login'))
   }
 
   function handleLogout() {
-    localStorage.removeItem('island-admin-token')
-    localStorage.removeItem('island-user-name')
-    window.dispatchEvent(new Event('island-admin-auth-change'))
+    clearAdminSession()
+    queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
     setToken('')
+    setHasRefreshToken(false)
     setAdminProfile(null)
     setAccountForm((current) => ({
       ...current,
@@ -289,17 +548,15 @@ export function useAdminDashboard() {
       queryClient.setQueryData(queryKeys.musicConfig, music)
       const enabledChanged = previousSnapshot.enabled !== music.enabled
       const sourceChanged = previousSnapshot.sourceType !== music.sourceType || previousSnapshot.musicId !== music.musicId
-      const message = enabledChanged
-        ? music.enabled
-          ? '音乐入口已开启。'
+      const message =
+        enabledChanged ?
+          music.enabled ?
+            '音乐入口已开启。'
           : '音乐入口已关闭。'
-        : sourceChanged && music.sourceType === 'playlist'
-          ? `歌单已保存，共 ${music.tracks.length} 首。`
-          : sourceChanged
-            ? '歌曲已保存。'
-            : music.sourceType === 'playlist'
-              ? `歌单已保存，共 ${music.tracks.length} 首。`
-              : '歌曲已保存。'
+        : sourceChanged && music.sourceType === 'playlist' ? `歌单已保存，共 ${music.tracks.length} 首。`
+        : sourceChanged ? '歌曲已保存。'
+        : music.sourceType === 'playlist' ? `歌单已保存，共 ${music.tracks.length} 首。`
+        : '歌曲已保存。'
 
       showStatus({
         type: 'success',
@@ -315,7 +572,7 @@ export function useAdminDashboard() {
   async function handleSaveAdminAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const account = accountForm.account.trim()
+    const account = normalizeIslandAccount(accountForm.account)
     const currentPassword = accountForm.currentPassword.trim()
     const newPassword = accountForm.newPassword.trim()
     const confirmPassword = accountForm.confirmPassword.trim()
@@ -346,12 +603,12 @@ export function useAdminDashboard() {
 
       setAdminProfile(profile)
       setAccountForm({
-        account: profile.account,
+        account: toAccountInputValue(profile.account),
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       })
-      localStorage.setItem('island-user-name', profile.account)
+      queryClient.setQueryData(queryKeys.adminProfile(token), profile)
       window.dispatchEvent(new Event('island-admin-auth-change'))
       showStatus({ type: 'success', text: '账号信息已更新。' })
     } catch (error) {
@@ -435,10 +692,13 @@ export function useAdminDashboard() {
     accountForm,
     activeSection,
     adminProfile,
+    authChecking,
     aboutContentForm,
     deleteTarget,
     form,
     isLoggedIn,
+    isRestoringSession,
+    checkingSystem,
     loadingPosts,
     musicForm,
     pinnedCount,
@@ -448,6 +708,8 @@ export function useAdminDashboard() {
     selectedPost,
     siteProfileForm,
     status,
+    systemChecks,
+    token,
     handleConfirmDelete,
     handleLogout,
     handleNewPost,
@@ -457,6 +719,7 @@ export function useAdminDashboard() {
     handleSaveSiteProfile,
     handleSaveMusic,
     handleSelectPost,
+    handleSystemCheck,
     loadPosts,
     openLoginModal,
     setActiveSection,
