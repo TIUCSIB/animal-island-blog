@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Loading } from 'animal-island-ui'
 import { defaultSiteProfile } from '@/data/site-profile'
-import { fetchSiteProfile } from '@/lib/posts-api'
+import { useSiteProfileQuery } from '@/lib/query-hooks'
 import { Gallery } from './components/Gallery'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
@@ -13,7 +13,8 @@ const HOME_LOADING_EXIT_DURATION = 1400
 export default function HomePage() {
   const [loadingActive, setLoadingActive] = useState(true)
   const [loadingMounted, setLoadingMounted] = useState(true)
-  const [siteProfile, setSiteProfile] = useState(defaultSiteProfile)
+  const siteProfileQuery = useSiteProfileQuery()
+  const siteProfile = siteProfileQuery.data ?? defaultSiteProfile
 
   useEffect(() => {
     const hideTimer = window.setTimeout(() => {
@@ -27,20 +28,6 @@ export default function HomePage() {
     return () => {
       window.clearTimeout(hideTimer)
       window.clearTimeout(unmountTimer)
-    }
-  }, [])
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetchSiteProfile(controller.signal)
-      .then(setSiteProfile)
-      .catch(() => {
-        // 后端未启动时继续使用本地默认资料。
-      })
-
-    return () => {
-      controller.abort()
     }
   }, [])
 

@@ -1,17 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { emitIslandToast } from '@/components/island'
 import { defaultAboutContent } from '@/data/about-content'
 import type { GalleryPost } from '@/data/gallery'
 import { defaultSiteProfile } from '@/data/site-profile'
 import { createGalleryPost, deleteGalleryPost, fetchAboutContent, fetchAdminProfile, fetchGalleryPosts, fetchMusicConfig, fetchSiteProfile, saveMusicConfig, updateAboutContent, updateAdminAccount, updateGalleryPost, updateSiteProfile } from '@/lib/posts-api'
-import type { AdminProfile, MusicTrack } from '@/lib/posts-api'
+import type { AdminProfile, MusicConfig } from '@/lib/posts-api'
+import { queryKeys } from '@/lib/query-client'
 
 import { createEmptyForm, formToPost, getErrorMessage, postToForm } from './post-form'
 import type { AboutContentForm, AdminAccountForm, AdminSection, AdminStatus, MusicForm, PostForm, SiteProfileForm } from './types'
 
+type MusicSnapshot = Pick<MusicConfig, 'enabled' | 'platform' | 'sourceType' | 'musicId'>
+
+const defaultMusicSnapshot: MusicSnapshot = {
+  enabled: true,
+  platform: 'netease',
+  sourceType: 'song',
+  musicId: '473403185',
+}
+
 export function useAdminDashboard() {
+  const queryClient = useQueryClient()
+  const musicSnapshotRef = useRef<MusicSnapshot>(defaultMusicSnapshot)
   const [token, setToken] = useState(() => localStorage.getItem('island-admin-token') ?? '')
   const [activeSection, setActiveSection] = useState<AdminSection>('posts')
   const [posts, setPosts] = useState<GalleryPost[]>([])
@@ -22,7 +35,6 @@ export function useAdminDashboard() {
     musicId: '473403185',
     enabled: true,
   }))
-  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([])
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null)
   const [accountForm, setAccountForm] = useState<AdminAccountForm>(() => ({
     account: localStorage.getItem('island-user-name') ?? 'mewbarkjoy',
@@ -56,6 +68,7 @@ export function useAdminDashboard() {
       const nextPosts = await fetchGalleryPosts()
 
       setPosts(nextPosts)
+      queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
 
       if (selectedId && !nextPosts.some((post) => post.id === selectedId)) {
         setSelectedId(null)
@@ -77,7 +90,13 @@ export function useAdminDashboard() {
         musicId: music.musicId,
         enabled: music.enabled,
       })
-      setMusicTracks(music.tracks)
+      musicSnapshotRef.current = {
+        enabled: music.enabled,
+        platform: music.platform,
+        sourceType: music.sourceType,
+        musicId: music.musicId,
+      }
+      queryClient.setQueryData(queryKeys.musicConfig, music)
     } catch {
       // 后端未启动或音乐配置不存在时，保留默认配置。
     }
@@ -85,7 +104,10 @@ export function useAdminDashboard() {
 
   async function loadSiteProfile() {
     try {
-      setSiteProfileForm(await fetchSiteProfile())
+      const profile = await fetchSiteProfile()
+
+      setSiteProfileForm(profile)
+      queryClient.setQueryData(queryKeys.siteProfile, profile)
     } catch {
       setSiteProfileForm(defaultSiteProfile)
     }
@@ -93,7 +115,10 @@ export function useAdminDashboard() {
 
   async function loadAboutContent() {
     try {
-      setAboutContentForm(await fetchAboutContent())
+      const about = await fetchAboutContent()
+
+      setAboutContentForm(about)
+      queryClient.setQueryData(queryKeys.aboutContent, about)
     } catch {
       setAboutContentForm(defaultAboutContent)
     }
@@ -195,11 +220,10 @@ export function useAdminDashboard() {
       const savedPost = selectedPost ? await updateGalleryPost(token, selectedPost.id, payload) : await createGalleryPost(token, payload)
 
       setPosts((current) => {
-        if (selectedPost) {
-          return current.map((post) => (post.id === selectedPost.id ? savedPost : post))
-        }
+        const nextPosts = selectedPost ? current.map((post) => (post.id === selectedPost.id ? savedPost : post)) : [savedPost, ...current]
 
-        return [savedPost, ...current]
+        queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
+        return nextPosts
       })
       setSelectedId(savedPost.id)
       setForm(postToForm(savedPost))
@@ -218,7 +242,12 @@ export function useAdminDashboard() {
 
     try {
       await deleteGalleryPost(token, deleteTarget.id)
-      setPosts((current) => current.filter((post) => post.id !== deleteTarget.id))
+      setPosts((current) => {
+        const nextPosts = current.filter((post) => post.id !== deleteTarget.id)
+
+        queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
+        return nextPosts
+      })
 
       if (selectedId === deleteTarget.id) {
         setSelectedId(null)
@@ -238,6 +267,7 @@ export function useAdminDashboard() {
     setSaving(true)
 
     try {
+      const previousSnapshot = musicSnapshotRef.current
       const music = await saveMusicConfig(token, {
         platform: 'netease',
         sourceType: musicForm.sourceType,
@@ -250,10 +280,30 @@ export function useAdminDashboard() {
         musicId: music.musicId,
         enabled: music.enabled,
       })
-      setMusicTracks(music.tracks)
+      musicSnapshotRef.current = {
+        enabled: music.enabled,
+        platform: music.platform,
+        sourceType: music.sourceType,
+        musicId: music.musicId,
+      }
+      queryClient.setQueryData(queryKeys.musicConfig, music)
+      const enabledChanged = previousSnapshot.enabled !== music.enabled
+      const sourceChanged = previousSnapshot.sourceType !== music.sourceType || previousSnapshot.musicId !== music.musicId
+      const message = enabledChanged
+        ? music.enabled
+          ? '音乐入口已开启。'
+          : '音乐入口已关闭。'
+        : sourceChanged && music.sourceType === 'playlist'
+          ? `歌单已保存，共 ${music.tracks.length} 首。`
+          : sourceChanged
+            ? '歌曲已保存。'
+            : music.sourceType === 'playlist'
+              ? `歌单已保存，共 ${music.tracks.length} 首。`
+              : '歌曲已保存。'
+
       showStatus({
         type: 'success',
-        text: music.sourceType === 'playlist' ? `歌单已保存，共 ${music.tracks.length} 首。` : '歌曲已保存。',
+        text: message,
       })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
@@ -337,6 +387,7 @@ export function useAdminDashboard() {
       })
 
       setSiteProfileForm(profile)
+      queryClient.setQueryData(queryKeys.siteProfile, profile)
       showStatus({ type: 'success', text: '主页个人资料已更新。' })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
@@ -371,6 +422,7 @@ export function useAdminDashboard() {
       })
 
       setAboutContentForm(about)
+      queryClient.setQueryData(queryKeys.aboutContent, about)
       showStatus({ type: 'success', text: '关于页面已更新。' })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
@@ -389,7 +441,6 @@ export function useAdminDashboard() {
     isLoggedIn,
     loadingPosts,
     musicForm,
-    musicTracks,
     pinnedCount,
     posts,
     saving,
@@ -414,7 +465,6 @@ export function useAdminDashboard() {
     setDeleteTarget,
     setForm,
     setMusicForm,
-    setMusicTracks,
     setSiteProfileForm,
   }
 }

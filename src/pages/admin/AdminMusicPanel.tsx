@@ -1,46 +1,28 @@
 import { Button, Card, Checkbox, Input, Switch } from 'animal-island-ui'
 import { Hash, Music2, Save } from 'lucide-react'
 
-import type { MusicSourceType, MusicTrack } from '@/lib/posts-api'
+import type { MusicSourceType } from '@/lib/posts-api'
 import type { MusicForm, SetMusicForm } from './types'
+import { IslandAvatar } from '@/components/island'
 
 type AdminMusicPanelProps = {
   musicForm: MusicForm
-  musicTracks: MusicTrack[]
   saving: boolean
   setMusicForm: SetMusicForm
-  setMusicTracks: (tracks: MusicTrack[]) => void
   onSaveMusic: () => void
 }
 
-export function AdminMusicPanel({ musicForm, musicTracks, saving, setMusicForm, setMusicTracks, onSaveMusic }: AdminMusicPanelProps) {
+export function AdminMusicPanel({ musicForm, saving, setMusicForm, onSaveMusic }: AdminMusicPanelProps) {
   return (
     <section className="island-admin-panel">
       <Card className="island-admin-editor__card">
         <div className="island-admin-editor__header">
           <div>
             <span className="island-admin-editor__eyebrow">音乐管理</span>
-            <h2>{musicForm.sourceType === 'playlist' ? '网易云歌单' : '网易云歌曲'}</h2>
           </div>
-          <Button type="primary" size="small" htmlType="button" icon={<Save size={14} strokeWidth={3} />} loading={saving} onClick={onSaveMusic}>
-            保存
-          </Button>
         </div>
 
-        <div className="island-admin-music-preview">
-          <div className="island-admin-music-preview__cover">
-            {musicTracks[0]?.pic ?
-              <img src={musicTracks[0].pic} alt="音乐封面预览" />
-            : <Music2 aria-hidden="true" size={30} strokeWidth={3} />}
-          </div>
-          <div>
-            <strong>{musicTracks[0]?.title || '等待读取歌曲信息'}</strong>
-            <span>
-              {musicTracks[0]?.author || '输入 ID 保存后，会从音乐接口解析'}
-              {musicTracks.length > 1 ? ` · 共 ${musicTracks.length} 首` : ''}
-            </span>
-          </div>
-        </div>
+        <IslandAvatar src={musicForm.sourceType} size="sm"></IslandAvatar>
 
         <fieldset className="island-admin-field">
           <span>歌曲类型</span>
@@ -56,7 +38,6 @@ export function AdminMusicPanel({ musicForm, musicTracks, saving, setMusicForm, 
               const nextType = (values.at(-1) ?? musicForm.sourceType) as MusicSourceType
 
               setMusicForm((current) => ({ ...current, sourceType: nextType }))
-              setMusicTracks([])
             }}
           />
         </fieldset>
@@ -78,33 +59,15 @@ export function AdminMusicPanel({ musicForm, musicTracks, saving, setMusicForm, 
           />
         </label>
 
-        <label className="island-admin-switch island-admin-switch--fit">
-          <span>默认开启音乐入口</span>
-          <Switch
-            size="small"
-            checked={musicForm.enabled}
-            checkedChildren="ON"
-            unCheckedChildren="OFF"
-            onChange={(checked) => setMusicForm((current) => ({ ...current, enabled: checked }))}
-          />
-        </label>
-
-        {musicTracks.length > 0 ?
-          <div className="island-admin-track-list" aria-label="已解析歌曲">
-            {musicTracks.slice(0, 8).map((track) => (
-              <div key={`${track.url}-${track.title}`} className="island-admin-track-list__item">
-                <img src={track.pic || 'https://www.loliapi.com/acg/pp'} alt="" />
-                <span>
-                  <strong>{track.title}</strong>
-                  <small>{track.author}</small>
-                </span>
-              </div>
-            ))}
-            {musicTracks.length > 8 ?
-              <p>还有 {musicTracks.length - 8} 首已保存。</p>
-            : null}
-          </div>
-        : null}
+        <div className="flex items-center justify-between">
+          <label className="island-admin-switch island-admin-switch--fit">
+            <span>播放器</span>
+            <Switch size="small" checked={musicForm.enabled} checkedChildren="ON" unCheckedChildren="OFF" onChange={(checked) => setMusicForm((current) => ({ ...current, enabled: checked }))} />
+          </label>
+          <Button className="w-fit" type="primary" size="small" htmlType="button" icon={<Save size={14} strokeWidth={3} />} loading={saving} onClick={onSaveMusic}>
+            保存
+          </Button>
+        </div>
       </Card>
     </section>
   )

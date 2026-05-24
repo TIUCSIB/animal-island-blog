@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button, Card } from 'animal-island-ui'
 import { ChevronDown, Home, LogOut, Sprout } from 'lucide-react'
 
-import { IslandAvatar } from '@/components/island'
+import { IslandAvatar, IslandText } from '@/components/island'
 import type { SiteProfile } from '@/data/site-profile'
 
 type AdminTopbarProps = {
@@ -60,8 +60,12 @@ export function AdminTopbar({ account, profile, onHomeClick, onLogout }: AdminTo
           <Sprout size={18} strokeWidth={3} />
         </span>
         <span>
-          <strong>小岛后台</strong>
-          <small>{profile.bio}</small>
+          <IslandText tone="teal" variant="muted">
+            小岛管理后台
+          </IslandText>
+          <IslandText tone="secondary" variant="label">
+            {profile.bio}
+          </IslandText>
         </span>
       </div>
 

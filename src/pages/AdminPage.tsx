@@ -48,10 +48,8 @@ export default function AdminPage() {
                   {admin.activeSection === 'music' ?
                     <AdminMusicPanel
                       musicForm={admin.musicForm}
-                      musicTracks={admin.musicTracks}
                       saving={admin.saving}
                       setMusicForm={admin.setMusicForm}
-                      setMusicTracks={admin.setMusicTracks}
                       onSaveMusic={() => void admin.handleSaveMusic()}
                     />
                   : null}

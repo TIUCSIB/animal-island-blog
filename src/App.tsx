@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { Cursor } from 'animal-island-ui'
 import { emitIslandToast, IslandFloatingMenu, IslandFloatingSwitch, IslandLoginModal, IslandMusicPlayer, IslandToastViewport } from '@/components/island'
-import { fetchMusicConfig, loginAdmin } from '@/lib/posts-api'
+import { loginAdmin } from '@/lib/posts-api'
 import type { MusicConfig } from '@/lib/posts-api'
+import { useMusicConfigQuery } from '@/lib/query-hooks'
 
 const ISLAND_MODE_STORAGE_KEY = 'island-mode-enabled'
 const ISLAND_USER_STORAGE_KEY = 'island-user-name'
@@ -46,25 +47,16 @@ export default function App() {
   const [isIslandMode, setIsIslandMode] = useState(() => readStoredBoolean(ISLAND_MODE_STORAGE_KEY))
   const [loginOpen, setLoginOpen] = useState(false)
   const [musicEnabled, setMusicEnabled] = useState(false)
-  const [musicConfig, setMusicConfig] = useState<MusicConfig>(defaultMusicConfig)
   const [userName, setUserName] = useState<string | null>(() => readStoredUserName())
-  const musicAvailable = musicConfig.enabled && musicConfig.tracks.length > 0
+  const musicConfigQuery = useMusicConfigQuery()
+  const musicConfig = musicConfigQuery.data ?? defaultMusicConfig
+  const musicAvailable = !musicConfigQuery.isPending && musicConfig.enabled && musicConfig.tracks.length > 0
 
   useEffect(() => {
-    const controller = new AbortController()
-
-    fetchMusicConfig(controller.signal)
-      .then((nextMusicConfig) => {
-        setMusicConfig(nextMusicConfig)
-      })
-      .catch(() => {
-        // 后端未启动时，继续使用默认音乐。
-      })
-
-    return () => {
-      controller.abort()
+    if (!musicAvailable) {
+      setMusicEnabled(false)
     }
-  }, [])
+  }, [musicAvailable])
 
   useEffect(() => {
     function syncAdminAuth() {
@@ -134,6 +126,7 @@ export default function App() {
         {isIslandMode ?
           <IslandFloatingMenu
             userName={userName}
+            musicAvailable={musicAvailable}
             musicEnabled={musicEnabled}
             onAboutClick={openAboutPage}
             onMusicClick={() => {

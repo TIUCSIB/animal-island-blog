@@ -1,41 +1,23 @@
-import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { IslandGalleryGrid, IslandGalleryItem, IslandGalleryModal } from '@/components/island'
 import { galleryPosts } from '@/data/gallery'
 import type { SiteProfile } from '@/data/site-profile'
-import { fetchGalleryPosts } from '@/lib/posts-api'
+import { useGalleryPostsQuery } from '@/lib/query-hooks'
 
 type GalleryProps = {
   siteProfile: SiteProfile
 }
 
 export function Gallery({ siteProfile }: GalleryProps) {
-  const [posts, setPosts] = useState(galleryPosts)
+  const postsQuery = useGalleryPostsQuery()
+  const posts = postsQuery.data?.length ? postsQuery.data : galleryPosts
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedId = searchParams.get('post')
   const selectedIndex = selectedId ? posts.findIndex((post) => post.id === selectedId) : -1
   const selectedPost = selectedIndex >= 0 ? posts[selectedIndex] : null
   const canPrevious = selectedIndex > 0
   const canNext = selectedIndex >= 0 && selectedIndex < posts.length - 1
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetchGalleryPosts(controller.signal)
-      .then((nextPosts) => {
-        if (nextPosts.length > 0) {
-          setPosts(nextPosts)
-        }
-      })
-      .catch(() => {
-        // 后端未启动时，继续使用本地占位数据。
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [])
 
   function setPostId(postId: string | null, replace = false) {
     const nextSearchParams = new URLSearchParams(searchParams)

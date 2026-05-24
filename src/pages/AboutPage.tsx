@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { Button, Card, Collapse, Divider, Typewriter } from 'animal-island-ui'
 import { Camera, Cat, Globe2, Mail, Tv } from 'lucide-react'
@@ -7,7 +7,7 @@ import { IslandBadge, IslandText } from '@/components/island'
 import { defaultAboutContent } from '@/data/about-content'
 import type { AboutContent, ContactIconName } from '@/data/about-content'
 import { defaultSiteProfile } from '@/data/site-profile'
-import { fetchAboutContent, fetchSiteProfile } from '@/lib/posts-api'
+import { useAboutContentQuery, useSiteProfileQuery } from '@/lib/query-hooks'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 
@@ -23,42 +23,34 @@ const contactIconMap = {
 
 export default function AboutPage() {
   const navigate = useNavigate()
-  const [siteProfile, setSiteProfile] = useState(defaultSiteProfile)
-  const [aboutContent, setAboutContent] = useState<AboutContent | null>(null)
+  const siteProfileQuery = useSiteProfileQuery()
+  const aboutContentQuery = useAboutContentQuery()
+  const siteProfile = siteProfileQuery.data ?? (siteProfileQuery.isError ? defaultSiteProfile : null)
+  const aboutContent: AboutContent | null = aboutContentQuery.data ?? (aboutContentQuery.isError ? defaultAboutContent : null)
   const enabledContacts = useMemo(() => (aboutContent?.contacts ?? []).filter((contact) => contact.enabled).sort((left, right) => left.sortOrder - right.sortOrder), [aboutContent?.contacts])
   const enabledCollapseItems = useMemo(
     () => (aboutContent?.collapseItems ?? []).filter((item) => item.enabled && item.question && item.content).sort((left, right) => left.sortOrder - right.sortOrder),
     [aboutContent?.collapseItems],
   )
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetchSiteProfile(controller.signal)
-      .then(setSiteProfile)
-      .catch(() => {
-        // 后端未启动时继续使用本地默认资料。
-      })
-    fetchAboutContent(controller.signal)
-      .then(setAboutContent)
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return
-
-        // 后端未启动时继续使用本地默认关于页，但不再在请求完成前先闪一下默认数据。
-        setAboutContent(defaultAboutContent)
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [])
-
   return (
     <div className="island-about-shell m-auto max-w-lg px-5 pt-7.5">
       <Button className="island-about-page__back" type="primary" size="small" onClick={() => navigate('/')}>
         ← 返回首页
       </Button>
-      <SiteHeader profile={siteProfile}></SiteHeader>
+      {siteProfile ?
+        <SiteHeader profile={siteProfile}></SiteHeader>
+      : <>
+          <header className="island-site-header-loading" aria-label="正在读取站点资料">
+            <span className="island-site-header-loading__avatar" />
+            <span className="island-site-header-loading__text">
+              <strong>正在读取岛主资料</strong>
+              <small>小岛头像连线中...</small>
+            </span>
+          </header>
+          <Divider type="line-white" className="mt-5" />
+        </>
+      }
 
       <main className="island-about-page">
         <IslandBadge dot tone="green">
