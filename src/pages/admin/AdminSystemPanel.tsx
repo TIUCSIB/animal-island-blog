@@ -17,17 +17,7 @@ type AdminSystemPanelProps = {
   onSaveAccount: FormEventHandler<HTMLFormElement>
 }
 
-export function AdminSystemPanel({
-  accountForm,
-  adminProfile,
-  postsCount,
-  isLoggedIn,
-  loadingPosts,
-  saving,
-  setAccountForm,
-  onCheck,
-  onSaveAccount,
-}: AdminSystemPanelProps) {
+export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLoggedIn, loadingPosts, saving, setAccountForm, onCheck, onSaveAccount }: AdminSystemPanelProps) {
   return (
     <section className="island-admin-panel">
       <Card className="island-admin-editor__card">
@@ -69,7 +59,7 @@ export function AdminSystemPanel({
             <span>账号 / 邮箱</span>
             <Input
               value={accountForm.account}
-              placeholder="mewbarkjoy 或 hello@example.com"
+              placeholder="用户名 或 hello@example.com"
               prefix={<AtSign size={15} strokeWidth={3} />}
               allowClear
               onChange={(event) => setAccountForm((current) => ({ ...current, account: event.target.value }))}
@@ -118,7 +108,6 @@ export function AdminSystemPanel({
             </Button>
           </div>
         </form>
-
       </Card>
     </section>
   )

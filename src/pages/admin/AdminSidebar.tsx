@@ -5,12 +5,12 @@ import type { AdminSection } from './types'
 
 type AdminSidebarProps = {
   activeSection: AdminSection
-  postsCount: number
-  pinnedCount: number
+  postsCount?: number
+  pinnedCount?: number
   onSectionChange: (section: AdminSection) => void
 }
 
-export function AdminSidebar({ activeSection, postsCount, pinnedCount, onSectionChange }: AdminSidebarProps) {
+export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarProps) {
   return (
     <aside className="island-admin-nav" aria-label="后台管理菜单">
       <Card className="island-admin-nav__card">
@@ -52,12 +52,12 @@ export function AdminSidebar({ activeSection, postsCount, pinnedCount, onSection
         </button>
       </Card>
 
-      <Card className="island-admin-summary">
+      {/* <Card className="island-admin-summary">
         <strong>{postsCount}</strong>
         <span>篇文章</span>
         <strong>{pinnedCount}</strong>
         <span>个置顶</span>
-      </Card>
+      </Card> */}
     </aside>
   )
 }
