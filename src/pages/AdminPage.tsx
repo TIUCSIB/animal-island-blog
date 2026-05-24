@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router'
 
+import { AdminAboutPanel } from './admin/AdminAboutPanel'
 import { AdminLoginGate } from './admin/AdminLoginGate'
 import { AdminMusicPanel } from './admin/AdminMusicPanel'
 import { AdminPostsPanel } from './admin/AdminPostsPanel'
@@ -57,13 +58,19 @@ export default function AdminPage() {
 
                   {admin.activeSection === 'site' ?
                     <AdminSitePanel
-                      aboutContentForm={admin.aboutContentForm}
                       saving={admin.saving}
                       siteProfileForm={admin.siteProfileForm}
-                      setAboutContentForm={admin.setAboutContentForm}
                       setSiteProfileForm={admin.setSiteProfileForm}
-                      onSaveAboutContent={admin.handleSaveAboutContent}
                       onSaveSiteProfile={admin.handleSaveSiteProfile}
+                    />
+                  : null}
+
+                  {admin.activeSection === 'about' ?
+                    <AdminAboutPanel
+                      aboutContentForm={admin.aboutContentForm}
+                      saving={admin.saving}
+                      setAboutContentForm={admin.setAboutContentForm}
+                      onSaveAboutContent={admin.handleSaveAboutContent}
                     />
                   : null}
 

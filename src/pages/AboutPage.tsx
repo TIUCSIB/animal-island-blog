@@ -25,10 +25,7 @@ export default function AboutPage() {
   const navigate = useNavigate()
   const [siteProfile, setSiteProfile] = useState(defaultSiteProfile)
   const [aboutContent, setAboutContent] = useState<AboutContent | null>(null)
-  const enabledContacts = useMemo(
-    () => (aboutContent?.contacts ?? []).filter((contact) => contact.enabled).sort((left, right) => left.sortOrder - right.sortOrder),
-    [aboutContent?.contacts],
-  )
+  const enabledContacts = useMemo(() => (aboutContent?.contacts ?? []).filter((contact) => contact.enabled).sort((left, right) => left.sortOrder - right.sortOrder), [aboutContent?.contacts])
   const enabledCollapseItems = useMemo(
     () => (aboutContent?.collapseItems ?? []).filter((item) => item.enabled && item.question && item.content).sort((left, right) => left.sortOrder - right.sortOrder),
     [aboutContent?.collapseItems],
@@ -61,20 +58,18 @@ export default function AboutPage() {
       <Button className="island-about-page__back" type="primary" size="small" onClick={() => navigate('/')}>
         ← 返回首页
       </Button>
-      <SiteHeader profile={siteProfile} />
+      <SiteHeader profile={siteProfile}></SiteHeader>
 
       <main className="island-about-page">
         <IslandBadge dot tone="green">
           <div className="island-about-page__intro">关于小岛</div>
         </IslandBadge>
         <Card type="dashed" className="island-about-page__card">
-          {aboutContent ? (
+          {aboutContent ?
             <Typewriter key={aboutContent.updatedAt ?? aboutContent.intro} speed={36}>
               {aboutContent.intro}
             </Typewriter>
-          ) : (
-            <span className="island-about-page__loading">正在读取小岛资料...</span>
-          )}
+          : <span className="island-about-page__loading">正在读取小岛资料...</span>}
         </Card>
 
         <Divider type="line-yellow" className="island-about-page__footer" />
@@ -82,7 +77,7 @@ export default function AboutPage() {
           <div className="island-about-page__intro">岛主</div>
         </IslandBadge>
         <div className="island-about-page__contacts" aria-label="联系方式">
-          {aboutContent ? (
+          {aboutContent ?
             enabledContacts.map((contact) => {
               const ContactIcon = contactIconMap[contact.icon] ?? Globe2
 
@@ -104,15 +99,14 @@ export default function AboutPage() {
                 </a>
               )
             })
-          ) : (
-            <div className="island-about-page__contact island-about-page__contact--loading">
+          : <div className="island-about-page__contact island-about-page__contact--loading">
               <span className="island-about-page__contact-icon island-about-page__contact-icon--loading" />
               <span className="island-about-page__contact-main">
                 <strong>正在读取联系方式</strong>
                 <small>稍等一下，小岛正在连线...</small>
               </span>
             </div>
-          )}
+          }
         </div>
         <Divider type="line-teal" className="island-about-page__footer" />
 
