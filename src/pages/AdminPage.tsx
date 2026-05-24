@@ -27,7 +27,7 @@ export default function AdminPage() {
               <section className="island-admin-layout">
                 <AdminSidebar activeSection={admin.activeSection} postsCount={admin.posts.length} pinnedCount={admin.pinnedCount} onSectionChange={admin.setActiveSection} />
 
-                <section className="island-admin-content">
+                <section className="island-admin-content ">
                   {admin.activeSection === 'posts' ?
                     <AdminPostsPanel
                       posts={admin.posts}
@@ -46,21 +46,11 @@ export default function AdminPage() {
                   : null}
 
                   {admin.activeSection === 'music' ?
-                    <AdminMusicPanel
-                      musicForm={admin.musicForm}
-                      saving={admin.saving}
-                      setMusicForm={admin.setMusicForm}
-                      onSaveMusic={() => void admin.handleSaveMusic()}
-                    />
+                    <AdminMusicPanel musicForm={admin.musicForm} saving={admin.saving} setMusicForm={admin.setMusicForm} onSaveMusic={() => void admin.handleSaveMusic()} />
                   : null}
 
                   {admin.activeSection === 'site' ?
-                    <AdminSitePanel
-                      saving={admin.saving}
-                      siteProfileForm={admin.siteProfileForm}
-                      setSiteProfileForm={admin.setSiteProfileForm}
-                      onSaveSiteProfile={admin.handleSaveSiteProfile}
-                    />
+                    <AdminSitePanel saving={admin.saving} siteProfileForm={admin.siteProfileForm} setSiteProfileForm={admin.setSiteProfileForm} onSaveSiteProfile={admin.handleSaveSiteProfile} />
                   : null}
 
                   {admin.activeSection === 'about' ?
