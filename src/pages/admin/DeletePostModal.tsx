@@ -15,7 +15,6 @@ export function DeletePostModal({ post, saving, onClose, onConfirm }: DeletePost
       open={Boolean(post)}
       title="删除这篇记录？"
       width={420}
-      typewriter={false}
       onClose={onClose}
       footer={
         <>

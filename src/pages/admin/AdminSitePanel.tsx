@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import type { FormEventHandler } from 'react'
-import { Button, Card, Input, Select, Switch } from 'animal-island-ui'
+import { Button, Card, Input, Modal, Select, Switch } from 'animal-island-ui'
 import { AtSign, FileText, Globe2, Heart, ImageIcon, MessageCircle, Plus, Trash2, UserRound } from 'lucide-react'
 
 import { IslandAvatar } from '@/components/island'
@@ -31,21 +32,21 @@ type AdminSitePanelProps = {
   onSaveSiteProfile: FormEventHandler<HTMLFormElement>
 }
 
+type PendingAboutDelete = {
+  id: string
+  title: string
+  type: 'contact' | 'collapse'
+} | null
+
 function normalizeContactIcon(value: string): ContactIconName {
   if (value === 'github' || value === 'mail' || value === 'instagram' || value === 'bilibili' || value === 'website') return value
 
   return 'website'
 }
 
-export function AdminSitePanel({
-  aboutContentForm,
-  saving,
-  siteProfileForm,
-  setAboutContentForm,
-  setSiteProfileForm,
-  onSaveAboutContent,
-  onSaveSiteProfile,
-}: AdminSitePanelProps) {
+export function AdminSitePanel({ aboutContentForm, saving, siteProfileForm, setAboutContentForm, setSiteProfileForm, onSaveAboutContent, onSaveSiteProfile }: AdminSitePanelProps) {
+  const [pendingDelete, setPendingDelete] = useState<PendingAboutDelete>(null)
+
   function addContact() {
     setAboutContentForm((current) => ({
       ...current,
@@ -80,6 +81,25 @@ export function AdminSitePanel({
         },
       ],
     }))
+  }
+
+  function confirmDeleteAboutItem() {
+    if (!pendingDelete) return
+
+    setAboutContentForm((current) => {
+      if (pendingDelete.type === 'contact') {
+        return {
+          ...current,
+          contacts: current.contacts.filter((contact) => contact.id !== pendingDelete.id),
+        }
+      }
+
+      return {
+        ...current,
+        collapseItems: current.collapseItems.filter((item) => item.id !== pendingDelete.id),
+      }
+    })
+    setPendingDelete(null)
   }
 
   return (
@@ -202,7 +222,7 @@ export function AdminSitePanel({
 
           <div className="island-admin-system-actions">
             <Button type="primary" htmlType="submit" loading={saving}>
-              保存个人资料
+              保存
             </Button>
           </div>
         </form>
@@ -219,21 +239,7 @@ export function AdminSitePanel({
         <form className="island-admin-about-form" onSubmit={onSaveAboutContent}>
           <label className="island-admin-field">
             <span>自我介绍</span>
-            <textarea
-              className="island-admin-textarea"
-              value={aboutContentForm.intro}
-              rows={4}
-              onChange={(event) => setAboutContentForm((current) => ({ ...current, intro: event.target.value }))}
-            />
-          </label>
-
-          <label className="island-admin-field">
-            <span>问题标题</span>
-            <Input
-              value={aboutContentForm.projectQuestion}
-              prefix={<FileText size={15} strokeWidth={3} />}
-              onChange={(event) => setAboutContentForm((current) => ({ ...current, projectQuestion: event.target.value }))}
-            />
+            <textarea className="island-admin-textarea" value={aboutContentForm.intro} rows={4} onChange={(event) => setAboutContentForm((current) => ({ ...current, intro: event.target.value }))} />
           </label>
 
           <div className="island-admin-section-title">
@@ -245,7 +251,7 @@ export function AdminSitePanel({
 
           <div className="island-admin-edit-list">
             {aboutContentForm.contacts.map((contact, index) => (
-              <div key={contact.id} className="island-admin-edit-card">
+              <div key={contact.id} className="island-admin-edit-card island-admin-edit-card--contact">
                 <label className="island-admin-field">
                   <span>名称</span>
                   <Input
@@ -310,7 +316,7 @@ export function AdminSitePanel({
                     size="small"
                     htmlType="button"
                     icon={<Trash2 size={14} strokeWidth={3} />}
-                    onClick={() => setAboutContentForm((current) => ({ ...current, contacts: current.contacts.filter((_, itemIndex) => itemIndex !== index) }))}
+                    onClick={() => setPendingDelete({ id: contact.id, title: contact.label || contact.value || '联系方式', type: 'contact' })}
                   />
                 </div>
               </div>
@@ -318,17 +324,26 @@ export function AdminSitePanel({
           </div>
 
           <div className="island-admin-section-title">
-            <strong>折叠内容</strong>
+            <strong>常见问题</strong>
             <Button type="default" size="small" htmlType="button" icon={<Plus size={14} strokeWidth={3} />} onClick={addCollapseItem}>
               添加
             </Button>
           </div>
 
+          <label className="island-admin-field">
+            <span>常见问题标题</span>
+            <Input
+              value={aboutContentForm.projectQuestion}
+              prefix={<FileText size={15} strokeWidth={3} />}
+              onChange={(event) => setAboutContentForm((current) => ({ ...current, projectQuestion: event.target.value }))}
+            />
+          </label>
+
           <div className="island-admin-edit-list">
             {aboutContentForm.collapseItems.map((item, index) => (
               <div key={item.id} className="island-admin-edit-card island-admin-edit-card--collapse">
                 <label className="island-admin-field">
-                  <span>问题 question</span>
+                  <span>问题</span>
                   <Input
                     value={item.question}
                     onChange={(event) =>
@@ -340,7 +355,7 @@ export function AdminSitePanel({
                   />
                 </label>
                 <label className="island-admin-field">
-                  <span>内容 answer</span>
+                  <span>内容</span>
                   <textarea
                     className="island-admin-textarea island-admin-textarea--small"
                     value={item.content}
@@ -399,7 +414,7 @@ export function AdminSitePanel({
                     size="small"
                     htmlType="button"
                     icon={<Trash2 size={14} strokeWidth={3} />}
-                    onClick={() => setAboutContentForm((current) => ({ ...current, collapseItems: current.collapseItems.filter((_, itemIndex) => itemIndex !== index) }))}
+                    onClick={() => setPendingDelete({ id: item.id, title: item.question || '常见问题', type: 'collapse' })}
                   />
                 </div>
               </div>
@@ -408,11 +423,30 @@ export function AdminSitePanel({
 
           <div className="island-admin-system-actions">
             <Button type="primary" htmlType="submit" loading={saving}>
-              保存关于页面
+              保存
             </Button>
           </div>
         </form>
       </Card>
+
+      <Modal
+        open={Boolean(pendingDelete)}
+        title="确认操作"
+        width={420}
+        onClose={() => setPendingDelete(null)}
+        footer={
+          <>
+            <Button htmlType="button" onClick={() => setPendingDelete(null)}>
+              取消
+            </Button>
+            <Button type="primary" danger htmlType="button" onClick={confirmDeleteAboutItem}>
+              删除
+            </Button>
+          </>
+        }
+      >
+        {pendingDelete ? `「${pendingDelete.title}」你确定要删除吗?` : null}
+      </Modal>
     </section>
   )
 }

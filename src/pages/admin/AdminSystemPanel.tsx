@@ -1,6 +1,6 @@
 import type { FormEventHandler } from 'react'
 import { Button, Card, Input } from 'animal-island-ui'
-import { AtSign, Database, Home, KeyRound, RefreshCw, Server, ShieldCheck } from 'lucide-react'
+import { AtSign, Database, KeyRound, RefreshCw, Server, ShieldCheck } from 'lucide-react'
 
 import type { AdminProfile } from '@/lib/posts-api'
 import type { AdminAccountForm, SetAdminAccountForm } from './types'
@@ -14,8 +14,6 @@ type AdminSystemPanelProps = {
   saving: boolean
   setAccountForm: SetAdminAccountForm
   onCheck: () => void
-  onHomeClick: () => void
-  onLogout: () => void
   onSaveAccount: FormEventHandler<HTMLFormElement>
 }
 
@@ -28,8 +26,6 @@ export function AdminSystemPanel({
   saving,
   setAccountForm,
   onCheck,
-  onHomeClick,
-  onLogout,
   onSaveAccount,
 }: AdminSystemPanelProps) {
   return (
@@ -123,14 +119,6 @@ export function AdminSystemPanel({
           </div>
         </form>
 
-        <div className="island-admin-system-actions">
-          <Button type="primary" htmlType="button" icon={<Home size={15} strokeWidth={3} />} onClick={onHomeClick}>
-            返回首页
-          </Button>
-          <Button type="primary" danger htmlType="button" onClick={onLogout}>
-            退出后台
-          </Button>
-        </div>
       </Card>
     </section>
   )
