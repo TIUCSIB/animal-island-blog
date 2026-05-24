@@ -27,18 +27,13 @@ function getTrackTitle(track?: MusicTrack, index = 0) {
   return track?.title || `第 ${index + 1} 首音乐`
 }
 
-function AdminMusicPreview({ dirty, loading, music }: AdminMusicPreviewProps) {
+function AdminMusicPreviewContent({ dirty, loading, music }: AdminMusicPreviewProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [trackIndex, setTrackIndex] = useState(0)
   const tracks = music?.tracks?.filter((track) => track.url) ?? []
   const currentTrack = tracks[trackIndex] ?? tracks[0]
   const hasMultipleTracks = tracks.length > 1
-
-  useEffect(() => {
-    setTrackIndex(0)
-    setPlaying(false)
-  }, [music?.musicId, music?.sourceType])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -145,6 +140,12 @@ function AdminMusicPreview({ dirty, loading, music }: AdminMusicPreviewProps) {
       </div>
     </div>
   )
+}
+
+function AdminMusicPreview(props: AdminMusicPreviewProps) {
+  const resetKey = `${props.music?.sourceType ?? 'empty'}-${props.music?.musicId ?? 'empty'}`
+
+  return <AdminMusicPreviewContent key={resetKey} {...props} />
 }
 
 export function AdminMusicPanel({ musicForm, saving, setMusicForm, onSaveMusic }: AdminMusicPanelProps) {
