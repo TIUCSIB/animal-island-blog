@@ -24,6 +24,8 @@ type DragState = {
 
 const PLAYER_WIDTH = 88
 const PLAYER_HEIGHT = 118
+const PLAYER_PADDING = 8
+const PLAYER_POSITION_STORAGE_KEY = 'island-music-player-position'
 const DEFAULT_COVER = 'https://www.loliapi.com/acg/pp'
 
 export type IslandMusicTrack = {
@@ -51,9 +53,60 @@ function getAudioContextConstructor() {
 function getDefaultPosition(): PlayerPosition {
   if (typeof window === 'undefined') return { x: 12, y: 12 }
 
-  return {
+  return clampPositionToViewport({
     x: Math.max(10, Math.round((window.innerWidth - PLAYER_WIDTH) / 2)),
     y: Math.max(10, window.visualViewport?.offsetTop ?? 18),
+  })
+}
+
+function clampPositionToViewport(position: PlayerPosition, width = PLAYER_WIDTH, height = PLAYER_HEIGHT) {
+  if (typeof window === 'undefined') return position
+
+  const maxX = Math.max(PLAYER_PADDING, window.innerWidth - width - PLAYER_PADDING)
+  const maxY = Math.max(PLAYER_PADDING, window.innerHeight - height - PLAYER_PADDING)
+
+  return {
+    x: Math.min(Math.max(PLAYER_PADDING, position.x), maxX),
+    y: Math.min(Math.max(PLAYER_PADDING, position.y), maxY),
+  }
+}
+
+function readStoredPosition() {
+  if (typeof window === 'undefined') return getDefaultPosition()
+
+  try {
+    const rawPosition = window.localStorage.getItem(PLAYER_POSITION_STORAGE_KEY)
+
+    if (!rawPosition) return getDefaultPosition()
+
+    const position = JSON.parse(rawPosition) as Partial<PlayerPosition>
+
+    if (Number.isFinite(position.x) && Number.isFinite(position.y)) {
+      return clampPositionToViewport({
+        x: Number(position.x),
+        y: Number(position.y),
+      })
+    }
+  } catch {
+    // localStorage may be unavailable
+  }
+
+  return getDefaultPosition()
+}
+
+function saveStoredPosition(position: PlayerPosition) {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(
+      PLAYER_POSITION_STORAGE_KEY,
+      JSON.stringify({
+        x: Math.round(position.x),
+        y: Math.round(position.y),
+      }),
+    )
+  } catch {
+    // localStorage may be unavailable
   }
 }
 
@@ -91,7 +144,8 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
   const playAttemptRef = useRef(0)
   const [playing, setPlaying] = useState(true)
   const [audioReady, setAudioReady] = useState(true)
-  const [position, setPosition] = useState<PlayerPosition>(() => getDefaultPosition())
+  const [position, setPosition] = useState<PlayerPosition>(() => readStoredPosition())
+  const positionRef = useRef(position)
   const [activeTrackIndex, setActiveTrackIndex] = useState(0)
   const trackList = useMemo(
     () => tracks?.filter((track) => track.url) ?? (src ? [{ title, author: subtitle, pic: coverSrc, url: src }] : []),
@@ -107,14 +161,13 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     const rect = playerRef.current?.getBoundingClientRect()
     const width = rect?.width ?? PLAYER_WIDTH
     const height = rect?.height ?? PLAYER_HEIGHT
-    const padding = 8
-    const maxX = Math.max(padding, window.innerWidth - width - padding)
-    const maxY = Math.max(padding, window.innerHeight - height - padding)
 
-    return {
-      x: Math.min(Math.max(padding, nextX), maxX),
-      y: Math.min(Math.max(padding, nextY), maxY),
-    }
+    return clampPositionToViewport({ x: nextX, y: nextY }, width, height)
+  }
+
+  function updatePosition(nextPosition: PlayerPosition) {
+    positionRef.current = nextPosition
+    setPosition(nextPosition)
   }
 
   function handleTrackEnded() {
@@ -167,7 +220,7 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
 
     if (!drag || drag.pointerId !== event.pointerId) return
 
-    setPosition(clampPosition(event.clientX - drag.offsetX, event.clientY - drag.offsetY))
+    updatePosition(clampPosition(event.clientX - drag.offsetX, event.clientY - drag.offsetY))
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLElement>) {
@@ -176,6 +229,7 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     if (!drag || drag.pointerId !== event.pointerId) return
 
     dragRef.current = null
+    saveStoredPosition(positionRef.current)
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
@@ -264,12 +318,18 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     if (wasOpen && !open) {
       lastClosedTrackUrlRef.current = currentSrc
       playAttemptRef.current += 1
+      saveStoredPosition(positionRef.current)
       setPlaying(true)
       stopSynth()
       return
     }
 
     if (!wasOpen && open) {
+      const nextPosition = clampPosition(positionRef.current.x, positionRef.current.y)
+
+      updatePosition(nextPosition)
+      saveStoredPosition(nextPosition)
+
       if (trackList.length <= 1) {
         lastClosedTrackUrlRef.current = trackList[0]?.url
         setActiveTrackIndex(0)
@@ -320,7 +380,14 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     if (!open) return
 
     function handleResize() {
-      setPosition((current) => clampPosition(current.x, current.y))
+      setPosition((current) => {
+        const nextPosition = clampPosition(current.x, current.y)
+
+        positionRef.current = nextPosition
+        saveStoredPosition(nextPosition)
+
+        return nextPosition
+      })
     }
 
     window.addEventListener('resize', handleResize)
