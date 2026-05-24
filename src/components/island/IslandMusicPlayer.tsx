@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { Button } from 'animal-island-ui'
 import { Pause, Play, X } from 'lucide-react'
@@ -69,18 +69,34 @@ function getRandomTrackIndex(length: number, currentIndex = -1) {
   return nextIndex
 }
 
+function getRandomTrackIndexExceptUrl(trackList: IslandMusicTrack[], currentUrl?: string) {
+  if (trackList.length <= 1) return 0
+
+  const availableIndexes = trackList
+    .map((track, index) => (track.url && track.url !== currentUrl ? index : -1))
+    .filter((index) => index >= 0)
+
+  if (availableIndexes.length === 0) return getRandomTrackIndex(trackList.length)
+
+  return availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
+}
+
 export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title = '小岛电台', subtitle = 'lo-fi 小岛电台', tracks, onClose }: IslandMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const playerRef = useRef<HTMLElement | null>(null)
   const synthRef = useRef<SynthNodes | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const prevOpenRef = useRef(open)
-  const lastClosedTrackIndexRef = useRef(0)
+  const lastClosedTrackUrlRef = useRef<string | undefined>(undefined)
+  const playAttemptRef = useRef(0)
   const [playing, setPlaying] = useState(true)
   const [audioReady, setAudioReady] = useState(true)
   const [position, setPosition] = useState<PlayerPosition>(() => getDefaultPosition())
   const [activeTrackIndex, setActiveTrackIndex] = useState(0)
-  const trackList = tracks?.filter((track) => track.url) ?? (src ? [{ title, author: subtitle, pic: coverSrc, url: src }] : [])
+  const trackList = useMemo(
+    () => tracks?.filter((track) => track.url) ?? (src ? [{ title, author: subtitle, pic: coverSrc, url: src }] : []),
+    [coverSrc, src, subtitle, title, tracks],
+  )
   const activeTrack = trackList[activeTrackIndex] ?? trackList[0]
   const currentSrc = activeTrack?.url
   const currentCoverSrc = activeTrack?.pic || coverSrc
@@ -115,6 +131,21 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
 
     setActiveTrackIndex((current) => getRandomTrackIndex(trackList.length, current))
     setPlaying(true)
+  }
+
+  function playAudio(audio: HTMLAudioElement, expectedSrc: string) {
+    const attemptId = playAttemptRef.current + 1
+
+    playAttemptRef.current = attemptId
+
+    void audio.play().catch((error: unknown) => {
+      if (playAttemptRef.current !== attemptId) return
+      if (audioRef.current !== audio) return
+      if (audio.currentSrc && audio.currentSrc !== expectedSrc) return
+      if (error instanceof DOMException && error.name === 'AbortError') return
+
+      setPlaying(false)
+    })
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
@@ -231,7 +262,8 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     prevOpenRef.current = open
 
     if (wasOpen && !open) {
-      lastClosedTrackIndexRef.current = activeTrackIndex
+      lastClosedTrackUrlRef.current = currentSrc
+      playAttemptRef.current += 1
       setPlaying(true)
       stopSynth()
       return
@@ -239,16 +271,16 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
 
     if (!wasOpen && open) {
       if (trackList.length <= 1) {
-        lastClosedTrackIndexRef.current = 0
+        lastClosedTrackUrlRef.current = trackList[0]?.url
         setActiveTrackIndex(0)
         return
       }
 
-      const nextIndex = getRandomTrackIndex(trackList.length, lastClosedTrackIndexRef.current)
-      lastClosedTrackIndexRef.current = nextIndex
+      const nextIndex = getRandomTrackIndexExceptUrl(trackList, lastClosedTrackUrlRef.current)
+      lastClosedTrackUrlRef.current = trackList[nextIndex]?.url
       setActiveTrackIndex(nextIndex)
     }
-  }, [activeTrackIndex, open, trackList.length])
+  }, [currentSrc, open, trackList])
 
   useEffect(() => {
     if (!open) return
@@ -259,11 +291,14 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
     if (!audio) return
 
     if (playing) {
-      void audio.play().catch(() => {
-        setPlaying(false)
-      })
+      playAudio(audio, currentSrc)
     } else {
+      playAttemptRef.current += 1
       audio.pause()
+    }
+
+    return () => {
+      playAttemptRef.current += 1
     }
   }, [currentSrc, open, playing])
 
@@ -309,7 +344,21 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
       onPointerCancel={handlePointerUp}
     >
       {currentSrc ?
-        <audio key={currentSrc} ref={audioRef} src={currentSrc} preload="auto" onEnded={handleTrackEnded} />
+        <audio
+          key={currentSrc}
+          ref={audioRef}
+          src={currentSrc}
+          preload="auto"
+          autoPlay={playing}
+          onCanPlay={() => {
+            const audio = audioRef.current
+
+            if (audio && playing) {
+              playAudio(audio, currentSrc)
+            }
+          }}
+          onEnded={handleTrackEnded}
+        />
       : null}
 
       <img className="island-music-player__cover" src={currentCoverSrc} alt="" draggable={false} />
