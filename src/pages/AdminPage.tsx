@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router'
 
-import { AdminAboutPanel } from './admin/AdminAboutPanel'
-import { AdminLoginGate } from './admin/AdminLoginGate'
-import { AdminMusicPanel } from './admin/AdminMusicPanel'
-import { AdminPostsPanel } from './admin/AdminPostsPanel'
-import { AdminSidebar } from './admin/AdminSidebar'
-import { AdminSitePanel } from './admin/AdminSitePanel'
-import { AdminSystemPanel } from './admin/AdminSystemPanel'
-import { DeletePostModal } from './admin/DeletePostModal'
-import { AdminTopbar } from './admin/AdminTopbar'
+import { AdminAboutPanel } from './admin/about/AdminAboutPanel'
+import { AdminLoginGate } from './admin/auth/AdminLoginGate'
+import { AdminMusicPanel } from './admin/music/AdminMusicPanel'
+import { AdminPostsPanel } from './admin/posts/AdminPostsPanel'
+import { AdminSidebar } from './admin/layout/AdminSidebar'
+import { AdminSitePanel } from './admin/site/AdminSitePanel'
+import { AdminSystemPanel } from './admin/system/AdminSystemPanel'
+import { DeletePostModal } from './admin/posts/DeletePostModal'
+import { AdminTopbar } from './admin/layout/AdminTopbar'
 import { useAdminDashboard } from './admin/useAdminDashboard'
 
 export default function AdminPage() {

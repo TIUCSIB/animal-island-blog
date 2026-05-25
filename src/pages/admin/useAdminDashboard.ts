@@ -30,7 +30,7 @@ import { queryKeys } from '@/lib/query-client'
 import { normalizeIslandAccount, toAccountInputValue } from '@/lib/account'
 import { useAdminDashboardStore } from '@/stores/admin-dashboard-store'
 
-import { createEmptyForm, formToPost, getErrorMessage, postToForm } from './post-form'
+import { createEmptyForm, formToPost, getErrorMessage, postToForm } from './posts/post-form'
 import type { AboutContentForm, AdminAccountForm, AdminSection, AdminStatus, MusicForm, PostForm, SiteProfileForm, SystemCheckItem } from './types'
 
 type MusicSnapshot = Pick<MusicConfig, 'enabled' | 'platform' | 'sourceType' | 'musicId'>
