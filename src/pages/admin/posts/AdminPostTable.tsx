@@ -9,7 +9,6 @@ import { formatPostDate } from './post-media-utils'
 
 type AdminPostTableProps = {
   posts: GalleryPost[]
-  selectedId: string | null
   loadingPosts: boolean
   onRefresh: () => void
   onSelectPost: (post: GalleryPost) => void
@@ -20,7 +19,7 @@ function toPost(record: Record<string, unknown>) {
   return record as unknown as GalleryPost
 }
 
-export function AdminPostTable({ posts, selectedId, loadingPosts, onRefresh, onSelectPost, onDeletePost }: AdminPostTableProps) {
+export function AdminPostTable({ posts, loadingPosts, onRefresh, onSelectPost, onDeletePost }: AdminPostTableProps) {
   const rows = useMemo<Record<string, unknown>[]>(() => posts.map((post) => ({ ...post })), [posts])
   const columns = useMemo<TableColumn[]>(
     () => [

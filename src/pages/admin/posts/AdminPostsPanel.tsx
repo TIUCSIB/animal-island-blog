@@ -15,7 +15,6 @@ type AdminPostsPanelMode = 'write' | 'manage'
 type AdminPostsPanelProps = {
   mode: AdminPostsPanelMode
   posts: GalleryPost[]
-  selectedId: string | null
   selectedPost: GalleryPost | null
   form: PostForm
   token: string
@@ -31,7 +30,6 @@ type AdminPostsPanelProps = {
 export function AdminPostsPanel({
   mode,
   posts,
-  selectedId,
   selectedPost,
   form,
   token,
@@ -51,7 +49,7 @@ export function AdminPostsPanel({
     <>
       <section className="island-admin-workbench island-admin-workbench--single">
         {!isWriteMode ? (
-          <AdminPostTable posts={posts} selectedId={selectedId} loadingPosts={loadingPosts} onRefresh={onRefresh} onSelectPost={onSelectPost} onDeletePost={onDeletePost} />
+          <AdminPostTable posts={posts} loadingPosts={loadingPosts} onRefresh={onRefresh} onSelectPost={onSelectPost} onDeletePost={onDeletePost} />
         ) : null}
 
         {canEdit ? (

@@ -10,6 +10,7 @@ import { AdminSystemPanel } from './admin/system/AdminSystemPanel'
 import { DeletePostModal } from './admin/posts/DeletePostModal'
 import { AdminTopbar } from './admin/layout/AdminTopbar'
 import { useAdminDashboard } from './admin/useAdminDashboard'
+import './admin/admin.css'
 
 export default function AdminPage() {
   const navigate = useNavigate()
@@ -34,7 +35,6 @@ export default function AdminPage() {
                     <AdminPostsPanel
                       mode="write"
                       posts={admin.posts}
-                      selectedId={null}
                       selectedPost={null}
                       form={admin.form}
                       token={admin.token}
@@ -52,7 +52,6 @@ export default function AdminPage() {
                     <AdminPostsPanel
                       mode="manage"
                       posts={admin.posts}
-                      selectedId={admin.selectedId}
                       selectedPost={admin.selectedPost}
                       form={admin.form}
                       token={admin.token}
