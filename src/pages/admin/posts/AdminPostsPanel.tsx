@@ -91,27 +91,18 @@ export function AdminPostsPanel({
         open={Boolean(mediaLibraryMode)}
         token={token}
         title="图片库"
-        description={mediaLibraryMode === 'cover' ? '选择一张图片作为封面' : '选择一张图片加入多图'}
+        description="选择图片加入文章，第一张会作为封面"
         emptyText="图片库还是空的，先上传文章图片吧。"
         assetLabel="图片"
         purpose="post-image"
         resourceType="image"
-        currentUrl={form.imageSrc}
         currentUrls={getPostImageUrls(form.imagesText)}
         onClose={() => setMediaLibraryMode(null)}
         onSelect={(asset) =>
-          setForm((current) =>
-            mediaLibraryMode === 'cover'
-              ? {
-                  ...current,
-                  imageSrc: asset.secureUrl,
-                }
-              : {
-                  ...current,
-                  imageSrc: current.imageSrc || asset.secureUrl,
-                  imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
-                },
-          )
+          setForm((current) => ({
+            ...current,
+            imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
+          }))
         }
       />
     </>

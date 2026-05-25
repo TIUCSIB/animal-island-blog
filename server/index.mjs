@@ -206,12 +206,11 @@ function normalizePost(input, posts, currentId) {
   const title = cleanText(input.title)
   const content = cleanText(input.content)
   const location = cleanText(input.location)
-  const time = cleanText(input.time) || new Date().toISOString()
+  const time = currentId ? cleanText(input.time) || new Date().toISOString() : new Date().toISOString()
   const tags = [...new Set(toStringList(input.tags))]
-  const formImages = toStringList(input.images)
-  const imageSrc = cleanText(input.imageSrc) || formImages[0]
-  const images = [...new Set([imageSrc, ...formImages].filter(Boolean))]
-  const id = currentId ?? getUniqueId(slugify(cleanText(input.id) || title), posts)
+  const images = [...new Set([...toStringList(input.images), cleanText(input.imageSrc)].filter(Boolean))].slice(0, 9)
+  const imageSrc = images[0] ?? ''
+  const id = currentId ?? crypto.randomUUID()
 
   if (!title) throw createHttpError(400, '请填写标题')
   if (!imageSrc) throw createHttpError(400, '请填写封面图片')

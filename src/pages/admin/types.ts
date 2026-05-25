@@ -26,7 +26,6 @@ export type PostForm = {
   content: string
   location: string
   time: string
-  imageSrc: string
   imagesText: string
   tagsText: string
   pinned: boolean

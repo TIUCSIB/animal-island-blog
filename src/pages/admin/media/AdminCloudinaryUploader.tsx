@@ -17,6 +17,8 @@ type AdminCloudinaryUploaderProps = {
   multiple?: boolean
   label?: string
   className?: string
+  disabled?: boolean
+  maxFiles?: number
   onUploaded: (asset: CloudinaryUploadAsset) => void
 }
 
@@ -28,17 +30,28 @@ export function AdminCloudinaryUploader({
   multiple = false,
   label = '上传图片',
   className,
+  disabled = false,
+  maxFiles,
   onUploaded,
 }: AdminCloudinaryUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
   async function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? [])
+    const selectedFiles = Array.from(event.target.files ?? [])
+    const limit = typeof maxFiles === 'number' ? Math.max(0, maxFiles) : selectedFiles.length
+    const files = selectedFiles.slice(0, limit)
 
     event.target.value = ''
 
-    if (!files.length) return
+    if (!files.length) {
+      emitIslandToast({ type: 'info', title: '最多只能添加 9 张图片。' })
+      return
+    }
+
+    if (selectedFiles.length > files.length) {
+      emitIslandToast({ type: 'info', title: `最多还能添加 ${files.length} 张图片。` })
+    }
 
     if (!token) {
       emitIslandToast({ type: 'info', title: '请先登录后台再上传。' })
@@ -74,8 +87,8 @@ export function AdminCloudinaryUploader({
 
   return (
     <span className={['island-admin-uploader', className].filter(Boolean).join(' ')}>
-      <input ref={inputRef} className="island-admin-uploader__input" type="file" accept={accept} multiple={multiple} onChange={handleChange} />
-      <Button type="default" size="small" htmlType="button" icon={<UploadCloud size={14} strokeWidth={3} />} loading={uploading} onClick={() => inputRef.current?.click()}>
+      <input ref={inputRef} className="island-admin-uploader__input" type="file" accept={accept} multiple={multiple} disabled={disabled || uploading} onChange={handleChange} />
+      <Button type="default" size="small" htmlType="button" icon={<UploadCloud size={14} strokeWidth={3} />} loading={uploading} disabled={disabled} onClick={() => inputRef.current?.click()}>
         {label}
       </Button>
     </span>

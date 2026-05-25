@@ -7,8 +7,7 @@ export function createEmptyForm(): PostForm {
     title: '',
     content: '',
     location: '',
-    time: new Date().toISOString().slice(0, 10),
-    imageSrc: '',
+    time: '',
     imagesText: '',
     tagsText: '',
     pinned: false,
@@ -32,17 +31,16 @@ export function postToForm(post: GalleryPost): PostForm {
     title: post.title,
     content: post.content,
     location: post.location,
-    time: post.time.slice(0, 10),
-    imageSrc: post.imageSrc,
-    imagesText: joinList(post.images),
+    time: post.time,
+    imagesText: joinList(post.images?.length ? post.images : [post.imageSrc]),
     tagsText: post.tags.join('，'),
     pinned: Boolean(post.pinned),
   }
 }
 
 export function formToPost(form: PostForm): GalleryPost {
-  const images = splitList(form.imagesText)
-  const imageSrc = form.imageSrc.trim() || images[0] || ''
+  const images = splitList(form.imagesText).slice(0, 9)
+  const imageSrc = images[0] || ''
 
   return {
     id: form.id.trim(),
@@ -51,7 +49,7 @@ export function formToPost(form: PostForm): GalleryPost {
     location: form.location.trim(),
     time: form.time.trim(),
     imageSrc,
-    images: Array.from(new Set([imageSrc, ...images].filter(Boolean))),
+    images,
     tags: splitList(form.tagsText),
     pinned: form.pinned,
   }

@@ -498,7 +498,7 @@ export function useAdminDashboard() {
     const payload = formToPost(form)
 
     if (!payload.title || !payload.imageSrc) {
-      showStatus({ type: 'error', text: '标题和封面图片是必填项。' })
+      showStatus({ type: 'error', text: '标题和至少 1 张图片是必填项。' })
       return
     }
 

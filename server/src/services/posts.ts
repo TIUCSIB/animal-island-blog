@@ -28,7 +28,7 @@ function serializePosts(postRows: PostRow[], assetRows: PostAssetRow[], tagRows:
       title: post.title,
       content: post.content,
       location: post.location,
-      time: post.time,
+      time: post.createdAt,
       tags: tagRows.filter((tag) => tag.postId === post.id).map((tag) => tag.tag),
       pinned: post.pinned,
     } satisfies GalleryPost
@@ -105,9 +105,8 @@ async function replacePostRelations(post: GalleryPost) {
 }
 
 export async function createPost(input: unknown) {
-  const currentPosts = await listPosts()
-  const post = normalizePost(input as Partial<GalleryPost>, currentPosts)
   const now = new Date().toISOString()
+  const post = normalizePost(input as Partial<GalleryPost>, undefined, now)
   const db = getDb()
 
   await db.insert(posts).values({
@@ -133,7 +132,7 @@ export async function updatePost(id: string, input: unknown) {
 
   if (!currentPost) throw new HttpError(404, '文章不存在')
 
-  const post = normalizePost({ ...currentPost, ...(input as Partial<GalleryPost>) }, currentPosts, id)
+  const post = normalizePost({ ...currentPost, ...(input as Partial<GalleryPost>) }, id)
 
   await db
     .update(posts)

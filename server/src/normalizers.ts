@@ -1,30 +1,17 @@
 import { defaultAboutContent, defaultSiteProfile } from './constants'
 import { HttpError } from './http'
 import type { AboutCollapseItem, AboutCollapseItemInput, AboutContent, AboutContentInput, ContactIconName, ContactLink, ContactLinkInput, GalleryPost, MusicTrack, SiteProfile } from './types'
-import { cleanText, slugify, toStringList } from './utils'
+import { cleanText, toStringList } from './utils'
 
-function getUniqueId(baseId: string, list: GalleryPost[], currentId?: string) {
-  let candidate = baseId
-  let index = 2
-
-  while (list.some((post) => post.id === candidate && post.id !== currentId)) {
-    candidate = `${baseId}-${index}`
-    index += 1
-  }
-
-  return candidate
-}
-
-export function normalizePost(input: Partial<GalleryPost>, list: GalleryPost[], currentId?: string): GalleryPost {
+export function normalizePost(input: Partial<GalleryPost>, currentId?: string, createdAt = new Date().toISOString()): GalleryPost {
   const title = cleanText(input.title)
   const content = cleanText(input.content)
   const location = cleanText(input.location)
-  const time = cleanText(input.time) || new Date().toISOString()
+  const time = currentId ? cleanText(input.time) || createdAt : createdAt
   const tags = [...new Set(toStringList(input.tags))]
-  const formImages = toStringList(input.images)
-  const imageSrc = cleanText(input.imageSrc) || formImages[0]
-  const images = [...new Set([imageSrc, ...formImages].filter(Boolean))]
-  const id = currentId ?? getUniqueId(slugify(cleanText(input.id) || title), list)
+  const images = [...new Set([...toStringList(input.images), cleanText(input.imageSrc)].filter(Boolean))].slice(0, 9)
+  const imageSrc = images[0] ?? ''
+  const id = currentId ?? crypto.randomUUID()
 
   if (!title) throw new HttpError(400, '请填写标题')
   if (!imageSrc) throw new HttpError(400, '请填写封面图片')

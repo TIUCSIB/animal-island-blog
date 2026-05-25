@@ -1,11 +1,17 @@
-export type PostMediaLibraryMode = 'cover' | 'gallery'
+export type PostMediaLibraryMode = 'gallery'
 
-export function appendPostImageUrl(currentText: string, url: string) {
+export const MAX_POST_IMAGES = 9
+
+export function appendPostImageUrl(currentText: string, url: string, max = MAX_POST_IMAGES) {
   const urls = getPostImageUrls(currentText)
 
   if (!urls.includes(url)) urls.push(url)
 
-  return urls.join('\n')
+  return urls.slice(0, max).join('\n')
+}
+
+export function removePostImageUrl(currentText: string, url: string) {
+  return getPostImageUrls(currentText).filter((item) => item !== url).join('\n')
 }
 
 export function getPostImageUrls(text: string) {
