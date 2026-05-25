@@ -53,8 +53,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       imagesText: removePostImageUrl(current.imagesText, url),
     }))
   }
-  const iconButtonClass = 'grid size-9 place-items-center rounded-2xl text-[#aaa197] transition hover:bg-[#e6f9f6] hover:text-[#19a99d] disabled:cursor-not-allowed disabled:opacity-45'
-  const activeIconButtonClass = 'bg-[#d0f6df] text-[#19a99d]'
+  const iconButtonClass = 'island-admin-compose-icon'
+  const activeIconButtonClass = 'island-admin-compose-icon--active'
 
   return (
     <form className="island-admin-editor" onSubmit={onSave}>
@@ -78,7 +78,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
 
           <div className="mt-3 flex flex-wrap items-center gap-2 border-b-2 border-[#c4b89e]/20 pb-3">
             {toolbarItems.map((item) => (
-              <button key={item.label} className="grid size-9 place-items-center rounded-2xl text-[#725d42] transition hover:bg-[#d7f8e7] hover:text-[#117f77]" type="button" aria-label={item.label}>
+              <button key={item.label} className="island-admin-compose-icon" type="button" aria-label={item.label}>
                 {item.icon}
               </button>
             ))}

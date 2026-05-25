@@ -62,7 +62,7 @@ export function AdminMediaLibraryModal({
           purpose,
           resourceType,
           nextCursor: cursor || undefined,
-          maxResults: 30,
+          maxResults: 24,
         })
 
         setAssets((current) => (cursor ? [...current, ...result.assets] : result.assets))
@@ -165,11 +165,14 @@ export function AdminMediaLibraryModal({
 
           {nextCursor ?
             <div className="island-admin-avatar-library__more">
+              <span>已加载 {assets.length} 张</span>
               <Button type="default" size="small" htmlType="button" loading={loading} onClick={() => void loadAssets(nextCursor)}>
                 加载更多
               </Button>
             </div>
           : null}
+
+          {!nextCursor && assets.length > 0 ? <p className="island-admin-avatar-library__count">已加载全部 {assets.length} 张</p> : null}
         </div>
       </Modal>
 
