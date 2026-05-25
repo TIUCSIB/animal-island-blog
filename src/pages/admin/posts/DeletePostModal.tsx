@@ -13,7 +13,7 @@ export function DeletePostModal({ post, saving, onClose, onConfirm }: DeletePost
   return (
     <Modal
       open={Boolean(post)}
-      title="删除这篇记录？"
+      title="操作确认"
       width={420}
       onClose={onClose}
       footer={
@@ -27,7 +27,7 @@ export function DeletePostModal({ post, saving, onClose, onConfirm }: DeletePost
         </>
       }
     >
-      {post ? `「${post.title}」删除后会从首页消失。` : null}
+      {post ? `「${post.title}」你确定要删除吗？` : null}
     </Modal>
   )
 }

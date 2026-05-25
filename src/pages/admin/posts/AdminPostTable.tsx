@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { MouseEvent } from 'react'
 import { Button, Card, Table } from 'animal-island-ui'
 import type { TableColumn } from 'animal-island-ui'
@@ -8,11 +8,13 @@ import { IslandPagination } from '@/components/island'
 import type { GalleryPost } from '@/data/gallery'
 import { formatPostDate } from './post-media-utils'
 
-const POST_TABLE_PAGE_SIZE = 6
-
 type AdminPostTableProps = {
   posts: GalleryPost[]
+  page: number
+  pageSize: number
+  total: number
   loadingPosts: boolean
+  onPageChange: (page: number) => void
   onRefresh: () => void
   onSelectPost: (post: GalleryPost) => void
   onDeletePost: (post: GalleryPost) => void
@@ -22,15 +24,8 @@ function toPost(record: Record<string, unknown>) {
   return record as unknown as GalleryPost
 }
 
-export function AdminPostTable({ posts, loadingPosts, onRefresh, onSelectPost, onDeletePost }: AdminPostTableProps) {
-  const [page, setPage] = useState(1)
-  const pageCount = Math.max(1, Math.ceil(posts.length / POST_TABLE_PAGE_SIZE))
-  const currentPage = Math.min(page, pageCount)
-  const pagedPosts = useMemo(() => {
-    const start = (currentPage - 1) * POST_TABLE_PAGE_SIZE
-    return posts.slice(start, start + POST_TABLE_PAGE_SIZE)
-  }, [currentPage, posts])
-  const rows = useMemo<Record<string, unknown>[]>(() => pagedPosts.map((post) => ({ ...post })), [pagedPosts])
+export function AdminPostTable({ posts, page, pageSize, total, loadingPosts, onPageChange, onRefresh, onSelectPost, onDeletePost }: AdminPostTableProps) {
+  const rows = useMemo<Record<string, unknown>[]>(() => posts.map((post) => ({ ...post })), [posts])
   const columns = useMemo<TableColumn[]>(
     () => [
       {
@@ -135,7 +130,7 @@ export function AdminPostTable({ posts, loadingPosts, onRefresh, onSelectPost, o
 
       <Table className="island-admin-post-table" striped rowKey="id" columns={columns} dataSource={rows} loading={loadingPosts} emptyText="暂时还没有文章" scroll={{ x: 640 }} />
 
-      <IslandPagination page={currentPage} pageSize={POST_TABLE_PAGE_SIZE} total={posts.length} onPageChange={setPage} />
+      <IslandPagination page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
     </Card>
   )
 }

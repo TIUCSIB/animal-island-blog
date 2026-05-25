@@ -14,7 +14,7 @@ import {
   fetchAboutContent,
   fetchAdminProfile,
   fetchApiHealth,
-  fetchGalleryPosts,
+  fetchGalleryPostsPage,
   fetchMusicConfig,
   fetchSiteProfile,
   getStoredAdminAccessToken,
@@ -42,6 +42,14 @@ const defaultMusicSnapshot: MusicSnapshot = {
   musicId: '473403185',
 }
 
+const ADMIN_POST_PAGE_SIZE = 5
+const defaultPostsPagination = {
+  page: 1,
+  pageSize: ADMIN_POST_PAGE_SIZE,
+  total: 0,
+  totalPages: 1,
+}
+
 const loadingSiteProfile: SiteProfileForm = {
   ...defaultSiteProfile,
   avatarUrl: '',
@@ -61,6 +69,8 @@ export function useAdminDashboard() {
   const selectedId = useAdminDashboardStore((state) => state.selectedId)
   const setSelectedId = useAdminDashboardStore((state) => state.setSelectedId)
   const [posts, setPosts] = useState<GalleryPost[]>([])
+  const [postsPagination, setPostsPagination] = useState(() => defaultPostsPagination)
+  const [pinnedCount, setPinnedCount] = useState(0)
   const [form, setForm] = useState<PostForm>(() => createEmptyForm())
   const [musicForm, setMusicForm] = useState<MusicForm>(() => ({
     sourceType: 'song',
@@ -86,8 +96,8 @@ export function useAdminDashboard() {
 
   const isLoggedIn = Boolean((token || hasRefreshToken) && adminProfile)
   const isRestoringSession = Boolean(hasRefreshToken && !adminProfile)
+  const safePostsPagination = postsPagination ?? defaultPostsPagination
   const selectedPost = useMemo(() => posts.find((post) => post.id === selectedId) ?? null, [posts, selectedId])
-  const pinnedCount = useMemo(() => posts.filter((post) => post.pinned).length, [posts])
 
   function showStatus(nextStatus: Exclude<AdminStatus, null>) {
     setStatus(nextStatus)
@@ -97,14 +107,16 @@ export function useAdminDashboard() {
     })
   }
 
-  async function loadPosts() {
+  async function loadPosts(page = safePostsPagination.page) {
     setLoadingPosts(true)
 
     try {
-      const nextPosts = await fetchGalleryPosts()
+      const result = await fetchGalleryPostsPage(page, ADMIN_POST_PAGE_SIZE)
+      const nextPosts = result.posts
 
       setPosts(nextPosts)
-      queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
+      setPostsPagination(result.pagination)
+      setPinnedCount(result.stats?.pinnedCount ?? 0)
 
       if (selectedId && !nextPosts.some((post) => post.id === selectedId)) {
         setSelectedId(null)
@@ -122,7 +134,7 @@ export function useAdminDashboard() {
 
     const [healthResult, postsResult, profileResult, musicResult, authResult] = await Promise.allSettled([
       fetchApiHealth(),
-      fetchGalleryPosts(),
+      fetchGalleryPostsPage(1, ADMIN_POST_PAGE_SIZE),
       fetchSiteProfile(),
       fetchMusicConfig(),
       token ? fetchAdminProfile(token) : Promise.resolve(null),
@@ -149,12 +161,13 @@ export function useAdminDashboard() {
     }
 
     if (postsResult.status === 'fulfilled') {
-      setPosts(postsResult.value)
-      queryClient.setQueryData(queryKeys.galleryPosts, postsResult.value)
+      setPosts(postsResult.value.posts)
+      setPostsPagination(postsResult.value.pagination)
+      setPinnedCount(postsResult.value.stats?.pinnedCount ?? 0)
       nextChecks.push({
         id: 'posts',
         label: '文章数据',
-        value: `${postsResult.value.length} 条`,
+        value: `${postsResult.value.pagination.total} 条`,
         status: 'success',
         detail: '文章接口和数据库读取正常。',
       })
@@ -253,13 +266,14 @@ export function useAdminDashboard() {
     let cancelled = false
 
     async function loadInitialData() {
-      const [postsResult, musicResult, siteProfileResult, aboutContentResult] = await Promise.allSettled([fetchGalleryPosts(), fetchMusicConfig(), fetchSiteProfile(), fetchAboutContent()])
+      const [postsResult, musicResult, siteProfileResult, aboutContentResult] = await Promise.allSettled([fetchGalleryPostsPage(1, ADMIN_POST_PAGE_SIZE), fetchMusicConfig(), fetchSiteProfile(), fetchAboutContent()])
 
       if (cancelled) return
 
       if (postsResult.status === 'fulfilled') {
-        setPosts(postsResult.value)
-        queryClient.setQueryData(queryKeys.galleryPosts, postsResult.value)
+        setPosts(postsResult.value.posts)
+        setPostsPagination(postsResult.value.pagination)
+        setPinnedCount(postsResult.value.stats?.pinnedCount ?? 0)
       } else {
         const text = getErrorMessage(postsResult.reason)
 
@@ -493,21 +507,17 @@ export function useAdminDashboard() {
     try {
       const savedPost = isCreating ? await createGalleryPost(token, payload) : await updateGalleryPost(token, selectedPost!.id, payload)
 
-      setPosts((current) => {
-        const nextPosts = isCreating ? [savedPost, ...current] : current.map((post) => (post.id === savedPost.id ? savedPost : post))
-
-        queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
-        return nextPosts
-      })
-
       if (isCreating) {
         setSelectedId(null)
         setForm(createEmptyForm())
+        await loadPosts(1)
       } else {
         setSelectedId(savedPost.id)
         setForm(postToForm(savedPost))
+        await loadPosts(safePostsPagination.page)
       }
 
+      await queryClient.invalidateQueries({ queryKey: queryKeys.galleryPosts })
       showStatus({ type: 'success', text: isCreating ? '新文章已发布，可在文章管理中继续编辑。' : '文章已更新。' })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
@@ -522,19 +532,17 @@ export function useAdminDashboard() {
     setSaving(true)
 
     try {
-      await deleteGalleryPost(token, deleteTarget.id)
-      setPosts((current) => {
-        const nextPosts = current.filter((post) => post.id !== deleteTarget.id)
+      const nextPage = posts.length <= 1 && safePostsPagination.page > 1 ? safePostsPagination.page - 1 : safePostsPagination.page
 
-        queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
-        return nextPosts
-      })
+      await deleteGalleryPost(token, deleteTarget.id)
 
       if (selectedId === deleteTarget.id) {
         setSelectedId(null)
         setForm(createEmptyForm())
       }
 
+      await loadPosts(nextPage)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.galleryPosts })
       setDeleteTarget(null)
       showStatus({ type: 'success', text: '文章已删除。' })
     } catch (error) {
@@ -724,6 +732,10 @@ export function useAdminDashboard() {
     loadingPosts,
     musicForm,
     pinnedCount,
+    postPage: safePostsPagination.page,
+    postPageSize: safePostsPagination.pageSize,
+    postsTotal: safePostsPagination.total,
+    postTotalPages: safePostsPagination.totalPages,
     posts,
     saving,
     selectedId,

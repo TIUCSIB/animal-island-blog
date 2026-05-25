@@ -1,4 +1,4 @@
-import { asc, desc, eq } from 'drizzle-orm'
+import { asc, count, desc, eq, inArray } from 'drizzle-orm'
 
 import { getDb } from '../db'
 import { postAssets, posts, postTags } from '../db/schema'
@@ -6,12 +6,18 @@ import { HttpError } from '../http'
 import { normalizePost } from '../normalizers'
 import type { GalleryPost } from '../types'
 
-export async function listPosts() {
-  const db = getDb()
-  const postRows = await db.select().from(posts).orderBy(desc(posts.pinned), desc(posts.time), desc(posts.createdAt)).all()
-  const assetRows = await db.select().from(postAssets).orderBy(asc(postAssets.sortOrder)).all()
-  const tagRows = await db.select().from(postTags).orderBy(asc(postTags.sortOrder)).all()
+type PostRow = typeof posts.$inferSelect
+type PostAssetRow = typeof postAssets.$inferSelect
+type PostTagRow = typeof postTags.$inferSelect
 
+export type PostsPagination = {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+function serializePosts(postRows: PostRow[], assetRows: PostAssetRow[], tagRows: PostTagRow[]) {
   return postRows.map((post) => {
     const images = assetRows.filter((asset) => asset.postId === post.id).map((asset) => asset.url)
 
@@ -27,6 +33,42 @@ export async function listPosts() {
       pinned: post.pinned,
     } satisfies GalleryPost
   })
+}
+
+export async function listPosts() {
+  const db = getDb()
+  const postRows = await db.select().from(posts).orderBy(desc(posts.pinned), desc(posts.time), desc(posts.createdAt)).all()
+  const assetRows = await db.select().from(postAssets).orderBy(asc(postAssets.sortOrder)).all()
+  const tagRows = await db.select().from(postTags).orderBy(asc(postTags.sortOrder)).all()
+
+  return serializePosts(postRows, assetRows, tagRows)
+}
+
+export async function listPostsPage(inputPage = 1, inputPageSize = 5) {
+  const db = getDb()
+  const pageSize = Math.min(Math.max(Math.floor(inputPageSize) || 5, 1), 50)
+  const total = (await db.select({ value: count() }).from(posts).get())?.value ?? 0
+  const pinnedCount = (await db.select({ value: count() }).from(posts).where(eq(posts.pinned, true)).get())?.value ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const page = Math.min(Math.max(Math.floor(inputPage) || 1, 1), totalPages)
+  const offset = (page - 1) * pageSize
+  const postRows = await db.select().from(posts).orderBy(desc(posts.pinned), desc(posts.time), desc(posts.createdAt)).limit(pageSize).offset(offset).all()
+  const postIds = postRows.map((post) => post.id)
+  const assetRows = postIds.length > 0 ? await db.select().from(postAssets).where(inArray(postAssets.postId, postIds)).orderBy(asc(postAssets.sortOrder)).all() : []
+  const tagRows = postIds.length > 0 ? await db.select().from(postTags).where(inArray(postTags.postId, postIds)).orderBy(asc(postTags.sortOrder)).all() : []
+
+  return {
+    posts: serializePosts(postRows, assetRows, tagRows),
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+    } satisfies PostsPagination,
+    stats: {
+      pinnedCount,
+    },
+  }
 }
 
 async function replacePostRelations(post: GalleryPost) {

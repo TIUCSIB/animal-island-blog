@@ -21,6 +21,20 @@ type PostsResponse = {
   posts: GalleryPost[]
 }
 
+export type PostsPagination = {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+export type PaginatedPostsResponse = PostsResponse & {
+  pagination: PostsPagination
+  stats?: {
+    pinnedCount?: number
+  }
+}
+
 type LoginResponse = {
   accessToken: string
   refreshToken?: string
@@ -268,6 +282,43 @@ export async function fetchGalleryPosts(signal?: AbortSignal) {
   const data = await requestJson<PostsResponse>('/api/posts', { signal })
 
   return data.posts
+}
+
+export async function fetchGalleryPostsPage(page = 1, pageSize = 5, signal?: AbortSignal) {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  const data = await requestJson<Partial<PaginatedPostsResponse> & PostsResponse>(`/api/posts?${params.toString()}`, { signal })
+  const posts = Array.isArray(data.posts) ? data.posts : []
+
+  if (data.pagination) {
+    return {
+      posts,
+      pagination: data.pagination,
+      stats: data.stats,
+    } satisfies PaginatedPostsResponse
+  }
+
+  const safePageSize = Math.max(1, pageSize)
+  const total = posts.length
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize))
+  const safePage = Math.min(Math.max(page, 1), totalPages)
+  const start = (safePage - 1) * safePageSize
+
+  return {
+    posts: posts.slice(start, start + safePageSize),
+    pagination: {
+      page: safePage,
+      pageSize: safePageSize,
+      total,
+      totalPages,
+    },
+    stats: {
+      pinnedCount: posts.filter((post) => post.pinned).length,
+    },
+  } satisfies PaginatedPostsResponse
 }
 
 export async function fetchApiHealth(signal?: AbortSignal) {

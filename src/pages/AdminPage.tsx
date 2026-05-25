@@ -28,20 +28,24 @@ export default function AdminPage() {
               <AdminTopbar account={admin.adminProfile?.account ?? admin.accountForm.account} profile={admin.siteProfileForm} onHomeClick={() => navigate('/')} onLogout={admin.handleLogout} />
 
               <section className="island-admin-layout">
-                <AdminSidebar activeSection={admin.activeSection} postsCount={admin.posts.length} pinnedCount={admin.pinnedCount} onSectionChange={admin.handleSectionChange} />
+                <AdminSidebar activeSection={admin.activeSection} postsCount={admin.postsTotal} pinnedCount={admin.pinnedCount} onSectionChange={admin.handleSectionChange} />
 
                 <section className="island-admin-content ">
                   {admin.activeSection === 'write' ?
                     <AdminPostsPanel
                       mode="write"
                       posts={admin.posts}
+                      page={admin.postPage}
+                      pageSize={admin.postPageSize}
+                      total={admin.postsTotal}
                       selectedPost={null}
                       form={admin.form}
                       token={admin.token}
                       loadingPosts={admin.loadingPosts}
                       saving={admin.saving}
                       setForm={admin.setForm}
-                      onRefresh={() => void admin.loadPosts()}
+                      onPageChange={(page) => void admin.loadPosts(page)}
+                      onRefresh={() => void admin.loadPosts(admin.postPage)}
                       onSelectPost={admin.handleSelectPost}
                       onDeletePost={admin.setDeleteTarget}
                       onSave={admin.handleSave}
@@ -52,13 +56,17 @@ export default function AdminPage() {
                     <AdminPostsPanel
                       mode="manage"
                       posts={admin.posts}
+                      page={admin.postPage}
+                      pageSize={admin.postPageSize}
+                      total={admin.postsTotal}
                       selectedPost={admin.selectedPost}
                       form={admin.form}
                       token={admin.token}
                       loadingPosts={admin.loadingPosts}
                       saving={admin.saving}
                       setForm={admin.setForm}
-                      onRefresh={() => void admin.loadPosts()}
+                      onPageChange={(page) => void admin.loadPosts(page)}
+                      onRefresh={() => void admin.loadPosts(admin.postPage)}
                       onSelectPost={admin.handleSelectPost}
                       onDeletePost={admin.setDeleteTarget}
                       onSave={admin.handleSave}
@@ -86,7 +94,7 @@ export default function AdminPage() {
                     <AdminSystemPanel
                       accountForm={admin.accountForm}
                       adminProfile={admin.adminProfile}
-                      postsCount={admin.posts.length}
+                      postsCount={admin.postsTotal}
                       isLoggedIn={showAdminShell}
                       checkingSystem={admin.checkingSystem}
                       systemChecks={admin.systemChecks}

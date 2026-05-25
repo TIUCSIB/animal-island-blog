@@ -289,6 +289,33 @@ function assertAdmin(request) {
   }
 }
 
+function parsePositiveInt(value) {
+  const number = Number.parseInt(value, 10)
+
+  return Number.isFinite(number) && number > 0 ? number : undefined
+}
+
+function paginatePosts(posts, pageInput, pageSizeInput) {
+  const pageSize = Math.min(Math.max(Math.floor(pageSizeInput) || 5, 1), 50)
+  const total = posts.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const page = Math.min(Math.max(Math.floor(pageInput) || 1, 1), totalPages)
+  const start = (page - 1) * pageSize
+
+  return {
+    posts: posts.slice(start, start + pageSize),
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages,
+    },
+    stats: {
+      pinnedCount: posts.filter((post) => post.pinned).length,
+    },
+  }
+}
+
 function getPostId(pathname) {
   const match = pathname.match(/^\/api\/posts\/([^/]+)$/)
 
@@ -323,6 +350,13 @@ async function handleRequest(request, response) {
 
   if (url.pathname === '/api/posts' && request.method === 'GET') {
     const posts = await readPosts()
+    const page = parsePositiveInt(url.searchParams.get('page'))
+    const pageSize = parsePositiveInt(url.searchParams.get('pageSize'))
+
+    if (page || pageSize) {
+      sendJson(response, 200, paginatePosts(posts, page, pageSize))
+      return
+    }
 
     sendJson(response, 200, { posts })
     return

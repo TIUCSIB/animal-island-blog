@@ -15,6 +15,9 @@ type AdminPostsPanelMode = 'write' | 'manage'
 type AdminPostsPanelProps = {
   mode: AdminPostsPanelMode
   posts: GalleryPost[]
+  page: number
+  pageSize: number
+  total: number
   selectedPost: GalleryPost | null
   form: PostForm
   token: string
@@ -22,6 +25,7 @@ type AdminPostsPanelProps = {
   saving: boolean
   setForm: SetPostForm
   onRefresh: () => void
+  onPageChange: (page: number) => void
   onSelectPost: (post: GalleryPost) => void
   onDeletePost: (post: GalleryPost) => void
   onSave: FormEventHandler<HTMLFormElement>
@@ -30,6 +34,9 @@ type AdminPostsPanelProps = {
 export function AdminPostsPanel({
   mode,
   posts,
+  page,
+  pageSize,
+  total,
   selectedPost,
   form,
   token,
@@ -37,6 +44,7 @@ export function AdminPostsPanel({
   saving,
   setForm,
   onRefresh,
+  onPageChange,
   onSelectPost,
   onDeletePost,
   onSave,
@@ -49,7 +57,7 @@ export function AdminPostsPanel({
     <>
       <section className="island-admin-workbench island-admin-workbench--single">
         {!isWriteMode ? (
-          <AdminPostTable posts={posts} loadingPosts={loadingPosts} onRefresh={onRefresh} onSelectPost={onSelectPost} onDeletePost={onDeletePost} />
+          <AdminPostTable posts={posts} page={page} pageSize={pageSize} total={total} loadingPosts={loadingPosts} onPageChange={onPageChange} onRefresh={onRefresh} onSelectPost={onSelectPost} onDeletePost={onDeletePost} />
         ) : null}
 
         {canEdit ? (
