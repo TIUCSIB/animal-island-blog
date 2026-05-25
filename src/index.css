@@ -199,3 +199,207 @@
     transform: translateY(-3px);
   }
 }
+
+
+.island-not-found {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 20px;
+}
+
+.island-not-found__card {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 34px 28px 38px 30px / 30px 38px 28px 34px;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.92) 0 12%, transparent 13%),
+    linear-gradient(180deg, rgba(255, 253, 247, 0.96) 0%, rgba(239, 255, 246, 0.94) 100%);
+}
+
+.island-not-found__card::after {
+  content: '';
+  position: absolute;
+  inset: auto -10% -28px;
+  height: 82px;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(circle at 18% 28%, #7dd8bd 0 12px, transparent 13px),
+    radial-gradient(circle at 42% 18%, #9ee6bf 0 10px, transparent 11px),
+    radial-gradient(circle at 68% 30%, #82d5bb 0 14px, transparent 15px),
+    linear-gradient(180deg, #baf1c8 0%, #8adfbb 100%);
+  opacity: 0.9;
+}
+
+.island-not-found__scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 154px;
+  margin-bottom: 8px;
+}
+
+.island-not-found__sun {
+  position: absolute;
+  top: 18px;
+  right: 18%;
+  width: 54px;
+  height: 54px;
+  border: 4px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  background: #f7cd67;
+  box-shadow: 0 5px 0 rgba(202, 151, 39, 0.38);
+  animation: island-not-found-float 4s ease-in-out infinite;
+}
+
+.island-not-found__cloud {
+  position: absolute;
+  width: 78px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    18px -10px 0 3px rgba(255, 255, 255, 0.88),
+    38px -2px 0 1px rgba(255, 255, 255, 0.88),
+    0 5px 0 rgba(189, 174, 160, 0.24);
+  animation: island-not-found-cloud 7s ease-in-out infinite;
+}
+
+.island-not-found__cloud--left {
+  top: 46px;
+  left: 9%;
+}
+
+.island-not-found__cloud--right {
+  top: 84px;
+  right: 15%;
+  transform: scale(0.72);
+  animation-delay: -2.4s;
+}
+
+.island-not-found__animal {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border: 5px solid #fff8ec;
+  border-radius: 42px 34px 46px 36px / 36px 46px 34px 42px;
+  background: linear-gradient(180deg, #f8d3da 0%, #f7a6b2 100%);
+  color: #fffdf7;
+  font-size: 48px;
+  box-shadow:
+    0 7px 0 #c9b8a8,
+    0 16px 30px rgba(121, 79, 39, 0.18);
+  animation: island-not-found-hop 2.2s ease-in-out infinite;
+}
+
+.island-not-found__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.island-not-found__code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  min-height: 40px;
+  padding: 4px 18px;
+  border: 3px solid rgba(255, 248, 236, 0.96);
+  border-radius: 999px;
+  background: #82d5bb;
+  color: #fffdf7;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 0 #5a9e1e;
+}
+
+.island-not-found__content h1 {
+  margin: 0;
+  color: #725d42;
+  font-size: clamp(24px, 6vw, 34px);
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.island-not-found__content p {
+  max-width: 320px;
+  margin: 0;
+  color: #8a7b66;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.8;
+}
+
+.island-not-found__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+@keyframes island-not-found-hop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes island-not-found-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+@keyframes island-not-found-cloud {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 12px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .island-not-found {
+    min-height: 100dvh;
+    padding: 16px;
+  }
+
+  .island-not-found__scene {
+    min-height: 138px;
+  }
+
+  .island-not-found__animal {
+    width: 96px;
+    height: 96px;
+    font-size: 42px;
+  }
+
+  .island-not-found__actions {
+    display: grid;
+  }
+}

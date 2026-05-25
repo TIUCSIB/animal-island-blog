@@ -1,5 +1,5 @@
 ﻿import type { HTMLAttributes, ReactNode } from 'react'
-import { Button, Card } from 'animal-island-ui'
+import { Button } from 'animal-island-ui'
 
 import { cn } from '@/lib/utils'
 
