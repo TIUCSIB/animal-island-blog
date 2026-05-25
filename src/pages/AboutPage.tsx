@@ -41,9 +41,13 @@ export default function AboutPage() {
         </Card>
 
         <Divider type="line-yellow" className="island-about-page__footer" />
-        <IslandBadge dot tone="pink">
-          <div className="island-about-page__intro">岛主</div>
-        </IslandBadge>
+        {aboutContent ?
+          enabledContacts.length > 0 && (
+            <IslandBadge dot tone="pink">
+              <div className="island-about-page__intro">岛主</div>
+            </IslandBadge>
+          )
+        : null}
         <div className="island-about-page__contacts" aria-label="联系方式">
           {aboutContent ?
             enabledContacts.map((contact) => {
@@ -79,9 +83,12 @@ export default function AboutPage() {
         <Divider type="line-teal" className="island-about-page__footer" />
 
         <section className="mt-5">
-          <IslandBadge dot tone="yellow">
-            <div className="island-about-page__intro">{aboutContent?.projectQuestion ?? '小岛资料读取中'}</div>
-          </IslandBadge>
+          {enabledCollapseItems.length > 0 && (
+            <IslandBadge dot tone="yellow">
+              <div className="island-about-page__intro">{aboutContent?.projectQuestion ?? '小岛资料读取中'}</div>
+            </IslandBadge>
+          )}
+
           <div className="island-about-page__contacts">
             {enabledCollapseItems.map((item) => (
               <Collapse

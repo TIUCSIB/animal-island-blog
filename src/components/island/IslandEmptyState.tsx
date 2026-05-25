@@ -13,31 +13,25 @@ export interface IslandEmptyStateProps extends Omit<HTMLAttributes<HTMLDivElemen
   onAction?: () => void
 }
 
-export function IslandEmptyState({
-  title,
-  description,
-  icon = '☁',
-  actionText,
-  onAction,
-  className,
-  ...props
-}: IslandEmptyStateProps) {
+export function IslandEmptyState({ title, description, icon = '☁', actionText, onAction, className, ...props }: IslandEmptyStateProps) {
   return (
-    <Card type="dashed" className={cn('island-empty-state', className)} {...props}>
+    <div className={cn('island-empty-state', className)} {...props}>
       <div className="island-empty-state__inner">
         <span className="island-empty-state__icon" aria-hidden="true">
           {icon}
         </span>
-        <h3 className="island-empty-state__title">{title}</h3>
-        {description ? <p className="island-empty-state__description">{description}</p> : null}
-        {actionText ? (
+        <span className="island-empty-state__title">{title}</span>
+        {description ?
+          <p className="island-empty-state__description">{description}</p>
+        : null}
+        {actionText ?
           <div className="island-empty-state__action">
             <Button type="primary" onClick={onAction}>
               {actionText}
             </Button>
           </div>
-        ) : null}
+        : null}
       </div>
-    </Card>
+    </div>
   )
 }
