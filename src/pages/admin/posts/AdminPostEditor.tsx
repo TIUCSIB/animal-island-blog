@@ -103,7 +103,16 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               >
                 <Image size={17} strokeWidth={2.8} />
               </button>
-              <button className={iconButtonClass} type="button" aria-label="图片库" disabled={remainingImages === 0} onClick={() => onOpenMediaLibrary('gallery')}>
+              <button
+                className={iconButtonClass}
+                type="button"
+                aria-label="图片库"
+                disabled={remainingImages === 0}
+                onClick={() => {
+                  setOpenPanel('image')
+                  onOpenMediaLibrary('gallery')
+                }}
+              >
                 <Images size={17} strokeWidth={2.8} />
               </button>
               <button className={iconButtonClass} type="button" aria-label="视频" disabled>
