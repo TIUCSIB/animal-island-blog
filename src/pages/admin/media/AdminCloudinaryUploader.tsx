@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
 import { Button } from 'animal-island-ui'
 import { UploadCloud } from 'lucide-react'
 
@@ -19,6 +19,7 @@ type AdminCloudinaryUploaderProps = {
   className?: string
   disabled?: boolean
   maxFiles?: number
+  renderTrigger?: (options: { disabled: boolean; uploading: boolean; open: () => void }) => ReactNode
   onUploaded: (asset: CloudinaryUploadAsset) => void
 }
 
@@ -32,6 +33,7 @@ export function AdminCloudinaryUploader({
   className,
   disabled = false,
   maxFiles,
+  renderTrigger,
   onUploaded,
 }: AdminCloudinaryUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -85,12 +87,21 @@ export function AdminCloudinaryUploader({
     }
   }
 
+  const triggerDisabled = disabled || uploading
+  const open = () => {
+    if (!triggerDisabled) inputRef.current?.click()
+  }
+
   return (
     <span className={['island-admin-uploader', className].filter(Boolean).join(' ')}>
       <input ref={inputRef} className="island-admin-uploader__input" type="file" accept={accept} multiple={multiple} disabled={disabled || uploading} onChange={handleChange} />
-      <Button type="default" size="small" htmlType="button" icon={<UploadCloud size={14} strokeWidth={3} />} loading={uploading} disabled={disabled} onClick={() => inputRef.current?.click()}>
-        {label}
-      </Button>
+      {renderTrigger ? (
+        renderTrigger({ disabled: triggerDisabled, uploading, open })
+      ) : (
+        <Button type="default" size="small" htmlType="button" icon={<UploadCloud size={14} strokeWidth={3} />} loading={uploading} disabled={disabled} onClick={open}>
+          {label}
+        </Button>
+      )}
     </span>
   )
 }

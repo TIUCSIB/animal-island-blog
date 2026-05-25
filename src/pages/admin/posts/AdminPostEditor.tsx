@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import type { FormEventHandler } from 'react'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
-import { Bold, Code2, Heading1, Heading2, Heading3, Images, Italic, List, ListOrdered, MapPin, Plus, Save, Send, Smile, Strikethrough, Tags, Trash2, X } from 'lucide-react'
+import { Bold, Code2, Heading1, Heading2, Heading3, Image, Images, Italic, List, ListOrdered, MapPin, Plus, Save, Send, Smile, Strikethrough, Tags, Trash2, Video, X } from 'lucide-react'
 
 import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from '../media/AdminCloudinaryUploader'
@@ -33,6 +34,7 @@ const toolbarItems = [
 ]
 
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave }: AdminPostEditorProps) {
+  const [openPanel, setOpenPanel] = useState<'image' | 'emoji' | null>(null)
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
   const contentLength = form.content.length
@@ -50,6 +52,9 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       imagesText: removePostImageUrl(current.imagesText, url),
     }))
   }
+
+  const iconButtonClass = 'grid size-9 place-items-center rounded-2xl text-[#aaa197] transition hover:bg-[#e6f9f6] hover:text-[#19a99d] disabled:cursor-not-allowed disabled:opacity-45'
+  const activeIconButtonClass = 'bg-[#d0f6df] text-[#19a99d]'
 
   return (
     <form className="island-admin-editor" onSubmit={onSave}>
@@ -92,11 +97,28 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
 
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
-              <AdminCloudinaryUploader token={token} purpose="post-image" label="上传图片" multiple maxFiles={remainingImages} disabled={remainingImages === 0} onUploaded={(asset) => addImage(asset.secureUrl)} />
-              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={remainingImages === 0} onClick={() => onOpenMediaLibrary('gallery')}>
-                图片库
-              </Button>
-              <Smile size={16} strokeWidth={2.6} />
+              <button
+                className={[iconButtonClass, openPanel === 'image' && activeIconButtonClass].filter(Boolean).join(' ')}
+                type="button"
+                aria-label="上传图片"
+                disabled={remainingImages === 0}
+                onClick={() => setOpenPanel((current) => (current === 'image' ? null : 'image'))}
+              >
+                <Image size={17} strokeWidth={2.8} />
+              </button>
+              <button className={iconButtonClass} type="button" aria-label="图片库" disabled={remainingImages === 0} onClick={() => onOpenMediaLibrary('gallery')}>
+                <Images size={17} strokeWidth={2.8} />
+              </button>
+              <button className={iconButtonClass} type="button" aria-label="视频" disabled>
+                <Video size={17} strokeWidth={2.8} />
+              </button>
+              <span className="mx-1 h-5 w-px bg-[#c4b89e]/28" />
+              <button className={iconButtonClass} type="button" aria-label="清空图片" disabled={imageUrls.length === 0} onClick={() => setForm((current) => ({ ...current, imagesText: '' }))}>
+                <Trash2 size={17} strokeWidth={2.8} />
+              </button>
+              <button className={[iconButtonClass, openPanel === 'emoji' && activeIconButtonClass].filter(Boolean).join(' ')} type="button" aria-label="表情" onClick={() => setOpenPanel((current) => (current === 'emoji' ? null : 'emoji'))}>
+                <Smile size={17} strokeWidth={2.8} />
+              </button>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm font-black text-[#aaa197]">{contentLength} / 3000</span>
@@ -108,7 +130,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </div>
         </section>
 
-        <section className="grid gap-3">
+        {openPanel === 'image' ? (
+          <section className="grid gap-3 border-t border-[#c4b89e]/18 pt-3">
           <strong className="text-sm font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
             {imageUrls.map((url, index) => (
@@ -122,12 +145,37 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             ))}
 
             {remainingImages > 0 ? (
-              <button className="grid aspect-square place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77]" type="button" onClick={() => onOpenMediaLibrary('gallery')}>
-                <Plus size={30} strokeWidth={2.8} />
-              </button>
+              <AdminCloudinaryUploader
+                token={token}
+                purpose="post-image"
+                multiple
+                maxFiles={remainingImages}
+                onUploaded={(asset) => addImage(asset.secureUrl)}
+                renderTrigger={({ disabled, uploading, open }) => (
+                  <button
+                    className="grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
+                    type="button"
+                    disabled={disabled}
+                    onClick={open}
+                  >
+                    {uploading ? <span className="text-xs font-black">上传中</span> : <Plus size={30} strokeWidth={2.8} />}
+                  </button>
+                )}
+              />
             ) : null}
           </div>
         </section>
+        ) : null}
+
+        {openPanel === 'emoji' ? (
+          <section className="flex flex-wrap gap-2 border-t border-[#c4b89e]/18 pt-3 text-xl">
+            {['˶’ᵕ‘˶', '૮₍ ˃ ⤙ ˂ ₎ა', '♡', '♪', '☁️', '🌿'].map((emoji) => (
+              <button key={emoji} className="rounded-2xl bg-[#fff8ec]/70 px-3 py-2 transition hover:bg-[#e6f9f6]" type="button" onClick={() => setForm((current) => ({ ...current, content: `${current.content}${emoji}` }))}>
+                {emoji}
+              </button>
+            ))}
+          </section>
+        ) : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="island-admin-field">
