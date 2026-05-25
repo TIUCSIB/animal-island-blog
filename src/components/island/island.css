@@ -2523,6 +2523,122 @@ button:where(.island-gallery-item) {
   text-align: center;
 }
 
+:where(.island-admin-post-table-card) {
+  overflow: hidden;
+}
+
+.island-admin-post-table {
+  min-width: 640px;
+  border-collapse: separate !important;
+  border-spacing: 0 10px;
+}
+
+.island-admin-post-table__row {
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.island-admin-post-table__row > td {
+  background: rgba(235, 255, 246, 0.72);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.island-admin-post-table__row > td:first-child {
+  border-radius: 22px 0 0 22px;
+}
+
+.island-admin-post-table__row > td:last-child {
+  border-radius: 0 22px 22px 0;
+}
+
+.island-admin-post-table__row:hover > td {
+  background: rgba(221, 250, 235, 0.94);
+}
+
+.island-admin-post-table__row--active > td {
+  background: rgba(205, 242, 224, 0.98);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.56),
+    inset 0 -2px 0 rgba(130, 213, 187, 0.18);
+}
+
+:where(.island-admin-post-table__cover-wrap) {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 52px;
+}
+
+:where(.island-admin-post-table__cover) {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border: 3px solid #fff8ec;
+  border-radius: 18px 14px 20px 16px / 16px 20px 14px 18px;
+  object-fit: cover;
+  box-shadow: 0 3px 0 rgba(196, 184, 158, 0.62);
+}
+
+:where(.island-admin-post-table__pin) {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff8ec;
+  border-radius: 999px;
+  background: #f7cd67;
+  color: #fffdf7;
+  font-size: 11px;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: 0 3px 0 rgba(169, 117, 24, 0.36);
+}
+
+:where(.island-admin-post-table__title) {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+:where(.island-admin-post-table__title strong) {
+  overflow: hidden;
+  color: #725d42;
+  font-size: 14px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.island-admin-post-table__title small) {
+  overflow: hidden;
+  color: #9f927d;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.island-admin-post-table__actions) {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+:where(.island-admin-post-table__icon-button) {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding-inline: 0;
+  border-radius: 999px;
+}
+
 :where(.island-admin-post-list__item) {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
