@@ -41,6 +41,9 @@ export type { IslandTimelineItem, IslandTimelineProps } from './IslandTimeline'
 export { IslandEmptyState } from './IslandEmptyState'
 export type { IslandEmptyStateProps } from './IslandEmptyState'
 
+export { IslandPagination } from './IslandPagination'
+export type { IslandPaginationProps } from './IslandPagination'
+
 export { IslandFloatingSwitch } from './IslandFloatingSwitch'
 export type { IslandFloatingSwitchProps } from './IslandFloatingSwitch'
 

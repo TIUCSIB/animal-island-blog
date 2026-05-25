@@ -1,11 +1,14 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { Button, Card, Table } from 'animal-island-ui'
 import type { TableColumn } from 'animal-island-ui'
 import { Pencil, RefreshCw, Trash2 } from 'lucide-react'
 
+import { IslandPagination } from '@/components/island'
 import type { GalleryPost } from '@/data/gallery'
 import { formatPostDate } from './post-media-utils'
+
+const POST_TABLE_PAGE_SIZE = 6
 
 type AdminPostTableProps = {
   posts: GalleryPost[]
@@ -20,7 +23,14 @@ function toPost(record: Record<string, unknown>) {
 }
 
 export function AdminPostTable({ posts, loadingPosts, onRefresh, onSelectPost, onDeletePost }: AdminPostTableProps) {
-  const rows = useMemo<Record<string, unknown>[]>(() => posts.map((post) => ({ ...post })), [posts])
+  const [page, setPage] = useState(1)
+  const pageCount = Math.max(1, Math.ceil(posts.length / POST_TABLE_PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const pagedPosts = useMemo(() => {
+    const start = (currentPage - 1) * POST_TABLE_PAGE_SIZE
+    return posts.slice(start, start + POST_TABLE_PAGE_SIZE)
+  }, [currentPage, posts])
+  const rows = useMemo<Record<string, unknown>[]>(() => pagedPosts.map((post) => ({ ...post })), [pagedPosts])
   const columns = useMemo<TableColumn[]>(
     () => [
       {
@@ -124,6 +134,8 @@ export function AdminPostTable({ posts, loadingPosts, onRefresh, onSelectPost, o
       </div>
 
       <Table className="island-admin-post-table" striped rowKey="id" columns={columns} dataSource={rows} loading={loadingPosts} emptyText="暂时还没有文章" scroll={{ x: 640 }} />
+
+      <IslandPagination page={currentPage} pageSize={POST_TABLE_PAGE_SIZE} total={posts.length} onPageChange={setPage} />
     </Card>
   )
 }
