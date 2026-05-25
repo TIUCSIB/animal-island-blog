@@ -2372,6 +2372,10 @@ button:where(.island-gallery-item) {
   align-items: start;
 }
 
+:where(.island-admin-workbench--single) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 :where(.island-admin-layout) {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -2491,6 +2495,10 @@ button:where(.island-gallery-item) {
   gap: 8px;
 }
 
+:where(.island-admin-sidebar__toolbar--single) {
+  grid-template-columns: 1fr;
+}
+
 :where(.island-admin-post-list) {
   display: grid;
   max-height: 360px;
@@ -2502,6 +2510,17 @@ button:where(.island-gallery-item) {
 
 :where(.island-admin-post-list::-webkit-scrollbar) {
   display: none;
+}
+
+:where(.island-admin-post-list__empty) {
+  padding: 18px 14px;
+  border: 2px dashed rgba(196, 184, 158, 0.64);
+  border-radius: 20px;
+  background: rgba(255, 248, 236, 0.68);
+  color: #8a7b66;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
 }
 
 :where(.island-admin-post-list__item) {

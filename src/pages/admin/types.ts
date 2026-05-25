@@ -3,7 +3,7 @@ import type { AboutContent } from '@/data/about-content'
 import type { MusicSourceType } from '@/lib/posts-api'
 import type { SiteProfile } from '@/data/site-profile'
 
-export type AdminSection = 'posts' | 'music' | 'site' | 'about' | 'system'
+export type AdminSection = 'write' | 'posts' | 'music' | 'site' | 'about' | 'system'
 
 export type AdminStatus = {
   type: 'success' | 'error' | 'info'

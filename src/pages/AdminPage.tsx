@@ -27,11 +27,30 @@ export default function AdminPage() {
               <AdminTopbar account={admin.adminProfile?.account ?? admin.accountForm.account} profile={admin.siteProfileForm} onHomeClick={() => navigate('/')} onLogout={admin.handleLogout} />
 
               <section className="island-admin-layout">
-                <AdminSidebar activeSection={admin.activeSection} postsCount={admin.posts.length} pinnedCount={admin.pinnedCount} onSectionChange={admin.setActiveSection} />
+                <AdminSidebar activeSection={admin.activeSection} postsCount={admin.posts.length} pinnedCount={admin.pinnedCount} onSectionChange={admin.handleSectionChange} />
 
                 <section className="island-admin-content ">
+                  {admin.activeSection === 'write' ?
+                    <AdminPostsPanel
+                      mode="write"
+                      posts={admin.posts}
+                      selectedId={null}
+                      selectedPost={null}
+                      form={admin.form}
+                      token={admin.token}
+                      loadingPosts={admin.loadingPosts}
+                      saving={admin.saving}
+                      setForm={admin.setForm}
+                      onRefresh={() => void admin.loadPosts()}
+                      onSelectPost={admin.handleSelectPost}
+                      onDeletePost={admin.setDeleteTarget}
+                      onSave={admin.handleSave}
+                    />
+                  : null}
+
                   {admin.activeSection === 'posts' ?
                     <AdminPostsPanel
+                      mode="manage"
                       posts={admin.posts}
                       selectedId={admin.selectedId}
                       selectedPost={admin.selectedPost}
@@ -40,7 +59,6 @@ export default function AdminPage() {
                       loadingPosts={admin.loadingPosts}
                       saving={admin.saving}
                       setForm={admin.setForm}
-                      onNewPost={admin.handleNewPost}
                       onRefresh={() => void admin.loadPosts()}
                       onSelectPost={admin.handleSelectPost}
                       onDeletePost={admin.setDeleteTarget}

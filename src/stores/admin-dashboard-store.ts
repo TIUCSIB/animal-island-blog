@@ -14,7 +14,7 @@ type AdminDashboardStore = {
 export const useAdminDashboardStore = create<AdminDashboardStore>()(
   persist(
     (set) => ({
-      activeSection: 'posts',
+      activeSection: 'write',
       selectedId: null,
       setActiveSection: (activeSection) => set({ activeSection }),
       setSelectedId: (selectedId) => set({ selectedId }),

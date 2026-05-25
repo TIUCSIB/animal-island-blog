@@ -31,7 +31,7 @@ import { normalizeIslandAccount, toAccountInputValue } from '@/lib/account'
 import { useAdminDashboardStore } from '@/stores/admin-dashboard-store'
 
 import { createEmptyForm, formToPost, getErrorMessage, postToForm } from './post-form'
-import type { AboutContentForm, AdminAccountForm, AdminStatus, MusicForm, PostForm, SiteProfileForm, SystemCheckItem } from './types'
+import type { AboutContentForm, AdminAccountForm, AdminSection, AdminStatus, MusicForm, PostForm, SiteProfileForm, SystemCheckItem } from './types'
 
 type MusicSnapshot = Pick<MusicConfig, 'enabled' | 'platform' | 'sourceType' | 'musicId'>
 
@@ -450,10 +450,18 @@ export function useAdminDashboard() {
     showStatus({ type: 'info', text: '已退出后台。' })
   }
 
+  function handleSectionChange(section: AdminSection) {
+    setActiveSection(section)
+
+    if (section === 'write') {
+      setSelectedId(null)
+      setForm(createEmptyForm())
+      setStatus(null)
+    }
+  }
+
   function handleNewPost() {
-    setActiveSection('posts')
-    setSelectedId(null)
-    setForm(createEmptyForm())
+    handleSectionChange('write')
     showStatus({ type: 'info', text: '正在创建一篇新文章。' })
   }
 
@@ -466,6 +474,13 @@ export function useAdminDashboard() {
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    const isCreating = activeSection === 'write'
+
+    if (!isCreating && !selectedPost) {
+      showStatus({ type: 'error', text: '请先选择一篇文章。' })
+      return
+    }
+
     const payload = formToPost(form)
 
     if (!payload.title || !payload.imageSrc) {
@@ -476,17 +491,24 @@ export function useAdminDashboard() {
     setSaving(true)
 
     try {
-      const savedPost = selectedPost ? await updateGalleryPost(token, selectedPost.id, payload) : await createGalleryPost(token, payload)
+      const savedPost = isCreating ? await createGalleryPost(token, payload) : await updateGalleryPost(token, selectedPost!.id, payload)
 
       setPosts((current) => {
-        const nextPosts = selectedPost ? current.map((post) => (post.id === selectedPost.id ? savedPost : post)) : [savedPost, ...current]
+        const nextPosts = isCreating ? [savedPost, ...current] : current.map((post) => (post.id === savedPost.id ? savedPost : post))
 
         queryClient.setQueryData(queryKeys.galleryPosts, nextPosts)
         return nextPosts
       })
-      setSelectedId(savedPost.id)
-      setForm(postToForm(savedPost))
-      showStatus({ type: 'success', text: selectedPost ? '文章已更新。' : '新文章已发布。' })
+
+      if (isCreating) {
+        setSelectedId(null)
+        setForm(createEmptyForm())
+      } else {
+        setSelectedId(savedPost.id)
+        setForm(postToForm(savedPost))
+      }
+
+      showStatus({ type: 'success', text: isCreating ? '新文章已发布，可在文章管理中继续编辑。' : '文章已更新。' })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
     } finally {
@@ -711,6 +733,7 @@ export function useAdminDashboard() {
     systemChecks,
     token,
     handleConfirmDelete,
+    handleSectionChange,
     handleLogout,
     handleNewPost,
     handleSave,
