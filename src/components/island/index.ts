@@ -44,6 +44,9 @@ export type { IslandEmptyStateProps } from './IslandEmptyState'
 export { IslandPagination } from './IslandPagination'
 export type { IslandPaginationProps } from './IslandPagination'
 
+export { IslandPopover } from './IslandPopover'
+export type { IslandPopoverProps } from './IslandPopover'
+
 export { IslandFloatingSwitch } from './IslandFloatingSwitch'
 export type { IslandFloatingSwitchProps } from './IslandFloatingSwitch'
 
