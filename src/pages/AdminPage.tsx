@@ -47,6 +47,7 @@ export default function AdminPage() {
                       onPageChange={(page) => void admin.loadPosts(page)}
                       onRefresh={() => void admin.loadPosts(admin.postPage)}
                       onSelectPost={admin.handleSelectPost}
+                      onCloseEditor={admin.handleClosePostEditor}
                       onDeletePost={admin.setDeleteTarget}
                       onSave={admin.handleSave}
                     />
@@ -68,6 +69,7 @@ export default function AdminPage() {
                       onPageChange={(page) => void admin.loadPosts(page)}
                       onRefresh={() => void admin.loadPosts(admin.postPage)}
                       onSelectPost={admin.handleSelectPost}
+                      onCloseEditor={admin.handleClosePostEditor}
                       onDeletePost={admin.setDeleteTarget}
                       onSave={admin.handleSave}
                     />

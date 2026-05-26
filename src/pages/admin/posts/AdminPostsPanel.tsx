@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import type { FormEventHandler } from 'react'
-import { Card } from 'animal-island-ui'
 
 import type { GalleryPost } from '@/data/gallery'
 import { AdminMediaLibraryModal } from '../media/AdminMediaLibraryModal'
 import { AdminPostEditor } from './AdminPostEditor'
+import { AdminPostEditModal } from './AdminPostEditModal'
 import { AdminPostTable } from './AdminPostTable'
 import { appendPostImageUrl, getPostImageUrls } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
@@ -27,6 +27,7 @@ type AdminPostsPanelProps = {
   onRefresh: () => void
   onPageChange: (page: number) => void
   onSelectPost: (post: GalleryPost) => void
+  onCloseEditor: () => void
   onDeletePost: (post: GalleryPost) => void
   onSave: FormEventHandler<HTMLFormElement>
 }
@@ -46,12 +47,17 @@ export function AdminPostsPanel({
   onRefresh,
   onPageChange,
   onSelectPost,
+  onCloseEditor,
   onDeletePost,
   onSave,
 }: AdminPostsPanelProps) {
   const [mediaLibraryMode, setMediaLibraryMode] = useState<PostMediaLibraryMode | null>(null)
   const isWriteMode = mode === 'write'
-  const canEdit = isWriteMode || Boolean(selectedPost)
+
+  function handleCloseEditor() {
+    setMediaLibraryMode(null)
+    onCloseEditor()
+  }
 
   return (
     <>
@@ -60,10 +66,10 @@ export function AdminPostsPanel({
           <AdminPostTable posts={posts} page={page} pageSize={pageSize} total={total} loadingPosts={loadingPosts} onPageChange={onPageChange} onRefresh={onRefresh} onSelectPost={onSelectPost} onDeletePost={onDeletePost} />
         ) : null}
 
-        {canEdit ? (
+        {isWriteMode ? (
           <AdminPostEditor
-            isWriteMode={isWriteMode}
-            selectedPost={selectedPost}
+            isWriteMode
+            selectedPost={null}
             form={form}
             token={token}
             saving={saving}
@@ -72,20 +78,22 @@ export function AdminPostsPanel({
             onOpenMediaLibrary={setMediaLibraryMode}
             onSave={onSave}
           />
-        ) : (
-          <section className="island-admin-editor">
-            <Card className="island-admin-editor__card island-admin-editor__empty">
-              <div className="island-admin-editor__header">
-                <div>
-                  <span className="island-admin-editor__eyebrow">文章管理</span>
-                  <h2>选择一篇文章</h2>
-                </div>
-              </div>
-              <p className="island-admin-field__hint">从上方表格选择文章后，就可以编辑、更新或删除。</p>
-            </Card>
-          </section>
-        )}
+        ) : null}
       </section>
+
+      {!isWriteMode ? (
+        <AdminPostEditModal
+          post={selectedPost}
+          form={form}
+          token={token}
+          saving={saving}
+          setForm={setForm}
+          onClose={handleCloseEditor}
+          onDeletePost={onDeletePost}
+          onOpenMediaLibrary={setMediaLibraryMode}
+          onSave={onSave}
+        />
+      ) : null}
 
       <AdminMediaLibraryModal
         open={Boolean(mediaLibraryMode)}

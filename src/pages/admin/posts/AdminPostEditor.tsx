@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import type { FormEventHandler } from 'react'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
-import { Bold, Code2, Heading1, Heading2, Heading3, Image, Images, Italic, List, ListOrdered, MapPin, Plus, Send, Settings2, Smile, Strikethrough, Tags, Trash2, Video, X } from 'lucide-react'
+import { Image, Images, MapPin, Plus, Send, Settings2, Smile, Star, Tags, Trash2, Video, X } from 'lucide-react'
 
 import { IslandPopover } from '@/components/island'
 import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from '../media/AdminCloudinaryUploader'
+import { AdminRichTextEditor } from './AdminRichTextEditor'
 import { appendPostImageUrl, getPostImageUrls, MAX_POST_IMAGES, removePostImageUrl } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
@@ -20,25 +21,14 @@ type AdminPostEditorProps = {
   onDeletePost: (post: GalleryPost) => void
   onOpenMediaLibrary: (mode: PostMediaLibraryMode) => void
   onSave: FormEventHandler<HTMLFormElement>
+  compact?: boolean
+  showDeleteAction?: boolean
 }
 
-const toolbarItems = [
-  { label: 'H1', icon: <Heading1 size={16} strokeWidth={2.8} /> },
-  { label: 'H2', icon: <Heading2 size={16} strokeWidth={2.8} /> },
-  { label: 'H3', icon: <Heading3 size={16} strokeWidth={2.8} /> },
-  { label: 'B', icon: <Bold size={16} strokeWidth={2.8} /> },
-  { label: 'I', icon: <Italic size={16} strokeWidth={2.8} /> },
-  { label: 'S', icon: <Strikethrough size={16} strokeWidth={2.8} /> },
-  { label: 'UL', icon: <List size={16} strokeWidth={2.8} /> },
-  { label: 'OL', icon: <ListOrdered size={16} strokeWidth={2.8} /> },
-  { label: 'Code', icon: <Code2 size={16} strokeWidth={2.8} /> },
-]
-
-export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave }: AdminPostEditorProps) {
-  const [openPanel, setOpenPanel] = useState<'image' | 'emoji' | 'settings' | null>(null)
+export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
+  const [openPanel, setOpenPanel] = useState<'image' | 'emoji' | 'settings' | null>(() => (!isWriteMode ? 'image' : null))
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
-  const contentLength = form.content.length
 
   function addImage(url: string) {
     setForm((current) => ({
@@ -57,15 +47,21 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
   const activeIconButtonClass = 'island-admin-compose-icon--active'
 
   return (
-    <form className="island-admin-editor" onSubmit={onSave}>
+    <form className={['island-admin-editor', compact && 'island-admin-editor--compact'].filter(Boolean).join(' ')} onSubmit={onSave}>
       <Card className="island-admin-editor__card overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="island-admin-editor__eyebrow">{isWriteMode ? '写文章' : '编辑文章'}</span>
-            <h2>{form.title || (isWriteMode ? '新的小岛记录' : '未命名记录')}</h2>
+            <h2>
+              {compact ?
+                isWriteMode ?
+                  '新的小岛记录'
+                : '编辑小岛记录'
+              : form.title || (isWriteMode ? '新的小岛记录' : '未命名记录')}
+            </h2>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {!isWriteMode && selectedPost ?
+            {showDeleteAction && !isWriteMode && selectedPost ?
               <Button type="default" danger size="small" htmlType="button" icon={<Trash2 size={14} strokeWidth={3} />} onClick={() => onDeletePost(selectedPost)}>
                 删除
               </Button>
@@ -73,26 +69,23 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </div>
         </div>
 
-        <section className="relative rounded-[28px] border-2 border-[#c4b89e]/55 bg-[#fffdf7]/72 p-3 shadow-[0_4px_0_rgba(212,201,180,0.62)]">
-          <Input className="max-w-sm" value={form.title} placeholder="写一个标题吧" onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} />
-
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-b-2 border-[#c4b89e]/20 pb-3">
-            {toolbarItems.map((item) => (
-              <button key={item.label} className="island-admin-compose-icon" type="button" aria-label={item.label}>
-                {item.icon}
-              </button>
-            ))}
+        <section className="island-admin-compose-box relative rounded-[28px] border-2 border-[#c4b89e]/55 bg-[#fffdf7]/72 p-3 shadow-[0_4px_0_rgba(212,201,180,0.62)]">
+          <div className="island-admin-compose-title">
+            <Input value={form.title} placeholder="写一个标题吧" onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} />
           </div>
 
-          <textarea
-            className="mt-3 min-h-32 w-full resize-none rounded-3xl border-2 border-[#c4b89e]/32 bg-[#f8f8f0]/72 px-4 py-3 text-sm font-bold leading-7 text-[#725d42] outline-none transition placeholder:text-[#b8b1a6] focus:border-[#82d5bb]"
-            maxLength={200}
+          <AdminRichTextEditor
             value={form.content}
-            placeholder="这一刻，你想说点什么..."
-            onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
+            maxLength={200}
+            onChange={(content) =>
+              setForm((current) => ({
+                ...current,
+                content,
+              }))
+            }
           />
 
-          <div className=" flex flex-wrap items-center justify-between gap-3">
+          <div className="island-admin-compose-bottom flex flex-wrap items-center justify-between gap-3 mt-1">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
               <button
                 className={[iconButtonClass, openPanel === 'image' && activeIconButtonClass].filter(Boolean).join(' ')}
@@ -171,24 +164,29 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               </IslandPopover>
             </div>
             <div className="flex items-center gap-3 self-center">
-              <span className="text-sm font-black leading-none text-[#aaa197]">{contentLength} / 200</span>
               <Button type="primary" size="small" htmlType="submit" icon={<Send size={16} strokeWidth={3} />} loading={saving} />
             </div>
           </div>
         </section>
 
         {openPanel === 'image' ?
-          <section className="grid gap-3 border-t border-[#c4b89e]/18 pt-3">
+          <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 pt-3">
             <strong className="text-sm font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
+            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {imageUrls.map((url, index) => (
-                <div key={url} className="relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]">
+                <div
+                  key={url}
+                  className="island-admin-compose-image-tile relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]"
+                >
                   <img className="size-full object-cover" src={url} alt={index === 0 ? '封面图片' : `文章图片 ${index + 1}`} />
+                  <span className="island-admin-compose-image-overlay" aria-hidden="true" />
                   {index === 0 ?
-                    <span className="absolute left-2 top-2 rounded-full bg-[#f7cd67] px-2 py-0.5 text-[10px] font-black text-white shadow-[0_2px_0_rgba(169,117,24,0.32)]">封面</span>
+                    <span className="island-admin-compose-cover-badge absolute" aria-label="封面图片">
+                      <Star size={10} strokeWidth={3} fill="currentColor" />
+                    </span>
                   : null}
                   <button
-                    className="absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
+                    className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
                     type="button"
                     aria-label="移除图片"
                     onClick={() => removeImage(url)}
@@ -207,7 +205,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   onUploaded={(asset) => addImage(asset.secureUrl)}
                   renderTrigger={({ disabled, uploading, open }) => (
                     <button
-                      className="grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
                       type="button"
                       disabled={disabled}
                       onClick={open}

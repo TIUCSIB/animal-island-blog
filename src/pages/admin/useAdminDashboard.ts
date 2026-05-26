@@ -485,6 +485,12 @@ export function useAdminDashboard() {
     setStatus(null)
   }
 
+  function handleClosePostEditor() {
+    setSelectedId(null)
+    setForm(createEmptyForm())
+    setStatus(null)
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -754,6 +760,7 @@ export function useAdminDashboard() {
     handleSaveSiteProfile,
     handleSaveMusic,
     handleSelectPost,
+    handleClosePostEditor,
     handleSystemCheck,
     loadPosts,
     openLoginModal,
