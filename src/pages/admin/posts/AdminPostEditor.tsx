@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
-import type { Editor } from '@tiptap/core'
+import type { Editor, JSONContent } from '@tiptap/core'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
 import { Image, Images, MapPin, Plus, Send, Settings2, Smile, Star, Tags, Trash2, Video, X } from 'lucide-react'
 
@@ -27,6 +27,50 @@ type AdminPostEditorProps = {
   showDeleteAction?: boolean
 }
 
+function createStickerInlineContent(sticker: AdminSticker): JSONContent[] {
+  return [
+    {
+      type: 'image',
+      attrs: {
+        src: sticker.src,
+        alt: sticker.alt,
+        title: sticker.alt,
+      },
+    },
+    {
+      type: 'text',
+      text: ' ',
+    },
+  ]
+}
+
+function canInsertStickerInline(editor: Editor) {
+  const imageType = editor.schema.nodes.image
+  if (!imageType) return false
+
+  const { $from } = editor.state.selection
+
+  try {
+    for (let depth = $from.depth; depth >= 0; depth -= 1) {
+      const parent = $from.node(depth)
+      const index = $from.index(depth)
+
+      if (parent.contentMatchAt(index).matchType(imageType)) return true
+    }
+  }
+  catch {
+    return false
+  }
+
+  return false
+}
+
+function appendStickerMarkdown(content: string, sticker: AdminSticker) {
+  const stickerMarkdown = `![${sticker.alt}](${sticker.src})`
+
+  return content.trim() ? `${content.trimEnd()}\n\n${stickerMarkdown}` : stickerMarkdown
+}
+
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
   const [imagePanelOpen, setImagePanelOpen] = useState(() => !isWriteMode)
   const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
@@ -50,32 +94,26 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
 
   function addSticker(sticker: AdminSticker) {
     if (richEditorRef.current) {
-      richEditorRef.current
-        .chain()
-        .focus()
-        .insertContent([
-          {
-            type: 'image',
-            attrs: {
-              src: sticker.src,
-              alt: sticker.alt,
-              title: sticker.alt,
-            },
-          },
-          {
-            type: 'text',
-            text: ' ',
-          },
-        ])
-        .run()
-      return
-    }
+      const editor = richEditorRef.current
+      const inlineContent = createStickerInlineContent(sticker)
+      const stickerContent: JSONContent | JSONContent[] = canInsertStickerInline(editor) ?
+        inlineContent
+      : {
+          type: 'paragraph',
+          content: inlineContent,
+        }
 
-    const stickerMarkdown = `![${sticker.alt}](${sticker.src})`
+      try {
+        if (editor.chain().focus().insertContent(stickerContent).run()) return
+      }
+      catch (error) {
+        console.warn('[AdminPostEditor] insert sticker failed, fallback to markdown append.', error)
+      }
+    }
 
     setForm((current) => ({
       ...current,
-      content: current.content.trim() ? `${current.content.trimEnd()}\n\n${stickerMarkdown}` : stickerMarkdown,
+      content: appendStickerMarkdown(current.content, sticker),
     }))
   }
 

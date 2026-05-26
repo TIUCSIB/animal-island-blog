@@ -19,7 +19,9 @@ export function IslandPostContent({ content }: IslandPostContentProps) {
   const editor = useEditor({
     editable: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        trailingNode: false,
+      }),
       TextStyle,
       Color.configure({
         types: [TextStyle.name],

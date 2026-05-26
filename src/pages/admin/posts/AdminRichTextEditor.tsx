@@ -120,7 +120,9 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
   const [toolbarVersion, refreshToolbar] = useState(0)
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        trailingNode: false,
+      }),
       TextStyle,
       Color.configure({
         types: [TextStyle.name],
