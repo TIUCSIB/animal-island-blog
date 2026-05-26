@@ -37,8 +37,8 @@ export const defaultAboutContent: AboutContent = {
     {
       id: 'github',
       label: 'GitHub',
-      value: '@mewbarkjoy',
-      href: 'https://github.com/mewbarkjoy',
+      value: '@biscuit',
+      href: 'https://github.com/yourname',
       icon: 'github',
       enabled: true,
       sortOrder: 0,
@@ -46,8 +46,8 @@ export const defaultAboutContent: AboutContent = {
     {
       id: 'email',
       label: 'Email',
-      value: 'hello@mewbarkjoy.com',
-      href: 'mailto:hello@mewbarkjoy.com',
+      value: 'hello@biscuit.com',
+      href: 'mailto:hello@biscuit.com',
       icon: 'mail',
       enabled: true,
       sortOrder: 1,
@@ -55,8 +55,8 @@ export const defaultAboutContent: AboutContent = {
     {
       id: 'instagram',
       label: 'Instagram',
-      value: '@mewbarkjoy',
-      href: 'https://www.instagram.com/mewbarkjoy',
+      value: '@biscuit',
+      href: 'https://www.instagram.com/biscuit',
       icon: 'instagram',
       enabled: true,
       sortOrder: 2,

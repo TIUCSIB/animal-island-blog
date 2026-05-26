@@ -16,7 +16,7 @@ export const defaultSiteProfile: SiteProfile = {
   badgeEnabled: true,
   badge: '♥',
   avatarStatus: '',
-  nickname: 'mewbarkjoy',
-  handle: '@mewbarkjoy',
-  bio: '你好，我是一个程序员',
+  nickname: 'biscuit',
+  handle: '@biscuit',
+  bio: '你好，我是 biscuit！',
 }

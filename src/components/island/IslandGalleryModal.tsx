@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Modal, Typewriter } from 'animal-island-ui'
+import { Modal } from 'animal-island-ui'
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin, MoreHorizontal, X } from 'lucide-react'
+
+import { IslandPostContent } from './IslandPostContent'
 
 import './island.css'
 
@@ -172,11 +174,9 @@ export function IslandGalleryModal({
                   <p className="island-gallery-animal-modal__caption-title">
                     <strong>{authorName}</strong>
                   </p>
-                  <p className="island-gallery-animal-modal__content">
-                    <Typewriter speed={35} trigger={`${open}-${title}-${time}-${content}`}>
-                      {content}
-                    </Typewriter>
-                  </p>
+                  <div className="island-gallery-animal-modal__content">
+                    <IslandPostContent content={content} />
+                  </div>
                 </div>
               </div>
 
