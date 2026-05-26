@@ -22,6 +22,9 @@ type AdminRichTextEditorProps = {
   maxLength?: number
   placeholder?: string
   onChange: (value: string) => void
+  externalEditorRef?: {
+    current: Editor | null
+  }
 }
 
 type MarkdownEditor = Editor & {
@@ -107,7 +110,7 @@ function readToolbarState(editor: Editor | null): ToolbarState {
   }
 }
 
-export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这一刻，你想说点什么...', onChange }: AdminRichTextEditorProps) {
+export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这一刻，你想说点什么...', onChange, externalEditorRef }: AdminRichTextEditorProps) {
   const syncingRef = useRef(false)
   const composingRef = useRef(false)
   const editorRef = useRef<Editor | null>(null)
@@ -176,6 +179,7 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
     },
     onCreate: ({ editor: nextEditor }) => {
       editorRef.current = nextEditor
+      if (externalEditorRef) externalEditorRef.current = nextEditor
       setTextLength(readTextLength(nextEditor))
     },
   })
@@ -187,7 +191,12 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
 
   useEffect(() => {
     editorRef.current = editor
-  }, [editor])
+    if (externalEditorRef) externalEditorRef.current = editor
+
+    return () => {
+      if (externalEditorRef?.current === editor) externalEditorRef.current = null
+    }
+  }, [editor, externalEditorRef])
 
   useEffect(() => {
     if (!editor) return

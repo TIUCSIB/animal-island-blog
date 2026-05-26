@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
+import type { Editor } from '@tiptap/core'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
 import { Image, Images, MapPin, Plus, Send, Settings2, Smile, Star, Tags, Trash2, Video, X } from 'lucide-react'
 
@@ -7,6 +8,7 @@ import { IslandPopover } from '@/components/island'
 import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from '../media/AdminCloudinaryUploader'
 import { AdminRichTextEditor } from './AdminRichTextEditor'
+import { AdminStickerPanel, type AdminSticker } from './AdminStickerPanel'
 import { appendPostImageUrl, getPostImageUrls, MAX_POST_IMAGES, removePostImageUrl } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
@@ -27,6 +29,7 @@ type AdminPostEditorProps = {
 
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
   const [openPanel, setOpenPanel] = useState<'image' | 'emoji' | 'settings' | null>(() => (!isWriteMode ? 'image' : null))
+  const richEditorRef = useRef<Editor | null>(null)
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
 
@@ -43,11 +46,26 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       imagesText: removePostImageUrl(current.imagesText, url),
     }))
   }
+
+  function addSticker(sticker: AdminSticker) {
+    if (richEditorRef.current) {
+      richEditorRef.current.chain().focus().setImage({ src: sticker.src, alt: sticker.alt, title: sticker.alt }).run()
+      return
+    }
+
+    const stickerMarkdown = `![${sticker.alt}](${sticker.src})`
+
+    setForm((current) => ({
+      ...current,
+      content: current.content.trim() ? `${current.content.trimEnd()}\n\n${stickerMarkdown}` : stickerMarkdown,
+    }))
+  }
+
   const iconButtonClass = 'island-admin-compose-icon'
   const activeIconButtonClass = 'island-admin-compose-icon--active'
 
   return (
-    <form className={['island-admin-editor', compact && 'island-admin-editor--compact'].filter(Boolean).join(' ')} onSubmit={onSave}>
+    <form className={['island-admin-editor', isWriteMode && 'island-admin-editor--write', compact && 'island-admin-editor--compact'].filter(Boolean).join(' ')} onSubmit={onSave}>
       <Card className="island-admin-editor__card overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -77,6 +95,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           <AdminRichTextEditor
             value={form.content}
             maxLength={200}
+            externalEditorRef={richEditorRef}
             onChange={(content) =>
               setForm((current) => ({
                 ...current,
@@ -170,8 +189,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
         </section>
 
         {openPanel === 'image' ?
-          <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 pt-3">
-            <strong className="text-sm font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
+          <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
+            <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {imageUrls.map((url, index) => (
                 <div
@@ -222,18 +241,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
         : null}
 
         {openPanel === 'emoji' ?
-          <section className="flex flex-wrap gap-2 border-t border-[#c4b89e]/18 pt-3 text-xl">
-            {['˶’ᵕ‘˶', '૮₍ ˃ ⤙ ˂ ₎ა', '♡', '♪', '☁️', '🌿'].map((emoji) => (
-              <button
-                key={emoji}
-                className="rounded-2xl bg-[#fff8ec]/70 px-3 py-2 transition hover:bg-[#e6f9f6]"
-                type="button"
-                onClick={() => setForm((current) => ({ ...current, content: `${current.content}${emoji}` }))}
-              >
-                {emoji}
-              </button>
-            ))}
-          </section>
+          <AdminStickerPanel onSelect={addSticker} />
         : null}
       </Card>
     </form>
