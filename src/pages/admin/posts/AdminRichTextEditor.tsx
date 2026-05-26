@@ -132,7 +132,9 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
       Link.configure({
         openOnClick: false,
       }),
-      ImageExtension,
+      ImageExtension.configure({
+        inline: true,
+      }),
       TaskList,
       TaskItem.configure({
         nested: true,

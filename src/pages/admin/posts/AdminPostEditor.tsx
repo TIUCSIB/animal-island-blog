@@ -28,7 +28,8 @@ type AdminPostEditorProps = {
 }
 
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
-  const [openPanel, setOpenPanel] = useState<'image' | 'emoji' | 'settings' | null>(() => (!isWriteMode ? 'image' : null))
+  const [imagePanelOpen, setImagePanelOpen] = useState(() => !isWriteMode)
+  const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
   const richEditorRef = useRef<Editor | null>(null)
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
@@ -49,7 +50,24 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
 
   function addSticker(sticker: AdminSticker) {
     if (richEditorRef.current) {
-      richEditorRef.current.chain().focus().setImage({ src: sticker.src, alt: sticker.alt, title: sticker.alt }).run()
+      richEditorRef.current
+        .chain()
+        .focus()
+        .insertContent([
+          {
+            type: 'image',
+            attrs: {
+              src: sticker.src,
+              alt: sticker.alt,
+              title: sticker.alt,
+            },
+          },
+          {
+            type: 'text',
+            text: ' ',
+          },
+        ])
+        .run()
       return
     }
 
@@ -65,7 +83,12 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
   const activeIconButtonClass = 'island-admin-compose-icon--active'
 
   return (
-    <form className={['island-admin-editor', isWriteMode && 'island-admin-editor--write', compact && 'island-admin-editor--compact'].filter(Boolean).join(' ')} onSubmit={onSave}>
+    <form
+      className={['island-admin-editor', isWriteMode && 'island-admin-editor--write', compact && 'island-admin-editor--compact', openPopover === 'emoji' && 'island-admin-editor--emoji-open']
+        .filter(Boolean)
+        .join(' ')}
+      onSubmit={onSave}
+    >
       <Card className="island-admin-editor__card overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -107,11 +130,14 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           <div className="island-admin-compose-bottom flex flex-wrap items-center justify-between gap-3 mt-1">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
               <button
-                className={[iconButtonClass, openPanel === 'image' && activeIconButtonClass].filter(Boolean).join(' ')}
+                className={[iconButtonClass, imagePanelOpen && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
                 aria-label="上传图片"
                 disabled={remainingImages === 0}
-                onClick={() => setOpenPanel((current) => (current === 'image' ? null : 'image'))}
+                onClick={() => {
+                  setOpenPopover(null)
+                  setImagePanelOpen((open) => !open)
+                }}
               >
                 <Image size={17} strokeWidth={2.8} />
               </button>
@@ -121,7 +147,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 aria-label="图片库"
                 disabled={remainingImages === 0}
                 onClick={() => {
-                  setOpenPanel('image')
+                  setOpenPopover(null)
+                  setImagePanelOpen(true)
                   onOpenMediaLibrary('gallery')
                 }}
               >
@@ -132,24 +159,33 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               </button>
               <span className="mx-1 h-5 w-px bg-[#c4b89e]/28" />
 
-              <button
-                className={[iconButtonClass, openPanel === 'emoji' && activeIconButtonClass].filter(Boolean).join(' ')}
-                type="button"
-                aria-label="表情"
-                onClick={() => setOpenPanel((current) => (current === 'emoji' ? null : 'emoji'))}
-              >
-                <Smile size={17} strokeWidth={2.8} />
-              </button>
               <IslandPopover
-                open={openPanel === 'settings'}
-                onOpenChange={(open) => setOpenPanel(open ? 'settings' : null)}
+                open={openPopover === 'emoji'}
+                onOpenChange={(open) => setOpenPopover(open ? 'emoji' : null)}
+                contentClassName="island-admin-sticker-popover"
+                trigger={
+                  <button
+                    className={[iconButtonClass, openPopover === 'emoji' && activeIconButtonClass].filter(Boolean).join(' ')}
+                    type="button"
+                    aria-label="表情"
+                    onClick={() => setOpenPopover((current) => (current === 'emoji' ? null : 'emoji'))}
+                  >
+                    <Smile size={17} strokeWidth={2.8} />
+                  </button>
+                }
+              >
+                <AdminStickerPanel pageSize={compact ? 25 : 45} onSelect={addSticker} />
+              </IslandPopover>
+              <IslandPopover
+                open={openPopover === 'settings'}
+                onOpenChange={(open) => setOpenPopover(open ? 'settings' : null)}
                 contentClassName="w-[17.5rem]"
                 trigger={
                   <button
-                    className={[iconButtonClass, openPanel === 'settings' && activeIconButtonClass].filter(Boolean).join(' ')}
+                    className={[iconButtonClass, openPopover === 'settings' && activeIconButtonClass].filter(Boolean).join(' ')}
                     type="button"
                     aria-label="文章设置"
-                    onClick={() => setOpenPanel((current) => (current === 'settings' ? null : 'settings'))}
+                    onClick={() => setOpenPopover((current) => (current === 'settings' ? null : 'settings'))}
                   >
                     <Settings2 size={17} strokeWidth={2.8} />
                   </button>
@@ -188,7 +224,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </div>
         </section>
 
-        {openPanel === 'image' ?
+        {imagePanelOpen ?
           <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
             <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
@@ -240,9 +276,6 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </section>
         : null}
 
-        {openPanel === 'emoji' ?
-          <AdminStickerPanel onSelect={addSticker} />
-        : null}
       </Card>
     </form>
   )
