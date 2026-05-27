@@ -38,6 +38,8 @@ type IslandGalleryImageProps = {
   className?: string
 }
 
+const loadedGalleryImages = new Set<string>()
+
 export function IslandGalleryGrid({
   minItemWidth = '180px',
   gap = '14px',
@@ -163,7 +165,12 @@ export function IslandGalleryItem({
 }
 
 function IslandGalleryImage({ src, alt, className }: IslandGalleryImageProps) {
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(() => loadedGalleryImages.has(src))
+
+  function handleLoad() {
+    loadedGalleryImages.add(src)
+    setLoaded(true)
+  }
 
   return (
     <>
@@ -174,7 +181,7 @@ function IslandGalleryImage({ src, alt, className }: IslandGalleryImageProps) {
         alt={alt}
         loading="lazy"
         decoding="async"
-        onLoad={() => setLoaded(true)}
+        onLoad={handleLoad}
       />
     </>
   )

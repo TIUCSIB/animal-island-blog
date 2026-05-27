@@ -7,13 +7,25 @@ import type { SiteLayoutContext } from './components/SiteLayout'
 
 const HOME_LOADING_DURATION = 1100
 const HOME_LOADING_EXIT_DURATION = 1400
+const HOME_LOADING_SEEN_STORAGE_KEY = 'home-loading-seen'
+
+function shouldShowHomeLoading() {
+  if (typeof window === 'undefined') return false
+
+  return window.sessionStorage.getItem(HOME_LOADING_SEEN_STORAGE_KEY) !== 'true'
+}
 
 export default function HomePage() {
-  const [loadingActive, setLoadingActive] = useState(true)
-  const [loadingMounted, setLoadingMounted] = useState(true)
+  const [showLoading] = useState(() => shouldShowHomeLoading())
+  const [loadingActive, setLoadingActive] = useState(showLoading)
+  const [loadingMounted, setLoadingMounted] = useState(showLoading)
   const { siteProfile } = useOutletContext<SiteLayoutContext>()
 
   useEffect(() => {
+    if (!showLoading) return
+
+    window.sessionStorage.setItem(HOME_LOADING_SEEN_STORAGE_KEY, 'true')
+
     const hideTimer = window.setTimeout(() => {
       setLoadingActive(false)
     }, HOME_LOADING_DURATION)
@@ -26,12 +38,12 @@ export default function HomePage() {
       window.clearTimeout(hideTimer)
       window.clearTimeout(unmountTimer)
     }
-  }, [])
+  }, [showLoading])
 
   return (
     <>
       {loadingMounted ?
-        <div className={`homepage-loading ${loadingActive ? '' : 'homepage-loading--leaving'}`} role="status" aria-live="polite" aria-label="首页加载中">
+        <div className={`homepage-loading ${loadingActive ? '' : 'homepage-loading--leaving'}`} role="status" aria-live="polite" aria-label="?????">
           <Loading active={loadingActive} />
         </div>
       : null}
