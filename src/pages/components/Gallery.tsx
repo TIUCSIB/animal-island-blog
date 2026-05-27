@@ -1,6 +1,7 @@
-import { useSearchParams } from 'react-router'
+import { useEffect, useMemo, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router'
 
-import { IslandEmptyState, IslandGalleryGrid, IslandGalleryItem, IslandGalleryModal } from '@/components/island'
+import { IslandEmptyState, IslandGalleryGrid, IslandGalleryItem } from '@/components/island'
 import type { SiteProfile } from '@/data/site-profile'
 import { useGalleryPostsQuery } from '@/lib/query-hooks'
 
@@ -8,57 +9,84 @@ type GalleryProps = {
   siteProfile: SiteProfile
 }
 
+function shouldOpenAsPage() {
+  if (typeof window === 'undefined') return false
+
+  return window.matchMedia('(max-width: 699px)').matches
+}
+
 export function Gallery({ siteProfile }: GalleryProps) {
+  void siteProfile
+
+  const navigate = useNavigate()
+  const location = useLocation()
   const postsQuery = useGalleryPostsQuery()
-  const posts = postsQuery.data ?? []
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const hasNextPage = Boolean(postsQuery.hasNextPage)
+  const isFetchingNextPage = postsQuery.isFetchingNextPage
+  const fetchNextPage = postsQuery.fetchNextPage
+  const posts = useMemo(() => postsQuery.data?.pages.flatMap((page) => page.posts) ?? [], [postsQuery.data])
   const showEmptyState = !postsQuery.isPending && posts.length === 0
-  const [searchParams, setSearchParams] = useSearchParams()
-  const selectedId = searchParams.get('post')
-  const selectedIndex = selectedId ? posts.findIndex((post) => post.id === selectedId) : -1
-  const selectedPost = selectedIndex >= 0 ? posts[selectedIndex] : null
-  const canPrevious = selectedIndex > 0
-  const canNext = selectedIndex >= 0 && selectedIndex < posts.length - 1
 
-  function setPostId(postId: string | null, replace = false) {
-    const nextSearchParams = new URLSearchParams(searchParams)
+  useEffect(() => {
+    const target = loadMoreRef.current
 
-    if (postId) {
-      nextSearchParams.set('post', postId)
-    } else {
-      nextSearchParams.delete('post')
+    if (!target || !hasNextPage) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || isFetchingNextPage) return
+
+        void fetchNextPage()
+      },
+      {
+        rootMargin: '0px',
+        threshold: 0.1,
+      },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
     }
-
-    setSearchParams(nextSearchParams, { replace })
-  }
-
-  function switchPost(direction: -1 | 1) {
-    if (selectedIndex < 0) return
-
-    const nextIndex = selectedIndex + direction
-
-    if (nextIndex < 0 || nextIndex >= posts.length) return
-
-    setPostId(posts[nextIndex].id, true)
-  }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <>
       {posts.length > 0 ?
-        <IslandGalleryGrid className="mt-4" minItemWidth="180px" gap="0px">
-          {posts.map((post) => (
-            <IslandGalleryItem
-              key={post.id}
-              radius="0px"
-              imageSrc={post.imageSrc}
-              imageAlt={post.title}
-              title={post.title}
-              location={post.location}
-              pinned={post.pinned}
-              ratio="portrait"
-              contentPlacement="overlay"
-              onOpen={() => setPostId(post.id)}
-            />
-          ))}
+        <IslandGalleryGrid className="island-home-gallery-grid mt-4" minItemWidth="180px" gap="0px">
+          {posts.map((post) => {
+            const mediaType = post.mediaType === 'video' ? 'video' : 'image'
+            const imageCount = post.images?.filter(Boolean).length ?? (post.imageSrc ? 1 : 0)
+
+            return (
+              <IslandGalleryItem
+                key={post.id}
+                radius="0px"
+                imageSrc={post.imageSrc}
+                imageAlt={post.title}
+                title={post.title}
+                location={post.location}
+                pinned={post.pinned}
+                multiple={mediaType !== 'video' && imageCount > 1}
+                mediaType={mediaType}
+                ratio="portrait"
+                contentPlacement="overlay"
+                onOpen={() => {
+                  const nextState = {
+                    from: `${location.pathname}${location.search}`,
+                    post,
+                    intercepted: !shouldOpenAsPage(),
+                  }
+
+                  void navigate(`/posts/${encodeURIComponent(post.id)}`, {
+                    state: nextState,
+                  })
+                }}
+              />
+            )
+          })}
         </IslandGalleryGrid>
       : null}
 
@@ -66,32 +94,14 @@ export function Gallery({ siteProfile }: GalleryProps) {
         <IslandEmptyState
           className="mt-4"
           icon="🌱"
-          title={postsQuery.isError ? '文章读取失败' : '空'}
-          // description={postsQuery.isError ? '接口暂时没有返回文章数据，请稍后再试。' : '后台发布文章后，这里就会出现新的照片。'}
+          title={postsQuery.isError ? '文章读取失败' : '空空的小岛'}
         />
       : null}
 
-      {selectedPost ?
-        <IslandGalleryModal
-          open={Boolean(selectedPost)}
-          onOpenChange={(open) => {
-            if (!open) setPostId(null, true)
-          }}
-          imageSrc={selectedPost.imageSrc}
-          images={selectedPost.images}
-          imageAlt={selectedPost.title}
-          title={selectedPost.title}
-          content={selectedPost.content}
-          location={selectedPost.location}
-          time={selectedPost.time}
-          tags={selectedPost.tags}
-          authorName={siteProfile.nickname}
-          authorAvatar={siteProfile.avatarUrl}
-          canPrevious={canPrevious}
-          canNext={canNext}
-          onPrevious={() => switchPost(-1)}
-          onNext={() => switchPost(1)}
-        />
+      {posts.length > 0 && (hasNextPage || isFetchingNextPage) ?
+        <div ref={loadMoreRef} className="mt-5 flex justify-center pb-2 text-xs font-black text-[#7db0a8]">
+          {isFetchingNextPage ? '小岛继续加载中...' : '继续往下滑，会出现新的记录'}
+        </div>
       : null}
     </>
   )

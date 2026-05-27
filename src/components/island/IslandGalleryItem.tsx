@@ -1,5 +1,6 @@
+import { useId, useState } from 'react'
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
-import { MapPin, Pin } from 'lucide-react'
+import { Images, MapPin, Pin, Video } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -7,6 +8,7 @@ import './island.css'
 
 export type IslandGalleryItemRatio = 'square' | 'portrait' | 'landscape' | 'wide'
 export type IslandGalleryItemContentPlacement = 'overlay' | 'below' | 'none'
+export type IslandGalleryItemMediaType = 'image' | 'video'
 
 export interface IslandGalleryGridProps extends HTMLAttributes<HTMLDivElement> {
   minItemWidth?: string
@@ -22,10 +24,18 @@ export interface IslandGalleryItemProps extends Omit<HTMLAttributes<HTMLElement>
   contentPlacement?: IslandGalleryItemContentPlacement
   radius?: string
   pinned?: boolean
+  multiple?: boolean
+  mediaType?: IslandGalleryItemMediaType
   corner?: ReactNode
   onOpen?: () => void
   imageClassName?: string
   contentClassName?: string
+}
+
+type IslandGalleryImageProps = {
+  src: string
+  alt: string
+  className?: string
 }
 
 export function IslandGalleryGrid({
@@ -59,6 +69,8 @@ export function IslandGalleryItem({
   contentPlacement = 'overlay',
   radius,
   pinned = false,
+  multiple = false,
+  mediaType = 'image',
   corner,
   onOpen,
   className,
@@ -67,7 +79,23 @@ export function IslandGalleryItem({
   contentClassName,
   ...props
 }: IslandGalleryItemProps) {
+  const titleId = useId()
   const hasContent = Boolean(title || location)
+  const markerType =
+    pinned ? 'pin'
+    : mediaType === 'video' ? 'video'
+    : multiple ? 'images'
+    : null
+  const markerLabel =
+    markerType === 'pin' ? '置顶'
+    : markerType === 'video' ? '视频'
+    : markerType === 'images' ? '多图'
+    : ''
+  const markerIcon =
+    markerType === 'pin' ? <Pin aria-hidden="true" size={13} strokeWidth={3.4} />
+    : markerType === 'video' ? <Video aria-hidden="true" size={13} strokeWidth={3.2} />
+    : markerType === 'images' ? <Images aria-hidden="true" size={13} strokeWidth={3.2} />
+    : null
 
   const info = hasContent ? (
     <div className={cn('island-gallery-item__content', contentClassName)}>
@@ -78,22 +106,22 @@ export function IslandGalleryItem({
         </div>
       ) : null}
 
-      {title ? <h3 className="island-gallery-item__title">{title}</h3> : null}
+      {title ? <h3 id={titleId} className="island-gallery-item__title">{title}</h3> : null}
     </div>
   ) : null
 
   const body = (
     <>
       <div className={cn('island-gallery-item__media', `island-gallery-item__media--${ratio}`)}>
-        <img className={cn('island-gallery-item__image', imageClassName)} src={imageSrc} alt={imageAlt} />
+        <IslandGalleryImage key={imageSrc} className={imageClassName} src={imageSrc} alt={imageAlt} />
         <div className="island-gallery-item__shade" />
 
-        {(pinned || corner) ? (
+        {(markerIcon || (!pinned && corner)) ? (
           <div className="island-gallery-item__corner">
-            {corner}
-            {pinned ? (
-              <span className="island-gallery-item__marker island-gallery-item__marker--pin" aria-label="置顶">
-                <Pin aria-hidden="true" size={13} strokeWidth={3.4} />
+            {pinned ? null : corner}
+            {markerIcon ? (
+              <span className={cn('island-gallery-item__marker', `island-gallery-item__marker--${markerType}`)} aria-label={markerLabel}>
+                {markerIcon}
               </span>
             ) : null}
           </div>
@@ -103,6 +131,16 @@ export function IslandGalleryItem({
       </div>
 
       {contentPlacement === 'below' && info ? info : null}
+
+      {onOpen ? (
+        <button
+          className="island-gallery-item__trigger"
+          type="button"
+          aria-label={imageAlt || String(title || '打开文章')}
+          aria-labelledby={title ? titleId : undefined}
+          onClick={onOpen}
+        />
+      ) : null}
     </>
   )
 
@@ -117,17 +155,27 @@ export function IslandGalleryItem({
     ...style,
   } as CSSProperties
 
-  if (onOpen) {
-    return (
-      <button className={classes} type="button" onClick={onOpen} aria-label={imageAlt || String(title || '打开图片')} style={itemStyle} {...props}>
-        {body}
-      </button>
-    )
-  }
-
   return (
     <article className={classes} style={itemStyle} {...props}>
       {body}
     </article>
+  )
+}
+
+function IslandGalleryImage({ src, alt, className }: IslandGalleryImageProps) {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <>
+      <span className={cn('island-gallery-item__placeholder', loaded && 'is-loaded')} aria-hidden="true" />
+      <img
+        className={cn('island-gallery-item__image', loaded && 'is-loaded', className)}
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+      />
+    </>
   )
 }

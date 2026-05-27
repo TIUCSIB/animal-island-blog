@@ -5,6 +5,7 @@ import AboutPage from '@/pages/AboutPage'
 import AdminPage from '@/pages/AdminPage'
 import HomePage from '@/pages/HomePage'
 import NotFoundPage from '@/pages/NotFoundPage'
+import PostDetailPage from '@/pages/PostDetailPage'
 import { SiteLayout } from '@/pages/components/SiteLayout'
 
 export const routes: RouteObject[] = [
@@ -28,6 +29,10 @@ export const routes: RouteObject[] = [
       {
         path: '404',
         element: <NotFoundPage />,
+      },
+      {
+        path: 'posts/:postId',
+        element: <PostDetailPage />,
       },
       {
         path: 'admin',

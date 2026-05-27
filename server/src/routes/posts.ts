@@ -1,7 +1,8 @@
 import { Elysia } from 'elysia'
 
 import { assertAdmin } from '../services/auth'
-import { createPost, deletePost, listPosts, listPostsPage, updatePost } from '../services/posts'
+import { createPost, deletePost, getPostById, listPostsPage, updatePost } from '../services/posts'
+import { HttpError } from '../http'
 import { PostBody } from '../validation'
 
 function parsePositiveInt(value: unknown) {
@@ -16,11 +17,14 @@ export const postsRoutes = new Elysia()
     const page = parsePositiveInt(query.page)
     const pageSize = parsePositiveInt(query.pageSize)
 
-    if (page || pageSize) {
-      return listPostsPage(page, pageSize)
-    }
+    return listPostsPage(page ?? 1, pageSize ?? 6)
+  })
+  .get('/api/posts/:id', async ({ params }) => {
+    const post = await getPostById(params.id)
 
-    return { posts: await listPosts() }
+    if (!post) throw new HttpError(404, '文章不存在')
+
+    return { post }
   })
   .post(
     '/api/posts',
@@ -30,7 +34,7 @@ export const postsRoutes = new Elysia()
       const post = await createPost(body)
 
       set.status = 201
-      return { post, posts: await listPosts() }
+      return { post }
     },
     {
       body: PostBody,
@@ -43,7 +47,7 @@ export const postsRoutes = new Elysia()
 
       const post = await updatePost(params.id, body)
 
-      return { post, posts: await listPosts() }
+      return { post }
     },
     {
       body: PostBody,
@@ -53,5 +57,5 @@ export const postsRoutes = new Elysia()
     await assertAdmin(request)
     await deletePost(params.id)
 
-    return { ok: true, posts: await listPosts() }
+    return { ok: true }
   })

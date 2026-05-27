@@ -4,7 +4,8 @@ export const queryKeys = {
   aboutContent: ['about-content'] as const,
   adminProfileRoot: ['admin-profile'] as const,
   adminProfile: (token: string) => ['admin-profile', token] as const,
-  galleryPosts: ['gallery-posts'] as const,
+  galleryPosts: ['gallery-posts', 'home-infinite'] as const,
+  galleryPost: (postId: string) => ['gallery-post', postId] as const,
   musicConfig: ['music-config'] as const,
   siteProfile: ['site-profile'] as const,
 }

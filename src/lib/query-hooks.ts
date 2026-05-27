@@ -1,7 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 
-import { fetchAboutContent, fetchAdminProfile, fetchGalleryPosts, fetchMusicConfig, fetchSiteProfile } from '@/lib/posts-api'
+import type { GalleryPost } from '@/data/gallery'
+import { fetchAboutContent, fetchAdminProfile, fetchGalleryPostById, fetchGalleryPostsPage, fetchMusicConfig, fetchSiteProfile } from '@/lib/posts-api'
 import { queryKeys } from '@/lib/query-client'
+
+const HOME_POST_PAGE_SIZE = 6
 
 export function useSiteProfileQuery() {
   return useQuery({
@@ -27,9 +30,24 @@ export function useAdminProfileQuery(token: string) {
 }
 
 export function useGalleryPostsQuery() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: queryKeys.galleryPosts,
-    queryFn: ({ signal }) => fetchGalleryPosts(signal),
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) => fetchGalleryPostsPage(pageParam, HOME_POST_PAGE_SIZE, signal),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination
+
+      return page < totalPages ? page + 1 : undefined
+    },
+  })
+}
+
+export function useGalleryPostQuery(postId: string, initialPost?: GalleryPost) {
+  return useQuery({
+    queryKey: queryKeys.galleryPost(postId),
+    queryFn: ({ signal }) => fetchGalleryPostById(postId, signal),
+    enabled: Boolean(postId),
+    initialData: initialPost,
   })
 }
 

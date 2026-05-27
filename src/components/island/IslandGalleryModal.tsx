@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Modal } from 'animal-island-ui'
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, MoreHorizontal, X } from 'lucide-react'
+import { BadgeCheck, Bookmark, CalendarDays, ChevronLeft, ChevronRight, Heart, MapPin, MessageCircle, MoreHorizontal, Send, X } from 'lucide-react'
 
 import { IslandPostContent } from './IslandPostContent'
 
@@ -82,6 +82,7 @@ export function IslandGalleryModal({
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const previousImageEnabled = activeImageIndex > 0
   const nextImageEnabled = activeImageIndex < imageList.length - 1
+  const displayLocation = location.trim()
 
   useEffect(() => {
     setActiveImageIndex(0)
@@ -131,6 +132,19 @@ export function IslandGalleryModal({
         onClose={() => onOpenChange(false)}
       >
         <article className="island-gallery-animal-modal__panel">
+          <header className="island-gallery-animal-modal__mobile-account">
+            <img className="island-gallery-animal-modal__avatar" src={authorAvatar} alt="" />
+            <div className="island-gallery-animal-modal__mobile-account-main">
+              <strong>{authorName}</strong>
+              <BadgeCheck className="island-gallery-animal-modal__verified" aria-hidden="true" size={17} strokeWidth={3} />
+              <span className="island-gallery-animal-modal__mobile-dot">•</span>
+              <span>关注</span>
+            </div>
+            <button className="island-gallery-animal-modal__mobile-more" type="button" aria-label="关闭详情" onClick={() => onOpenChange(false)}>
+              <MoreHorizontal aria-hidden="true" size={25} strokeWidth={3} />
+            </button>
+          </header>
+
           <div className="island-gallery-animal-modal__image-wrap">
             <img className="island-gallery-animal-modal__image" src={imageList[activeImageIndex]} alt={imageAlt || title} />
 
@@ -153,6 +167,21 @@ export function IslandGalleryModal({
             ) : null}
           </div>
 
+          {imageList.length > 1 ? (
+            <div className="island-gallery-animal-modal__image-dots" aria-label="图片页码">
+              {imageList.map((image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  className={`island-gallery-animal-modal__image-dot${index === activeImageIndex ? ' is-active' : ''}`}
+                  type="button"
+                  aria-label={`切换到第 ${index + 1} 张图片`}
+                  aria-current={index === activeImageIndex}
+                  onClick={() => setActiveImageIndex(index)}
+                />
+              ))}
+            </div>
+          ) : null}
+
           <section className="island-gallery-animal-modal__detail">
             <header className="island-gallery-animal-modal__account">
               <img className="island-gallery-animal-modal__avatar" src={authorAvatar} alt="" />
@@ -166,6 +195,21 @@ export function IslandGalleryModal({
                 <X aria-hidden="true" size={18} strokeWidth={3} />
               </button>
             </header>
+
+            <div className="island-gallery-animal-modal__mobile-actions" aria-label="文章操作">
+              <button type="button" aria-label="喜欢">
+                <Heart aria-hidden="true" size={34} strokeWidth={2.4} />
+              </button>
+              <button type="button" aria-label="评论">
+                <MessageCircle aria-hidden="true" size={34} strokeWidth={2.4} />
+              </button>
+              <button type="button" aria-label="分享">
+                <Send aria-hidden="true" size={33} strokeWidth={2.4} />
+              </button>
+              <button type="button" aria-label="收藏">
+                <Bookmark aria-hidden="true" size={34} strokeWidth={2.4} />
+              </button>
+            </div>
 
             <div className="island-gallery-animal-modal__body">
               <div className="island-gallery-animal-modal__caption">
@@ -181,10 +225,12 @@ export function IslandGalleryModal({
               </div>
 
               <div className="island-gallery-animal-modal__meta">
-                <span className="island-gallery-animal-modal__meta-item">
-                  <MapPin aria-hidden="true" size={14} strokeWidth={2.8} />
-                  {location}
-                </span>
+                {displayLocation ? (
+                  <span className="island-gallery-animal-modal__meta-item">
+                    <MapPin aria-hidden="true" size={14} strokeWidth={2.8} />
+                    {displayLocation}
+                  </span>
+                ) : null}
                 <span className="island-gallery-animal-modal__meta-item">
                   <CalendarDays aria-hidden="true" size={14} strokeWidth={2.8} />
                   <time dateTime={time}>{formatDisplayTime(time)}</time>

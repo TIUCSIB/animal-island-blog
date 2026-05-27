@@ -4,6 +4,8 @@ export const PostBody = t.Object({
   id: t.Optional(t.String()),
   imageSrc: t.Optional(t.String()),
   images: t.Optional(t.Array(t.String())),
+  videos: t.Optional(t.Array(t.String())),
+  mediaType: t.Optional(t.Union([t.Literal('image'), t.Literal('video')])),
   title: t.String(),
   content: t.Optional(t.String()),
   location: t.Optional(t.String()),

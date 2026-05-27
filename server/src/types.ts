@@ -13,6 +13,8 @@ export type GalleryPost = {
   id: string
   imageSrc: string
   images?: string[]
+  videos?: string[]
+  mediaType?: 'image' | 'video'
   title: string
   content: string
   location: string

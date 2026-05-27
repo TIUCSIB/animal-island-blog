@@ -19,12 +19,16 @@ export type PostsPagination = {
 
 function serializePosts(postRows: PostRow[], assetRows: PostAssetRow[], tagRows: PostTagRow[]) {
   return postRows.map((post) => {
-    const images = assetRows.filter((asset) => asset.postId === post.id).map((asset) => asset.url)
+    const postAssetRows = assetRows.filter((asset) => asset.postId === post.id)
+    const images = postAssetRows.filter((asset) => asset.resourceType === 'image').map((asset) => asset.url)
+    const videos = postAssetRows.filter((asset) => asset.resourceType === 'video').map((asset) => asset.url)
 
     return {
       id: post.id,
       imageSrc: post.imageSrc,
       images: images.length > 0 ? images : [post.imageSrc],
+      videos,
+      mediaType: videos.length > 0 ? 'video' : 'image',
       title: post.title,
       content: post.content,
       location: post.location,
@@ -44,9 +48,21 @@ export async function listPosts() {
   return serializePosts(postRows, assetRows, tagRows)
 }
 
-export async function listPostsPage(inputPage = 1, inputPageSize = 5) {
+export async function getPostById(id: string) {
   const db = getDb()
-  const pageSize = Math.min(Math.max(Math.floor(inputPageSize) || 5, 1), 50)
+  const postRow = await db.select().from(posts).where(eq(posts.id, id)).get()
+
+  if (!postRow) return null
+
+  const assetRows = await db.select().from(postAssets).where(eq(postAssets.postId, id)).orderBy(asc(postAssets.sortOrder)).all()
+  const tagRows = await db.select().from(postTags).where(eq(postTags.postId, id)).orderBy(asc(postTags.sortOrder)).all()
+
+  return serializePosts([postRow], assetRows, tagRows)[0] ?? null
+}
+
+export async function listPostsPage(inputPage = 1, inputPageSize = 6) {
+  const db = getDb()
+  const pageSize = Math.min(Math.max(Math.floor(inputPageSize) || 6, 1), 50)
   const total = (await db.select({ value: count() }).from(posts).get())?.value ?? 0
   const pinnedCount = (await db.select({ value: count() }).from(posts).where(eq(posts.pinned, true)).get())?.value ?? 0
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
@@ -92,6 +108,20 @@ async function replacePostRelations(post: GalleryPost) {
     )
   }
 
+  if (post.videos?.length) {
+    await db.insert(postAssets).values(
+      post.videos.map((url, index) => ({
+        id: crypto.randomUUID(),
+        postId: post.id,
+        url,
+        publicId: '',
+        resourceType: 'video' as const,
+        sortOrder: index,
+        createdAt: now,
+      })),
+    )
+  }
+
   if (post.tags.length) {
     await db.insert(postTags).values(
       post.tags.map((tag, index) => ({
@@ -127,8 +157,7 @@ export async function createPost(input: unknown) {
 
 export async function updatePost(id: string, input: unknown) {
   const db = getDb()
-  const currentPosts = await listPosts()
-  const currentPost = currentPosts.find((post) => post.id === id)
+  const currentPost = await getPostById(id)
 
   if (!currentPost) throw new HttpError(404, '文章不存在')
 

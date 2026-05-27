@@ -10,6 +10,8 @@ export function normalizePost(input: Partial<GalleryPost>, currentId?: string, c
   const time = currentId ? cleanText(input.time) || createdAt : createdAt
   const tags = [...new Set(toStringList(input.tags))]
   const images = [...new Set([...toStringList(input.images), cleanText(input.imageSrc)].filter(Boolean))].slice(0, 9)
+  const videos = [...new Set(toStringList(input.videos))].slice(0, 9)
+  const mediaType = input.mediaType === 'video' || videos.length > 0 ? 'video' : 'image'
   const imageSrc = images[0] ?? ''
   const id = currentId ?? crypto.randomUUID()
 
@@ -20,6 +22,8 @@ export function normalizePost(input: Partial<GalleryPost>, currentId?: string, c
     id,
     imageSrc,
     images,
+    videos,
+    mediaType,
     title,
     content,
     location,

@@ -279,12 +279,12 @@ async function requestJson<T>(path: string, init: ApiRequestInit = {}) {
 }
 
 export async function fetchGalleryPosts(signal?: AbortSignal) {
-  const data = await requestJson<PostsResponse>('/api/posts', { signal })
+  const data = await fetchGalleryPostsPage(1, 6, signal)
 
   return data.posts
 }
 
-export async function fetchGalleryPostsPage(page = 1, pageSize = 5, signal?: AbortSignal) {
+export async function fetchGalleryPostsPage(page = 1, pageSize = 6, signal?: AbortSignal) {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),
@@ -319,6 +319,12 @@ export async function fetchGalleryPostsPage(page = 1, pageSize = 5, signal?: Abo
       pinnedCount: posts.filter((post) => post.pinned).length,
     },
   } satisfies PaginatedPostsResponse
+}
+
+export async function fetchGalleryPostById(postId: string, signal?: AbortSignal) {
+  const data = await requestJson<{ post: GalleryPost }>(`/api/posts/${encodeURIComponent(postId)}`, { signal })
+
+  return data.post
 }
 
 export async function fetchApiHealth(signal?: AbortSignal) {

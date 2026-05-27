@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Cursor } from 'animal-island-ui'
 import { emitIslandToast, IslandFloatingMenu, IslandFloatingSwitch, IslandLoginModal, IslandMusicPlayer, IslandToastViewport } from '@/components/island'
@@ -37,6 +37,7 @@ function readStoredAdminToken() {
 
 export default function App() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const [isIslandMode, setIsIslandMode] = useState(() => readStoredBoolean(ISLAND_MODE_STORAGE_KEY))
   const [loginOpen, setLoginOpen] = useState(false)
@@ -49,6 +50,7 @@ export default function App() {
   const musicConfig = musicConfigQuery.data ?? defaultMusicConfig
   const musicAvailable = !musicConfigQuery.isPending && musicConfig.enabled && musicConfig.tracks.length > 0
   const visibleMusicEnabled = musicEnabled && musicAvailable
+  const isPostDetailPage = location.pathname.startsWith('/posts/')
 
   useEffect(() => {
     function syncAdminAuth() {
@@ -154,7 +156,7 @@ export default function App() {
     <section className={['island-app', isIslandMode && 'island-app--island-mode', isIslandMode && 'island-app--footer-animated', visibleMusicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
       <Cursor>
         <Outlet />
-        {isIslandMode ?
+        {isIslandMode && !isPostDetailPage ?
           <IslandFloatingMenu
             signedIn={isAdminSignedIn}
             userName={adminUserName}
@@ -170,20 +172,24 @@ export default function App() {
             onAdminClick={openAdminPage}
           />
         : null}
-        <IslandFloatingSwitch
-          checked={isIslandMode}
-          uncheckedLabel="小憩中"
-          checkedLabel={isAdminSignedIn ? '已登岛' : '营业中'}
-          unCheckedChildren="OFF"
-          checkedChildren="ON"
-          onChange={handleIslandModeChange}
-        />
-        <IslandMusicPlayer
-          tracks={musicConfig.tracks}
-          open={visibleMusicEnabled}
-          onClose={() => setMusicEnabled(false)}
-        />
-        <IslandLoginModal open={loginOpen} onOpenChange={setLoginOpen} onLogin={handleLogin} />
+        {!isPostDetailPage ?
+          <>
+            <IslandFloatingSwitch
+              checked={isIslandMode}
+              uncheckedLabel="小憩中"
+              checkedLabel={isAdminSignedIn ? '已登岛' : '营业中'}
+              unCheckedChildren="OFF"
+              checkedChildren="ON"
+              onChange={handleIslandModeChange}
+            />
+            <IslandMusicPlayer
+              tracks={musicConfig.tracks}
+              open={visibleMusicEnabled}
+              onClose={() => setMusicEnabled(false)}
+            />
+            <IslandLoginModal open={loginOpen} onOpenChange={setLoginOpen} onLogin={handleLogin} />
+          </>
+        : null}
         <IslandToastViewport />
       </Cursor>
     </section>
