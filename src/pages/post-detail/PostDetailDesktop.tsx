@@ -20,7 +20,11 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
   if (!post) return null
 
   return (
-    <article className="relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_24px_80px_rgba(94,78,56,0.24)]" style={detail.desktopArticleStyle} aria-label={post.title}>
+    <article
+      className="relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)]"
+      style={detail.desktopArticleStyle}
+      aria-label={post.title}
+    >
       <section className="group/media relative min-h-0 min-w-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]">
         <div className="relative flex size-full items-center justify-center overflow-hidden">
           {detail.activeMedia?.type === 'video' ?
@@ -165,7 +169,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
         </div>
 
         <div className="fixed inset-0 z-[80] " />
-        <button className="fixed right-5 top-5 z-[110] grid size-11 place-items-center rounded-full  transition hover:bg-white" type="button" aria-label="关闭详情" onClick={detail.closeDetail}>
+        <button className={cn('fixed right-5 top-5 z-[110] size-8', islandSwitchButtonClass)} type="button" aria-label="关闭详情" onClick={detail.closeDetail}>
           <X aria-hidden="true" size={24} strokeWidth={2.6} />
         </button>
 
@@ -201,12 +205,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
 
   return (
     <main className="grid min-h-dvh place-items-center bg-[radial-gradient(circle_at_top,#eefcf2_0%,#dff3e7_100%)] p-4">
-      <button
-        className="fixed right-5 top-5 z-[110] grid size-11 place-items-center rounded-full bg-[rgba(255,248,236,0.92)] text-[#715d46] shadow-[0_10px_24px_rgba(94,78,56,0.18)] transition hover:bg-white"
-        type="button"
-        aria-label="关闭详情"
-        onClick={detail.closeDetail}
-      >
+      <button className={cn('fixed right-5 top-5 z-[110] size-8', islandSwitchButtonClass)} type="button" aria-label="关闭详情" onClick={detail.closeDetail}>
         <X aria-hidden="true" size={24} strokeWidth={2.6} />
       </button>
       <DesktopDetailCard detail={detail} />
