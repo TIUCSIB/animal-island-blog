@@ -77,6 +77,7 @@ export function Gallery({ siteProfile }: GalleryProps) {
                   const nextState = {
                     from: `${location.pathname}${location.search}`,
                     post,
+                    posts,
                     intercepted: !shouldOpenAsPage(),
                   }
 

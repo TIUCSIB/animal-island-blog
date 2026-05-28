@@ -43,7 +43,7 @@ export default function HomePage() {
   return (
     <>
       {loadingMounted ?
-        <div className={`homepage-loading ${loadingActive ? '' : 'homepage-loading--leaving'}`} role="status" aria-live="polite" aria-label="?????">
+        <div className={`homepage-loading ${loadingActive ? '' : 'homepage-loading--leaving'}`} role="status" aria-live="polite" aria-label="首页加载中">
           <Loading active={loadingActive} />
         </div>
       : null}
