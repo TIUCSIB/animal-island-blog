@@ -10,7 +10,3 @@ export function getEnv() {
 export function getDb() {
   return drizzle(getEnv().DB)
 }
-
-export function getAdminPassword() {
-  return getEnv().ADMIN_PASSWORD || 'island-admin'
-}

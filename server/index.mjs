@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const port = Number(process.env.PORT ?? 8787)
-const adminPassword = process.env.ADMIN_PASSWORD ?? 'island-admin'
+const adminPassword = process.env.ADMIN_PASSWORD?.trim() ?? ''
 const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true'
 const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY ?? ''
 const sessionToken = randomBytes(32).toString('hex')
@@ -27,6 +27,10 @@ const defaultMusic = {
       lrc: 'https://music.030456.xyz/api?server=netease&type=lrc&id=473403185',
     },
   ],
+}
+
+if (!adminPassword) {
+  throw new Error('ADMIN_PASSWORD is required to start the local JSON API server')
 }
 
 function sendJson(response, statusCode, data) {
@@ -444,5 +448,4 @@ const server = createServer((request, response) => {
 
 server.listen(port, () => {
   console.log(`Island API is running at http://localhost:${port}`)
-  console.log(`Admin password: ${adminPassword}`)
 })

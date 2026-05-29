@@ -1,4 +1,4 @@
-# shlii-web
+# Animal Island Blog
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript)
@@ -147,11 +147,11 @@ npm run build
 
 本地开发放在 `.env.local`，部署到 Cloudflare Pages 时配置到 Pages 的环境变量里。
 
-| 变量名 | 是否必填 | 说明 |
-|---|---:|---|
-| `VITE_API_BASE_URL` | 是 | 线上 API 地址，例如 `https://shlii-api.your-subdomain.workers.dev` |
-| `VITE_ENABLE_TURNSTILE` | 否 | 是否启用 Turnstile，填 `true` 或 `false` |
-| `VITE_TURNSTILE_SITE_KEY` | 否 | Turnstile 前端 Site Key |
+| 变量名                    | 是否必填 | 说明                                                               |
+| ------------------------- | -------: | ------------------------------------------------------------------ |
+| `VITE_API_BASE_URL`       |       是 | 线上 API 地址，例如 `https://shlii-api.your-subdomain.workers.dev` |
+| `VITE_ENABLE_TURNSTILE`   |       否 | 是否启用 Turnstile，填 `true` 或 `false`                           |
+| `VITE_TURNSTILE_SITE_KEY` |       否 | Turnstile 前端 Site Key                                            |
 
 示例：
 
@@ -165,15 +165,17 @@ VITE_TURNSTILE_SITE_KEY=
 
 本地开发可放到 `.dev.vars`，线上建议通过 `wrangler secret put` 或 Cloudflare Dashboard 配置。
 
-| 变量名 | 是否必填 | 说明 |
-|---|---:|---|
-| `ADMIN_PASSWORD` | 是 | 初始后台密码 |
-| `TURNSTILE_ENABLED` | 否 | 是否启用 Turnstile，`true` / `false` |
-| `TURNSTILE_SECRET_KEY` | 否 | Turnstile Secret Key |
-| `CLOUDINARY_CLOUD_NAME` | 管理后台上传时必填 | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | 管理后台上传时必填 | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | 管理后台上传时必填 | Cloudinary API secret |
-| `CLOUDINARY_UPLOAD_FOLDER` | 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog` |
+> 注意：后端现在不会再回退到默认后台密码。未配置 `ADMIN_PASSWORD` 时，管理员登录和本地 JSON API 都会直接报错。
+
+| 变量名                     |           是否必填 | 说明                                               |
+| -------------------------- | -----------------: | -------------------------------------------------- |
+| `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                       |
+| `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`               |
+| `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                               |
+| `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                              |
+| `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                 |
+| `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                              |
+| `CLOUDINARY_UPLOAD_FOLDER` |                 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog` |
 
 示例：
 
@@ -231,9 +233,9 @@ npx wrangler d1 create animal-island-db
       "binding": "DB",
       "database_name": "animal-island-db",
       "database_id": "替换成你自己的 database_id",
-      "migrations_dir": "server/drizzle/migrations"
-    }
-  ]
+      "migrations_dir": "server/drizzle/migrations",
+    },
+  ],
 }
 ```
 
@@ -287,12 +289,12 @@ https://shlii-api.your-subdomain.workers.dev
 
 在 Cloudflare Pages 新建项目，连接这个仓库，构建配置填写：
 
-| 配置项 | 值 |
-|---|---|
-| Framework preset | Vite |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node version | `20` 或更高 |
+| 配置项                 | 值              |
+| ---------------------- | --------------- |
+| Framework preset       | Vite            |
+| Build command          | `npm run build` |
+| Build output directory | `dist`          |
+| Node version           | `20` 或更高     |
 
 然后在 Pages 的环境变量里添加：
 

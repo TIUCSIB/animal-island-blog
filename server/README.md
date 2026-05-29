@@ -28,10 +28,10 @@ pnpm dev:api
 http://localhost:8787
 ```
 
-默认后台密码：
+ADMIN_PASSWORD 配置：
 
 ```txt
-island-admin
+Set ADMIN_PASSWORD in .dev.vars or your environment before starting the API.
 ```
 
 ## 主要接口

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, ADMIN_USER_ID, PASSWORD_HASH_ITERATIONS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '../constants'
-import { getAdminPassword, getDb, getEnv } from '../db'
+import { getDb, getEnv } from '../db'
 import { adminUsers } from '../db/schema'
 import { HttpError } from '../http'
 import type { AdminTokenType } from '../types'
@@ -26,6 +26,16 @@ type AdminAccountInput = {
 
 function normalizeAdminAccount(value: unknown) {
   return cleanText(value)
+}
+
+function getRequiredAdminPassword() {
+  const adminPassword = cleanText(getEnv().ADMIN_PASSWORD)
+
+  if (!adminPassword) {
+    throw new HttpError(500, 'ADMIN_PASSWORD is not configured')
+  }
+
+  return adminPassword
 }
 
 export async function verifyTurnstileToken(token: string, request: Request) {
@@ -114,7 +124,7 @@ export async function getAdminProfile() {
 async function getAdminTokenSecret() {
   const user = await getAdminUser()
 
-  return user ? `admin-user:${user.id}:${user.passwordHash}:${user.passwordSalt}` : `admin-password:${getAdminPassword()}`
+  return user ? `admin-user:${user.id}:${user.passwordHash}:${user.passwordSalt}` : `admin-password:${getRequiredAdminPassword()}`
 }
 
 async function createAdminToken(type: AdminTokenType, secret: string) {
@@ -182,7 +192,7 @@ export async function loginAdmin(input: AdminLoginInput, request: Request) {
     if (!accountMatched || !passwordMatched) {
       throw new HttpError(401, '账号或密码不正确')
     }
-  } else if (password !== getAdminPassword()) {
+  } else if (password !== getRequiredAdminPassword()) {
     throw new HttpError(401, '后台密码不正确')
   }
 
@@ -215,7 +225,7 @@ export async function updateAdminAccount(input: AdminAccountInput) {
   if (!account) throw new HttpError(400, '请填写账号或邮箱')
   if (!currentPassword) throw new HttpError(400, '请填写当前密码')
 
-  const currentPasswordMatched = user ? await verifyPassword(currentPassword, user.passwordHash, user.passwordSalt) : currentPassword === getAdminPassword()
+  const currentPasswordMatched = user ? await verifyPassword(currentPassword, user.passwordHash, user.passwordSalt) : currentPassword === getRequiredAdminPassword()
 
   if (!currentPasswordMatched) {
     throw new HttpError(401, '当前密码不正确')
