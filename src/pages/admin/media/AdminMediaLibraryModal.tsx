@@ -155,12 +155,7 @@ export function AdminMediaLibraryModal({
                       }}
                     >
                       {isVideoLibrary ?
-                        <>
-                          <video className="h-full w-full rounded-[20px] object-cover" src={asset.secureUrl} muted playsInline preload="metadata" />
-                          <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white">
-                            Video
-                          </span>
-                        </>
+                        <video className="h-full w-full rounded-[20px] object-cover" src={asset.secureUrl} muted playsInline preload="metadata" />
                       : <img src={asset.secureUrl} alt={assetLabel} />}
                     </button>
                     <button className="island-admin-avatar-library__delete" type="button" aria-label={`删除${assetLabel}`} onClick={() => setDeleteTarget(asset)}>

@@ -27,8 +27,8 @@ function splitList(value: string) {
 export function postToForm(post: GalleryPost): PostForm {
   const hasVideos = (post.videos?.length ?? 0) > 0
   const imageValues =
-    post.images?.length ? post.images
-    : hasVideos ? []
+    hasVideos ? []
+    : post.images?.length ? post.images
     : [post.imageSrc].filter(Boolean)
 
   return {

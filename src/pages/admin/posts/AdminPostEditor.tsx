@@ -59,8 +59,7 @@ function canInsertStickerInline(editor: Editor) {
 
       if (parent.contentMatchAt(index).matchType(imageType)) return true
     }
-  }
-  catch {
+  } catch {
     return false
   }
 
@@ -80,20 +79,21 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
   })
   const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
   const richEditorRef = useRef<Editor | null>(null)
-  const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
+  const rawImageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const videoUrls = getPostVideoUrls(form.videosText).slice(0, MAX_POST_VIDEOS)
+  const imageUrls = videoUrls.length > 0 ? [] : rawImageUrls
   const hasImages = imageUrls.length > 0
   const hasVideos = videoUrls.length > 0
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
   const remainingVideos = Math.max(0, MAX_POST_VIDEOS - videoUrls.length)
   const canAddImages = !hasVideos && remainingImages > 0
   const canAddVideos = !hasImages && remainingVideos > 0
-  const canOpenImagePanel = hasImages || !hasVideos
-  const canOpenVideoPanel = hasVideos || !hasImages
+  const canOpenImagePanel = !hasVideos
+  const canOpenVideoPanel = !hasImages
 
   const resolvedOpenPanel =
-    openPanel === 'images' && !canOpenImagePanel ? (canOpenVideoPanel ? 'videos' : null)
-    : openPanel === 'videos' && !canOpenVideoPanel ? (canOpenImagePanel ? 'images' : null)
+    hasVideos ? 'videos'
+    : hasImages ? 'images'
     : openPanel
 
   function addImage(url: string) {
@@ -136,17 +136,17 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     if (richEditorRef.current) {
       const editor = richEditorRef.current
       const inlineContent = createStickerInlineContent(sticker)
-      const stickerContent: JSONContent | JSONContent[] = canInsertStickerInline(editor) ?
-        inlineContent
-      : {
-          type: 'paragraph',
-          content: inlineContent,
-        }
+      const stickerContent: JSONContent | JSONContent[] =
+        canInsertStickerInline(editor) ? inlineContent : (
+          {
+            type: 'paragraph',
+            content: inlineContent,
+          }
+        )
 
       try {
         if (editor.chain().focus().insertContent(stickerContent).run()) return
-      }
-      catch (error) {
+      } catch (error) {
         console.warn('[AdminPostEditor] insert sticker failed, fallback to markdown append.', error)
       }
     }
@@ -187,13 +187,13 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       <Card className="island-admin-editor__card overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="island-admin-editor__eyebrow">{isWriteMode ? '写文章' : '编辑文章'}</span>
+            <span className="island-admin-editor__eyebrow">{isWriteMode ? '\u5199\u6587\u7ae0' : '\u7f16\u8f91\u6587\u7ae0'}</span>
             <h2>
               {compact ?
                 isWriteMode ?
-                  '新的小岛记录'
-                : '编辑小岛记录'
-              : form.title || (isWriteMode ? '新的小岛记录' : '未命名记录')}
+                  '\u65b0\u7684\u5c0f\u5c9b\u8bb0\u5f55'
+                : '\u7f16\u8f91\u5c0f\u5c9b\u8bb0\u5f55'
+              : form.title || (isWriteMode ? '\u65b0\u7684\u5c0f\u5c9b\u8bb0\u5f55' : '\u672a\u547d\u540d\u8bb0\u5f55')}
             </h2>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
@@ -227,7 +227,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               <button
                 className={[iconButtonClass, resolvedOpenPanel === 'images' && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
-                aria-label="管理图片"
+                aria-label="Manage images"
                 disabled={!canOpenImagePanel}
                 onClick={() => togglePanel('images')}
               >
@@ -236,7 +236,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               <button
                 className={iconButtonClass}
                 type="button"
-                aria-label="打开图片库"
+                aria-label="Open image library"
                 disabled={!canAddImages}
                 onClick={() => openMediaLibrary('gallery')}
               >
@@ -245,7 +245,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               <button
                 className={[iconButtonClass, resolvedOpenPanel === 'videos' && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
-                aria-label="管理视频"
+                aria-label="Manage video"
                 disabled={!canOpenVideoPanel}
                 onClick={() => togglePanel('videos')}
               >
@@ -285,7 +285,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   </button>
                 }
               >
-                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">⚙ 设置</strong>
+                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">⚙️ 设置</strong>
                 <label className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-2 text-xs font-black">
                   <span>地点</span>
                   <Input
@@ -323,10 +323,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图片；第一张会作为封面</strong>
               <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={!canAddImages} onClick={() => openMediaLibrary('gallery')}>
-                图片库
-              </Button>
+                图片库              </Button>
             </div>
-            {hasVideos ? <p className="text-[11px] font-black text-[#c27d5a]">已上传视频，删除视频后才能继续上传图片。</p> : null}
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {imageUrls.map((url, index) => (
                 <div
@@ -380,23 +378,18 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
         {resolvedOpenPanel === 'videos' ?
           <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 1 个视频；视频和图片只能二选一；有视频时不需要封面图</strong>
+              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 1 个视频</strong>
               <Button type="default" size="small" htmlType="button" icon={<Clapperboard size={14} strokeWidth={3} />} disabled={!canAddVideos} onClick={() => openMediaLibrary('videos')}>
-                视频库
-              </Button>
+                视频库              </Button>
             </div>
-            {hasImages ? <p className="text-[11px] font-black text-[#c27d5a]">已上传图片，删除图片后才能继续上传视频。</p> : null}
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
-              {videoUrls.map((url, index) => (
+              {videoUrls.map((url) => (
                 <div
                   key={url}
                   className="island-admin-compose-image-tile relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]"
                 >
                   <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
                   <span className="island-admin-compose-image-overlay" aria-hidden="true" />
-                  <span className="absolute bottom-2 left-2 z-[2] inline-flex items-center rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white">
-                    视频 {index + 1}
-                  </span>
                   <button
                     className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
                     type="button"
@@ -438,3 +431,4 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     </form>
   )
 }
+
