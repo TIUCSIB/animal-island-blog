@@ -308,23 +308,7 @@ VITE_TURNSTILE_SITE_KEY=
 
 如果你启用了 Turnstile，把后两项改成真实值。
 
-### 第 7 步：确认 SPA 路由重写
-
-项目里已经有：
-
-```txt
-public/_redirects
-```
-
-内容是：
-
-```txt
-/* /index.html 200
-```
-
-它可以保证 `/about`、`/posts/:postId`、`/admin` 这类前端路由在静态托管下正常刷新访问。
-
-### 第 8 步：绑定自定义域名
+### 第 7 步：绑定自定义域名
 
 建议至少配置两个域名：
 
@@ -339,96 +323,8 @@ VITE_API_BASE_URL=https://api.your-domain.com
 
 然后重新触发一次前端构建部署。
 
-### 第 9 步：上线后验收
-
-至少检查下面这些页面和能力：
-
-- `/`
-- `/about`
-- `/admin`
-- 文章详情页
-- 后台登录
-- 文章新增 / 编辑 / 删除
-- 关于页保存
-- 站点资料保存
-- 音乐配置保存
-- 图片 / 视频上传（如果启用了 Cloudinary）
-
 ---
 
-## 9. 发布前检查清单
-
-建议正式上线前逐项确认：
-
-- [ ] `npm run lint` 通过
-- [ ] `npm run build` 通过
-- [ ] `wrangler.api.jsonc` 中已填入正确的 D1 `database_id`
-- [ ] Worker secrets 已配置
-- [ ] `VITE_API_BASE_URL` 已指向线上 API
-- [ ] 如启用 Turnstile，前后端 key 已分别配置
-- [ ] 如启用上传，Cloudinary 已配置
-- [ ] 前端域名、API 域名都可访问
-- [ ] `/about`、`/posts/:postId`、`/admin` 刷新不 404
-
----
-
-## 10. 常用命令
-
-```bash
-npm run dev                # 启动前端开发环境
-npm run dev:api            # 启动 Worker 本地调试
-npm run dev:api:json       # 启动本地 JSON API 回退方案
-npm run build              # 生产构建
-npm run preview            # 预览构建结果
-npm run lint               # ESLint 检查
-npm run db:generate        # 生成 Drizzle migration
-npm run db:migrate:local   # 应用本地 D1 migration
-npm run db:migrate:remote  # 应用线上 D1 migration
-npm run deploy:api         # 部署 Worker API
-```
-
----
-
-## 11. 补充说明
-
-### 1）为什么前端和 API 推荐分开部署？
-
-因为当前项目结构本身就是：
-
-- 前端是标准 Vite 静态站
-- 后端是独立的 Cloudflare Worker
-
-这样拆开部署最简单，也最符合当前代码。
-
-### 2）为什么线上必须配置 `VITE_API_BASE_URL`？
-
-因为本地开发时有 Vite 代理：
-
-```txt
-/api -> http://localhost:8787
-```
-
-但线上静态站没有这个本地代理，所以前端必须明确知道线上 API 的完整地址。
-
-### 3）Cloudinary 是必须的吗？
-
-如果你只看静态内容，暂时不是必须。
-
-如果你要在后台上传图片 / 视频，它就是必须的。
-
-### 4）Turnstile 是必须的吗？
-
-不是。
-
-如果你暂时不需要后台登录防刷，可以先关闭：
-
-```env
-VITE_ENABLE_TURNSTILE=false
-TURNSTILE_ENABLED=false
-```
-
----
-
-## 12. License
+## 10. License
 
 MIT
