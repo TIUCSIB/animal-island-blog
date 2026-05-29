@@ -47,7 +47,7 @@ export function postToForm(post: GalleryPost): PostForm {
 export function formToPost(form: PostForm): GalleryPost {
   const images = splitList(form.imagesText).slice(0, MAX_POST_IMAGES)
   const videos = splitList(form.videosText).slice(0, MAX_POST_VIDEOS)
-  const imageSrc = images[0] || videos[0] || ''
+  const imageSrc = images[0] || ''
 
   return {
     id: form.id.trim(),
