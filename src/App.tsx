@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router'
+import { useLocation, useNavigate, useOutlet } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Cursor } from 'animal-island-ui'
 import { emitIslandToast, IslandFloatingMenu, IslandFloatingSwitch, IslandLoginModal, IslandMusicPlayer, IslandToastViewport } from '@/components/island'
@@ -38,6 +38,7 @@ function readStoredAdminToken() {
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
+  const outlet = useOutlet()
   const queryClient = useQueryClient()
   const [isIslandMode, setIsIslandMode] = useState(() => readStoredBoolean(ISLAND_MODE_STORAGE_KEY))
   const [loginOpen, setLoginOpen] = useState(false)
@@ -51,6 +52,9 @@ export default function App() {
   const musicAvailable = !musicConfigQuery.isPending && musicConfig.enabled && musicConfig.tracks.length > 0
   const visibleMusicEnabled = musicEnabled && musicAvailable
   const isPostDetailPage = location.pathname.startsWith('/posts/')
+  const postRouteState = location.state as { from?: string, intercepted?: boolean } | null
+  const shouldKeepBackgroundOutlet = isPostDetailPage && postRouteState?.intercepted === false && Boolean(postRouteState?.from)
+  const [cachedOutlet, setCachedOutlet] = useState(outlet)
 
   useEffect(() => {
     function syncAdminAuth() {
@@ -93,6 +97,12 @@ export default function App() {
       cancelled = true
     }
   }, [adminToken, queryClient])
+
+  useEffect(() => {
+    if (isPostDetailPage) return
+
+    setCachedOutlet(outlet)
+  }, [isPostDetailPage, outlet])
 
   useEffect(() => {
     if (!adminToken || !adminProfileQuery.isError) return
@@ -155,7 +165,12 @@ export default function App() {
   return (
     <section className={['island-app', isIslandMode && 'island-app--island-mode', isIslandMode && 'island-app--footer-animated', visibleMusicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
       <Cursor>
-        <Outlet />
+        {shouldKeepBackgroundOutlet && cachedOutlet ? cachedOutlet : outlet}
+        {shouldKeepBackgroundOutlet ?
+          <div className="fixed inset-0 z-[70] overflow-y-auto">
+            {outlet}
+          </div>
+        : null}
         {isIslandMode && !isPostDetailPage ?
           <IslandFloatingMenu
             signedIn={isAdminSignedIn}

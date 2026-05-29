@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, Modal } from 'animal-island-ui'
-import { Images, LoaderCircle, RefreshCw, Trash2 } from 'lucide-react'
+import { Clapperboard, Images, LoaderCircle, RefreshCw, Trash2 } from 'lucide-react'
 
 import { emitIslandToast } from '@/components/island'
 import type { CloudinaryResourceType, CloudinaryUploadAsset, CloudinaryUploadPurpose } from '@/lib/posts-api'
@@ -44,6 +44,8 @@ export function AdminMediaLibraryModal({
   const [deleteTarget, setDeleteTarget] = useState<CloudinaryUploadAsset | null>(null)
   const [deleting, setDeleting] = useState(false)
   const selectedUrlSet = useMemo(() => new Set([currentUrl, ...currentUrls].filter(Boolean)), [currentUrl, currentUrls])
+  const isVideoLibrary = resourceType === 'video'
+  const headerIcon = isVideoLibrary ? <Clapperboard size={17} strokeWidth={3} /> : <Images size={17} strokeWidth={3} />
 
   const loadAssets = useCallback(
     async (cursor = '') => {
@@ -100,7 +102,7 @@ export function AdminMediaLibraryModal({
 
       setAssets((current) => current.filter((asset) => asset.publicId !== deleteTarget.publicId))
       setDeleteTarget(null)
-      emitIslandToast({ type: 'success', title: `${assetLabel}已删除。` })
+      emitIslandToast({ type: 'success', title: `${assetLabel}已删除` })
     } catch (deleteError) {
       emitIslandToast({
         type: 'error',
@@ -118,7 +120,7 @@ export function AdminMediaLibraryModal({
         <div className="island-admin-avatar-library">
           <div className="island-admin-avatar-library__header">
             <span>
-              <Images size={17} strokeWidth={3} />
+              {headerIcon}
               {description}
             </span>
             <Button type="default" size="small" htmlType="button" icon={<RefreshCw size={14} strokeWidth={3} />} loading={loading} onClick={() => void loadAssets()}>
@@ -145,14 +147,21 @@ export function AdminMediaLibraryModal({
                 return (
                   <div key={asset.publicId || asset.secureUrl} className={['island-admin-avatar-library__item', active && 'island-admin-avatar-library__item--active'].filter(Boolean).join(' ')}>
                     <button
-                      className="island-admin-avatar-library__select"
+                      className="island-admin-avatar-library__select relative overflow-hidden"
                       type="button"
                       onClick={() => {
                         onSelect(asset)
                         onClose()
                       }}
                     >
-                      <img src={asset.secureUrl} alt={assetLabel} />
+                      {isVideoLibrary ?
+                        <>
+                          <video className="h-full w-full rounded-[20px] object-cover" src={asset.secureUrl} muted playsInline preload="metadata" />
+                          <span className="pointer-events-none absolute bottom-2 left-2 inline-flex items-center rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white">
+                            Video
+                          </span>
+                        </>
+                      : <img src={asset.secureUrl} alt={assetLabel} />}
                     </button>
                     <button className="island-admin-avatar-library__delete" type="button" aria-label={`删除${assetLabel}`} onClick={() => setDeleteTarget(asset)}>
                       <Trash2 size={13} strokeWidth={3} />
@@ -165,14 +174,14 @@ export function AdminMediaLibraryModal({
 
           {nextCursor ?
             <div className="island-admin-avatar-library__more">
-              <span>已加载 {assets.length} 张</span>
+              <span>已加载 {assets.length} 个</span>
               <Button type="default" size="small" htmlType="button" loading={loading} onClick={() => void loadAssets(nextCursor)}>
                 加载更多
               </Button>
             </div>
           : null}
 
-          {!nextCursor && assets.length > 0 ? <p className="island-admin-avatar-library__count">已加载全部 {assets.length} 张</p> : null}
+          {!nextCursor && assets.length > 0 ? <p className="island-admin-avatar-library__count">已加载全部 {assets.length} 个</p> : null}
         </div>
       </Modal>
 

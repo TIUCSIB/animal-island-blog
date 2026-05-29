@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
 import { Button } from 'animal-island-ui'
 import { UploadCloud } from 'lucide-react'
@@ -16,6 +16,7 @@ type AdminCloudinaryUploaderProps = {
   accept?: string
   multiple?: boolean
   label?: string
+  assetLabel?: string
   className?: string
   disabled?: boolean
   maxFiles?: number
@@ -29,15 +30,17 @@ export function AdminCloudinaryUploader({
   resourceType = 'image',
   accept = 'image/*',
   multiple = false,
-  label = '上传图片',
+  label = '上传文件',
+  assetLabel,
   className,
   disabled = false,
   maxFiles,
   renderTrigger,
   onUploaded,
 }: AdminCloudinaryUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputId = useId()
   const [uploading, setUploading] = useState(false)
+  const safeAssetLabel = assetLabel ?? (resourceType === 'video' ? '视频' : '图片')
 
   async function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? [])
@@ -47,16 +50,16 @@ export function AdminCloudinaryUploader({
     event.target.value = ''
 
     if (!files.length) {
-      emitIslandToast({ type: 'info', title: '最多只能添加 9 张图片。' })
+      emitIslandToast({ type: 'info', title: `当前最多只能再添加 ${limit} 个${safeAssetLabel}` })
       return
     }
 
     if (selectedFiles.length > files.length) {
-      emitIslandToast({ type: 'info', title: `最多还能添加 ${files.length} 张图片。` })
+      emitIslandToast({ type: 'info', title: `本次最多可添加 ${files.length} 个${safeAssetLabel}` })
     }
 
     if (!token) {
-      emitIslandToast({ type: 'info', title: '请先登录后台再上传。' })
+      emitIslandToast({ type: 'info', title: '请先登录后台再上传' })
       return
     }
 
@@ -74,7 +77,7 @@ export function AdminCloudinaryUploader({
 
       emitIslandToast({
         type: 'success',
-        title: files.length > 1 ? `已上传 ${files.length} 个文件。` : '图片已上传。',
+        title: files.length > 1 ? `已上传 ${files.length} 个${safeAssetLabel}` : `${safeAssetLabel}已上传`,
       })
     } catch (error) {
       emitIslandToast({
@@ -89,12 +92,18 @@ export function AdminCloudinaryUploader({
 
   const triggerDisabled = disabled || uploading
   const open = () => {
-    if (!triggerDisabled) inputRef.current?.click()
+    if (triggerDisabled) return
+
+    const input = document.getElementById(inputId)
+
+    if (input instanceof HTMLInputElement) {
+      input.click()
+    }
   }
 
   return (
     <span className={['island-admin-uploader', className].filter(Boolean).join(' ')}>
-      <input ref={inputRef} className="island-admin-uploader__input" type="file" accept={accept} multiple={multiple} disabled={disabled || uploading} onChange={handleChange} />
+      <input id={inputId} className="island-admin-uploader__input" type="file" accept={accept} multiple={multiple} disabled={disabled || uploading} onChange={handleChange} />
       {renderTrigger ? (
         renderTrigger({ disabled: triggerDisabled, uploading, open })
       ) : (

@@ -44,12 +44,12 @@ export function usePostDetailPage() {
   const [mediaRatios, setMediaRatios] = useState<Record<string, number>>({})
   const [mobileMediaControlState, setMobileMediaControlState] = useState(() => ({ postId, visible: false }))
   const mobileMediaControlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const mobileSwipeStartRef = useRef<{ x: number, y: number } | null>(null)
+  const mobileSwipeStartRef = useRef<{ x: number; y: number } | null>(null)
 
   const mediaItems = useMemo<MediaItem[]>(() => {
     if (!post) return []
 
-    if (post.mediaType === 'video' && post.videos?.length) {
+    if (post.videos?.length) {
       return post.videos.map((src) => ({ src, type: 'video' }))
     }
 
@@ -182,21 +182,24 @@ export function usePostDetailPage() {
   }, [])
 
   const desktopHeight = Math.max(620, Math.min(860, viewport.height - 72))
-  const desktopRightWidth = Math.min(620, Math.max(470, Math.round(viewport.width * 0.33)))
+  const desktopRightWidth = Math.min(410, Math.max(380, Math.round(viewport.width * 0.25)))
   const desktopOuterGap = isIntercepted ? 168 : 104
-  const widthCap = frameRatio > 1.15 ? 720 : frameRatio < 0.85 ? 680 : 740
+  const widthCap =
+    frameRatio > 1.15 ? 640
+    : frameRatio < 0.85 ? 600
+    : 660
   const availableLeftWidth = Math.max(360, viewport.width - desktopRightWidth - desktopOuterGap)
-  const computedLeftWidth = Math.max(360, Math.min(availableLeftWidth, widthCap, Math.round(desktopHeight * frameRatio)))
+  const computedLeftWidth = Math.max(320, Math.min(availableLeftWidth, widthCap, Math.round(desktopHeight * frameRatio)))
   const mobileMediaMaxHeight = Math.max(300, Math.min(frameRatio < 0.82 ? viewport.height * 0.54 : viewport.height * 0.62, 520))
 
   const desktopArticleStyle: CSSProperties | undefined =
-    !isCompact
-      ? {
-          width: `${computedLeftWidth + desktopRightWidth}px`,
-          height: `${desktopHeight}px`,
-          gridTemplateColumns: `${computedLeftWidth}px ${desktopRightWidth}px`,
-        }
-      : undefined
+    !isCompact ?
+      {
+        width: `${computedLeftWidth + desktopRightWidth}px`,
+        height: `${desktopHeight}px`,
+        gridTemplateColumns: `${computedLeftWidth}px ${desktopRightWidth}px`,
+      }
+    : undefined
 
   const mobileMediaStyle: CSSProperties = {
     aspectRatio: String(frameRatio || 1),

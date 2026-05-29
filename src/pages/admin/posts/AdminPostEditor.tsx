@@ -2,14 +2,14 @@ import { useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
 import type { Editor, JSONContent } from '@tiptap/core'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
-import { Image, Images, MapPin, Plus, Send, Settings2, Smile, Star, Tags, Trash2, Video, X } from 'lucide-react'
+import { Clapperboard, Image, Images, MapPin, Plus, Send, Settings2, Smile, Star, Tags, Trash2, Video, X } from 'lucide-react'
 
 import { IslandPopover } from '@/components/island'
 import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from '../media/AdminCloudinaryUploader'
 import { AdminRichTextEditor } from './AdminRichTextEditor'
 import { AdminStickerPanel, type AdminSticker } from './AdminStickerPanel'
-import { appendPostImageUrl, getPostImageUrls, MAX_POST_IMAGES, removePostImageUrl } from './post-media-utils'
+import { appendPostImageUrl, appendPostVideoUrl, getPostImageUrls, getPostVideoUrls, MAX_POST_IMAGES, MAX_POST_VIDEOS, removePostImageUrl, removePostVideoUrl } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
 
@@ -26,6 +26,8 @@ type AdminPostEditorProps = {
   compact?: boolean
   showDeleteAction?: boolean
 }
+
+type ComposePanelMode = 'images' | 'videos' | null
 
 function createStickerInlineContent(sticker: AdminSticker): JSONContent[] {
   return [
@@ -72,11 +74,13 @@ function appendStickerMarkdown(content: string, sticker: AdminSticker) {
 }
 
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
-  const [imagePanelOpen, setImagePanelOpen] = useState(() => !isWriteMode)
+  const [openPanel, setOpenPanel] = useState<ComposePanelMode>(() => (!isWriteMode ? 'images' : null))
   const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
   const richEditorRef = useRef<Editor | null>(null)
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
+  const videoUrls = getPostVideoUrls(form.videosText).slice(0, MAX_POST_VIDEOS)
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
+  const remainingVideos = Math.max(0, MAX_POST_VIDEOS - videoUrls.length)
 
   function addImage(url: string) {
     setForm((current) => ({
@@ -89,6 +93,20 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     setForm((current) => ({
       ...current,
       imagesText: removePostImageUrl(current.imagesText, url),
+    }))
+  }
+
+  function addVideo(url: string) {
+    setForm((current) => ({
+      ...current,
+      videosText: appendPostVideoUrl(current.videosText, url),
+    }))
+  }
+
+  function removeVideo(url: string) {
+    setForm((current) => ({
+      ...current,
+      videosText: removePostVideoUrl(current.videosText, url),
     }))
   }
 
@@ -115,6 +133,17 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       ...current,
       content: appendStickerMarkdown(current.content, sticker),
     }))
+  }
+
+  function togglePanel(panel: Exclude<ComposePanelMode, null>) {
+    setOpenPopover(null)
+    setOpenPanel((current) => (current === panel ? null : panel))
+  }
+
+  function openMediaLibrary(mode: PostMediaLibraryMode) {
+    setOpenPopover(null)
+    setOpenPanel(mode === 'videos' ? 'videos' : 'images')
+    onOpenMediaLibrary(mode)
   }
 
   const iconButtonClass = 'island-admin-compose-icon'
@@ -165,34 +194,31 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             }
           />
 
-          <div className="island-admin-compose-bottom flex flex-wrap items-center justify-between gap-3 mt-1">
+          <div className="island-admin-compose-bottom mt-1 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
               <button
-                className={[iconButtonClass, imagePanelOpen && activeIconButtonClass].filter(Boolean).join(' ')}
+                className={[iconButtonClass, openPanel === 'images' && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
-                aria-label="上传图片"
-                disabled={remainingImages === 0}
-                onClick={() => {
-                  setOpenPopover(null)
-                  setImagePanelOpen((open) => !open)
-                }}
+                aria-label="管理图片"
+                onClick={() => togglePanel('images')}
               >
                 <Image size={17} strokeWidth={2.8} />
               </button>
               <button
                 className={iconButtonClass}
                 type="button"
-                aria-label="图片库"
+                aria-label="打开图片库"
                 disabled={remainingImages === 0}
-                onClick={() => {
-                  setOpenPopover(null)
-                  setImagePanelOpen(true)
-                  onOpenMediaLibrary('gallery')
-                }}
+                onClick={() => openMediaLibrary('gallery')}
               >
                 <Images size={17} strokeWidth={2.8} />
               </button>
-              <button className={iconButtonClass} type="button" aria-label="视频" disabled>
+              <button
+                className={[iconButtonClass, openPanel === 'videos' && activeIconButtonClass].filter(Boolean).join(' ')}
+                type="button"
+                aria-label="管理视频"
+                onClick={() => togglePanel('videos')}
+              >
                 <Video size={17} strokeWidth={2.8} />
               </button>
               <span className="mx-1 h-5 w-px bg-[#c4b89e]/28" />
@@ -229,7 +255,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   </button>
                 }
               >
-                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">🤗 设置</strong>
+                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">📝 设置</strong>
                 <label className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-2 text-xs font-black">
                   <span>地点</span>
                   <Input
@@ -250,7 +276,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                     onChange={(event) => setForm((current) => ({ ...current, tagsText: event.target.value }))}
                   />
                 </label>
-                <label className="flex items-center  gap-3 rounded-2xl  text-xs font-black">
+                <label className="flex items-center gap-3 rounded-2xl text-xs font-black">
                   <span>置顶文章</span>
                   <Switch size="small" checked={form.pinned} checkedChildren="ON" unCheckedChildren="OFF" onChange={(checked) => setForm((current) => ({ ...current, pinned: checked }))} />
                 </label>
@@ -262,9 +288,14 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </div>
         </section>
 
-        {imagePanelOpen ?
+        {openPanel === 'images' ?
           <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
-            <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图哟，第一张会作为封面</strong>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图片，第一张会作为封面</strong>
+              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={remainingImages === 0} onClick={() => openMediaLibrary('gallery')}>
+                图片库
+              </Button>
+            </div>
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {imageUrls.map((url, index) => (
                 <div
@@ -293,6 +324,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 <AdminCloudinaryUploader
                   token={token}
                   purpose="post-image"
+                  assetLabel="图片"
                   multiple
                   maxFiles={remainingImages}
                   onUploaded={(asset) => addImage(asset.secureUrl)}
@@ -304,7 +336,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                       onClick={open}
                     >
                       {uploading ?
-                        <span className="text-xs font-black">上传中</span>
+                        <span className="text-xs font-black">上传中...</span>
                       : <Plus size={30} strokeWidth={2.8} />}
                     </button>
                   )}
@@ -314,6 +346,63 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </section>
         : null}
 
+        {openPanel === 'videos' ?
+          <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 个视频；视频文章仍需至少 1 张封面图</strong>
+              <Button type="default" size="small" htmlType="button" icon={<Clapperboard size={14} strokeWidth={3} />} disabled={remainingVideos === 0} onClick={() => openMediaLibrary('videos')}>
+                视频库
+              </Button>
+            </div>
+            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
+              {videoUrls.map((url, index) => (
+                <div
+                  key={url}
+                  className="island-admin-compose-image-tile relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]"
+                >
+                  <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
+                  <span className="island-admin-compose-image-overlay" aria-hidden="true" />
+                  <span className="absolute bottom-2 left-2 z-[2] inline-flex items-center rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white">
+                    Video {index + 1}
+                  </span>
+                  <button
+                    className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
+                    type="button"
+                    aria-label="移除视频"
+                    onClick={() => removeVideo(url)}
+                  >
+                    <X size={13} strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+
+              {remainingVideos > 0 ?
+                <AdminCloudinaryUploader
+                  token={token}
+                  purpose="post-video"
+                  resourceType="video"
+                  accept="video/*"
+                  assetLabel="视频"
+                  multiple
+                  maxFiles={remainingVideos}
+                  onUploaded={(asset) => addVideo(asset.secureUrl)}
+                  renderTrigger={({ disabled, uploading, open }) => (
+                    <button
+                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
+                      type="button"
+                      disabled={disabled}
+                      onClick={open}
+                    >
+                      {uploading ?
+                        <span className="text-xs font-black">上传中...</span>
+                      : <Plus size={30} strokeWidth={2.8} />}
+                    </button>
+                  )}
+                />
+              : null}
+            </div>
+          </section>
+        : null}
       </Card>
     </form>
   )

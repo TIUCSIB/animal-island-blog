@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEventHandler } from 'react'
 
 import type { GalleryPost } from '@/data/gallery'
@@ -6,7 +6,7 @@ import { AdminMediaLibraryModal } from '../media/AdminMediaLibraryModal'
 import { AdminPostEditor } from './AdminPostEditor'
 import { AdminPostEditModal } from './AdminPostEditModal'
 import { AdminPostTable } from './AdminPostTable'
-import { appendPostImageUrl, getPostImageUrls } from './post-media-utils'
+import { appendPostImageUrl, appendPostVideoUrl, getPostImageUrls, getPostVideoUrls } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
 
@@ -53,6 +53,9 @@ export function AdminPostsPanel({
 }: AdminPostsPanelProps) {
   const [mediaLibraryMode, setMediaLibraryMode] = useState<PostMediaLibraryMode | null>(null)
   const isWriteMode = mode === 'write'
+  const currentImageUrls = useMemo(() => getPostImageUrls(form.imagesText), [form.imagesText])
+  const currentVideoUrls = useMemo(() => getPostVideoUrls(form.videosText), [form.videosText])
+  const isVideoLibrary = mediaLibraryMode === 'videos'
 
   function handleCloseEditor() {
     setMediaLibraryMode(null)
@@ -98,19 +101,26 @@ export function AdminPostsPanel({
       <AdminMediaLibraryModal
         open={Boolean(mediaLibraryMode)}
         token={token}
-        title="图片库"
-        description="选择图片加入文章，第一张会作为封面"
-        emptyText="图片库还是空的，先上传文章图片吧。"
-        assetLabel="图片"
-        purpose="post-image"
-        resourceType="image"
-        currentUrls={getPostImageUrls(form.imagesText)}
+        title={isVideoLibrary ? '视频库' : '图片库'}
+        description={isVideoLibrary ? '选择视频加入文章，视频帖子仍需至少 1 张封面图' : '选择图片加入文章，第一张会作为封面'}
+        emptyText={isVideoLibrary ? '视频库还是空的，先上传文章视频吧。' : '图片库还是空的，先上传文章图片吧。'}
+        assetLabel={isVideoLibrary ? '视频' : '图片'}
+        purpose={isVideoLibrary ? 'post-video' : 'post-image'}
+        resourceType={isVideoLibrary ? 'video' : 'image'}
+        currentUrls={isVideoLibrary ? currentVideoUrls : currentImageUrls}
         onClose={() => setMediaLibraryMode(null)}
         onSelect={(asset) =>
-          setForm((current) => ({
-            ...current,
-            imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
-          }))
+          setForm((current) => (
+            isVideoLibrary ?
+              {
+                ...current,
+                videosText: appendPostVideoUrl(current.videosText, asset.secureUrl),
+              }
+            : {
+                ...current,
+                imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
+              }
+          ))
         }
       />
     </>

@@ -57,7 +57,7 @@ export function Gallery({ siteProfile }: GalleryProps) {
       {posts.length > 0 ?
         <IslandGalleryGrid className="island-home-gallery-grid mt-4" minItemWidth="180px" gap="0px">
           {posts.map((post) => {
-            const mediaType = post.mediaType === 'video' ? 'video' : 'image'
+            const mediaType = post.mediaType === 'video' || (post.videos?.length ?? 0) > 0 ? 'video' : 'image'
             const imageCount = post.images?.filter(Boolean).length ?? (post.imageSrc ? 1 : 0)
 
             return (

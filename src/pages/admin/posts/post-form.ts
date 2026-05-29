@@ -1,5 +1,6 @@
 import type { GalleryPost } from '@/data/gallery'
 import type { PostForm } from '../types'
+import { MAX_POST_IMAGES, MAX_POST_VIDEOS, getPostMediaUrls } from './post-media-utils'
 
 export function createEmptyForm(): PostForm {
   return {
@@ -9,6 +10,7 @@ export function createEmptyForm(): PostForm {
     location: '',
     time: '',
     imagesText: '',
+    videosText: '',
     tagsText: '',
     pinned: false,
   }
@@ -19,10 +21,7 @@ function joinList(values?: string[]) {
 }
 
 function splitList(value: string) {
-  return value
-    .split(/[\n,，]/)
-    .map((item) => item.trim())
-    .filter(Boolean)
+  return getPostMediaUrls(value)
 }
 
 export function postToForm(post: GalleryPost): PostForm {
@@ -33,13 +32,15 @@ export function postToForm(post: GalleryPost): PostForm {
     location: post.location,
     time: post.time,
     imagesText: joinList(post.images?.length ? post.images : [post.imageSrc]),
+    videosText: joinList(post.videos),
     tagsText: post.tags.join('，'),
     pinned: Boolean(post.pinned),
   }
 }
 
 export function formToPost(form: PostForm): GalleryPost {
-  const images = splitList(form.imagesText).slice(0, 9)
+  const images = splitList(form.imagesText).slice(0, MAX_POST_IMAGES)
+  const videos = splitList(form.videosText).slice(0, MAX_POST_VIDEOS)
   const imageSrc = images[0] || ''
 
   return {
@@ -50,6 +51,8 @@ export function formToPost(form: PostForm): GalleryPost {
     time: form.time.trim(),
     imageSrc,
     images,
+    videos,
+    mediaType: videos.length > 0 ? 'video' : 'image',
     tags: splitList(form.tagsText),
     pinned: form.pinned,
   }
