@@ -503,8 +503,8 @@ export function useAdminDashboard() {
 
     const payload = formToPost(form)
 
-    if (!payload.title || (!payload.images?.length && !payload.videos?.length)) {
-      showStatus({ type: 'error', text: '\u6807\u9898\u548c\u81f3\u5c11 1 \u4e2a\u5a92\u4f53\u6587\u4ef6\u662f\u5fc5\u586b\u9879\u3002' })
+    if (!payload.title || !payload.content || (!payload.images?.length && !payload.videos?.length)) {
+      showStatus({ type: 'error', text: '\u6807\u9898\u3001\u5185\u5bb9\u548c\u81f3\u5c11 1 \u4e2a\u5a92\u4f53\u6587\u4ef6\u662f\u5fc5\u586b\u9879\u3002' })
       return
     }
 
@@ -518,8 +518,7 @@ export function useAdminDashboard() {
         setForm(createEmptyForm())
         await loadPosts(1)
       } else {
-        setSelectedId(savedPost.id)
-        setForm(postToForm(savedPost))
+        handleClosePostEditor()
         await loadPosts(safePostsPagination.page)
       }
 

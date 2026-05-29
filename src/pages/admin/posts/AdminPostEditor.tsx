@@ -257,6 +257,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 open={openPopover === 'emoji'}
                 onOpenChange={(open) => setOpenPopover(open ? 'emoji' : null)}
                 contentClassName="island-admin-sticker-popover"
+                placement="bottom"
                 trigger={
                   <button
                     className={[iconButtonClass, openPopover === 'emoji' && activeIconButtonClass].filter(Boolean).join(' ')}

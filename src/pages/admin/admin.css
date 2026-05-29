@@ -1939,9 +1939,6 @@
 }
 
 .island-admin-sticker-popover {
-  top: calc(100% + 10px) !important;
-  bottom: auto !important;
-  z-index: 90 !important;
   display: block !important;
   width: max-content !important;
   max-width: min(calc(100vw - 28px), 32rem) !important;
@@ -2039,11 +2036,7 @@
 }
 
 .island-admin-post-edit-modal .island-admin-sticker-popover {
-  left: 0 !important;
-  right: auto !important;
   max-width: calc(100vw - 72px) !important;
-  transform: none !important;
-  translate: 0 0 !important;
 }
 
 .island-admin-post-edit-modal .island-admin-sticker-popover::after {
