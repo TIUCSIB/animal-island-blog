@@ -6,7 +6,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-ElysiaJS-F38020?logo=cloudflare)
 
-一个基于 **React 19**、**TypeScript**、**Vite 8**、**Tailwind CSS 4**、**shadcn/ui** 和 **ElysiaJS + Cloudflare D1** 的小岛风图片博客。
+一个基于 **React 19**、**TypeScript**、**Vite 8**、**Tailwind CSS 4**、**animal-island-ui** 和 **ElysiaJS + Cloudflare D1** 的小岛风图片博客。
 
 ## 概览
 
@@ -32,7 +32,7 @@
 | TypeScript | 类型安全 |
 | Vite 8 | 构建工具 + HMR |
 | Tailwind CSS 4 | 原子化 CSS |
-| shadcn/ui (Radix) | UI 组件库 |
+| animal-island-ui | 小岛主题 UI 组件库 |
 | TanStack React Query 5 | 服务端状态管理 |
 | Zustand 5 | 客户端状态管理 |
 | Tiptap 3 | 富文本编辑器 |
@@ -107,7 +107,7 @@ animal-island-blog/
 │   │   └── NotFoundPage.tsx      # 404 页面
 │   ├── components/               # 组件
 │   │   ├── island/               # 小岛主题组件
-│   │   └── ui/                   # shadcn/ui 基础组件
+│   │   └── ui/                   # UI 基础组件
 │   ├── routes/                   # React Router 配置
 │   ├── stores/                   # Zustand 状态管理
 │   ├── lib/                      # 工具函数 & API 客户端
