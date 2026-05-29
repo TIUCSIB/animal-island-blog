@@ -102,7 +102,7 @@ export function AdminPostsPanel({
         open={Boolean(mediaLibraryMode)}
         token={token}
         title={isVideoLibrary ? '视频库' : '图片库'}
-        description={isVideoLibrary ? '选择视频加入文章，视频帖子仍需至少 1 张封面图' : '选择图片加入文章，第一张会作为封面'}
+        description={isVideoLibrary ? '选择 1 个视频加入文章；视频和图片只能二选一，且视频文章不需要封面图。' : '选择图片加入文章；第一张会作为封面，且有视频时不能再添加图片。'}
         emptyText={isVideoLibrary ? '视频库还是空的，先上传文章视频吧。' : '图片库还是空的，先上传文章图片吧。'}
         assetLabel={isVideoLibrary ? '视频' : '图片'}
         purpose={isVideoLibrary ? 'post-video' : 'post-image'}
@@ -110,17 +110,20 @@ export function AdminPostsPanel({
         currentUrls={isVideoLibrary ? currentVideoUrls : currentImageUrls}
         onClose={() => setMediaLibraryMode(null)}
         onSelect={(asset) =>
-          setForm((current) => (
-            isVideoLibrary ?
-              {
+          setForm((current) => {
+            const hasImages = getPostImageUrls(current.imagesText).length > 0
+            const hasVideos = getPostVideoUrls(current.videosText).length > 0
+
+            return isVideoLibrary ?
+              hasImages ? current : {
                 ...current,
                 videosText: appendPostVideoUrl(current.videosText, asset.secureUrl),
               }
-            : {
+            : hasVideos ? current : {
                 ...current,
                 imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
               }
-          ))
+          })
         }
       />
     </>

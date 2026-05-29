@@ -10,13 +10,14 @@ export function normalizePost(input: Partial<GalleryPost>, currentId?: string, c
   const time = currentId ? cleanText(input.time) || createdAt : createdAt
   const tags = [...new Set(toStringList(input.tags))]
   const images = [...new Set([...toStringList(input.images), cleanText(input.imageSrc)].filter(Boolean))].slice(0, 9)
-  const videos = [...new Set(toStringList(input.videos))].slice(0, 9)
-  const mediaType = input.mediaType === 'video' || videos.length > 0 ? 'video' : 'image'
-  const imageSrc = images[0] ?? ''
+  const videos = [...new Set(toStringList(input.videos))].slice(0, 1)
+  const mediaType = videos.length > 0 ? 'video' : 'image'
+  const imageSrc = images[0] ?? videos[0] ?? ''
   const id = currentId ?? crypto.randomUUID()
 
   if (!title) throw new HttpError(400, '请填写标题')
-  if (!imageSrc) throw new HttpError(400, '请填写封面图片')
+  if (images.length > 0 && videos.length > 0) throw new HttpError(400, '图片和视频只能二选一')
+  if (!imageSrc) throw new HttpError(400, '请至少上传 1 个图片或视频')
 
   return {
     id,

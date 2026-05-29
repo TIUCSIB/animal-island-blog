@@ -26,7 +26,7 @@ function serializePosts(postRows: PostRow[], assetRows: PostAssetRow[], tagRows:
     return {
       id: post.id,
       imageSrc: post.imageSrc,
-      images: images.length > 0 ? images : [post.imageSrc],
+      images: images.length > 0 ? images : videos.length > 0 ? [] : [post.imageSrc],
       videos,
       mediaType: videos.length > 0 ? 'video' : 'image',
       title: post.title,

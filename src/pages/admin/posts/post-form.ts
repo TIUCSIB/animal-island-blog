@@ -25,13 +25,19 @@ function splitList(value: string) {
 }
 
 export function postToForm(post: GalleryPost): PostForm {
+  const hasVideos = (post.videos?.length ?? 0) > 0
+  const imageValues =
+    post.images?.length ? post.images
+    : hasVideos ? []
+    : [post.imageSrc].filter(Boolean)
+
   return {
     id: post.id,
     title: post.title,
     content: post.content,
     location: post.location,
     time: post.time,
-    imagesText: joinList(post.images?.length ? post.images : [post.imageSrc]),
+    imagesText: joinList(imageValues),
     videosText: joinList(post.videos),
     tagsText: post.tags.join('，'),
     pinned: Boolean(post.pinned),
@@ -41,7 +47,7 @@ export function postToForm(post: GalleryPost): PostForm {
 export function formToPost(form: PostForm): GalleryPost {
   const images = splitList(form.imagesText).slice(0, MAX_POST_IMAGES)
   const videos = splitList(form.videosText).slice(0, MAX_POST_VIDEOS)
-  const imageSrc = images[0] || ''
+  const imageSrc = images[0] || videos[0] || ''
 
   return {
     id: form.id.trim(),

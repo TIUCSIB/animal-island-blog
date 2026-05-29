@@ -1,7 +1,7 @@
 export type PostMediaLibraryMode = 'gallery' | 'videos'
 
 export const MAX_POST_IMAGES = 9
-export const MAX_POST_VIDEOS = 9
+export const MAX_POST_VIDEOS = 1
 
 export function getPostMediaUrls(text: string) {
   return text

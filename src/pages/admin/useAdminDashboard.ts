@@ -503,8 +503,8 @@ export function useAdminDashboard() {
 
     const payload = formToPost(form)
 
-    if (!payload.title || !payload.imageSrc) {
-      showStatus({ type: 'error', text: '标题和至少 1 张图片是必填项。' })
+    if (!payload.title || (!payload.images?.length && !payload.videos?.length)) {
+      showStatus({ type: 'error', text: '\u6807\u9898\u548c\u81f3\u5c11 1 \u4e2a\u5a92\u4f53\u6587\u4ef6\u662f\u5fc5\u586b\u9879\u3002' })
       return
     }
 

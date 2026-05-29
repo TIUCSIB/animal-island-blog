@@ -34,11 +34,14 @@ export function AdminPostTable({ posts, page, pageSize, total, loadingPosts, onP
         width: 84,
         render: (value, record) => {
           const post = toPost(record)
-          const src = typeof value === 'string' ? value : post.imageSrc
+          const isVideoPost = post.mediaType === 'video' || (post.videos?.length ?? 0) > 0
+          const src = isVideoPost ? (post.videos?.[0] || post.imageSrc) : (typeof value === 'string' ? value : post.imageSrc)
 
           return (
             <span className="island-admin-post-table__cover-wrap">
-              <img className="island-admin-post-table__cover" src={src} alt={post.title} />
+              {isVideoPost ?
+                <video className="island-admin-post-table__cover" src={src} muted playsInline preload="metadata" />
+              : <img className="island-admin-post-table__cover" src={src} alt={post.title} />}
               {post.pinned ?
                 <span className="island-admin-post-table__pin" aria-label="置顶">
                   {String.fromCharCode(9733)}

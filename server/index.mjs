@@ -209,16 +209,21 @@ function normalizePost(input, posts, currentId) {
   const time = currentId ? cleanText(input.time) || new Date().toISOString() : new Date().toISOString()
   const tags = [...new Set(toStringList(input.tags))]
   const images = [...new Set([...toStringList(input.images), cleanText(input.imageSrc)].filter(Boolean))].slice(0, 9)
-  const imageSrc = images[0] ?? ''
+  const videos = [...new Set(toStringList(input.videos))].slice(0, 1)
+  const mediaType = videos.length > 0 ? 'video' : 'image'
+  const imageSrc = images[0] ?? videos[0] ?? ''
   const id = currentId ?? crypto.randomUUID()
 
-  if (!title) throw createHttpError(400, '请填写标题')
-  if (!imageSrc) throw createHttpError(400, '请填写封面图片')
+  if (!title) throw createHttpError(400, '\u8bf7\u586b\u5199\u6807\u9898')
+  if (images.length > 0 && videos.length > 0) throw createHttpError(400, '\u56fe\u7247\u548c\u89c6\u9891\u53ea\u80fd\u4e8c\u9009\u4e00')
+  if (!imageSrc) throw createHttpError(400, '\u8bf7\u81f3\u5c11\u4e0a\u4f20 1 \u4e2a\u56fe\u7247\u6216\u89c6\u9891')
 
   return {
     id,
     imageSrc,
     images,
+    videos,
+    mediaType,
     title,
     content,
     location,

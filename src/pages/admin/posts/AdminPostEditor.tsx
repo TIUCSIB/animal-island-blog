@@ -74,19 +74,37 @@ function appendStickerMarkdown(content: string, sticker: AdminSticker) {
 }
 
 export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving, setForm, onDeletePost, onOpenMediaLibrary, onSave, compact = false, showDeleteAction = true }: AdminPostEditorProps) {
-  const [openPanel, setOpenPanel] = useState<ComposePanelMode>(() => (!isWriteMode ? 'images' : null))
+  const [openPanel, setOpenPanel] = useState<ComposePanelMode>(() => {
+    if (isWriteMode) return null
+    return getPostVideoUrls(form.videosText).length > 0 ? 'videos' : 'images'
+  })
   const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
   const richEditorRef = useRef<Editor | null>(null)
   const imageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const videoUrls = getPostVideoUrls(form.videosText).slice(0, MAX_POST_VIDEOS)
+  const hasImages = imageUrls.length > 0
+  const hasVideos = videoUrls.length > 0
   const remainingImages = Math.max(0, MAX_POST_IMAGES - imageUrls.length)
   const remainingVideos = Math.max(0, MAX_POST_VIDEOS - videoUrls.length)
+  const canAddImages = !hasVideos && remainingImages > 0
+  const canAddVideos = !hasImages && remainingVideos > 0
+  const canOpenImagePanel = hasImages || !hasVideos
+  const canOpenVideoPanel = hasVideos || !hasImages
+
+  const resolvedOpenPanel =
+    openPanel === 'images' && !canOpenImagePanel ? (canOpenVideoPanel ? 'videos' : null)
+    : openPanel === 'videos' && !canOpenVideoPanel ? (canOpenImagePanel ? 'images' : null)
+    : openPanel
 
   function addImage(url: string) {
-    setForm((current) => ({
-      ...current,
-      imagesText: appendPostImageUrl(current.imagesText, url),
-    }))
+    setForm((current) => {
+      if (getPostVideoUrls(current.videosText).length > 0) return current
+
+      return {
+        ...current,
+        imagesText: appendPostImageUrl(current.imagesText, url),
+      }
+    })
   }
 
   function removeImage(url: string) {
@@ -97,10 +115,14 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
   }
 
   function addVideo(url: string) {
-    setForm((current) => ({
-      ...current,
-      videosText: appendPostVideoUrl(current.videosText, url),
-    }))
+    setForm((current) => {
+      if (getPostImageUrls(current.imagesText).length > 0) return current
+
+      return {
+        ...current,
+        videosText: appendPostVideoUrl(current.videosText, url),
+      }
+    })
   }
 
   function removeVideo(url: string) {
@@ -136,11 +158,17 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
   }
 
   function togglePanel(panel: Exclude<ComposePanelMode, null>) {
+    if (panel === 'images' && !canOpenImagePanel) return
+    if (panel === 'videos' && !canOpenVideoPanel) return
+
     setOpenPopover(null)
     setOpenPanel((current) => (current === panel ? null : panel))
   }
 
   function openMediaLibrary(mode: PostMediaLibraryMode) {
+    if (mode === 'gallery' && !canAddImages) return
+    if (mode === 'videos' && !canAddVideos) return
+
     setOpenPopover(null)
     setOpenPanel(mode === 'videos' ? 'videos' : 'images')
     onOpenMediaLibrary(mode)
@@ -197,9 +225,10 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           <div className="island-admin-compose-bottom mt-1 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
               <button
-                className={[iconButtonClass, openPanel === 'images' && activeIconButtonClass].filter(Boolean).join(' ')}
+                className={[iconButtonClass, resolvedOpenPanel === 'images' && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
                 aria-label="管理图片"
+                disabled={!canOpenImagePanel}
                 onClick={() => togglePanel('images')}
               >
                 <Image size={17} strokeWidth={2.8} />
@@ -208,15 +237,16 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 className={iconButtonClass}
                 type="button"
                 aria-label="打开图片库"
-                disabled={remainingImages === 0}
+                disabled={!canAddImages}
                 onClick={() => openMediaLibrary('gallery')}
               >
                 <Images size={17} strokeWidth={2.8} />
               </button>
               <button
-                className={[iconButtonClass, openPanel === 'videos' && activeIconButtonClass].filter(Boolean).join(' ')}
+                className={[iconButtonClass, resolvedOpenPanel === 'videos' && activeIconButtonClass].filter(Boolean).join(' ')}
                 type="button"
                 aria-label="管理视频"
+                disabled={!canOpenVideoPanel}
                 onClick={() => togglePanel('videos')}
               >
                 <Video size={17} strokeWidth={2.8} />
@@ -255,13 +285,13 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   </button>
                 }
               >
-                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">📝 设置</strong>
+                <strong className="flex items-center gap-1.5 text-sm font-black text-[#4d3f2c]">⚙ 设置</strong>
                 <label className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-2 text-xs font-black">
                   <span>地点</span>
                   <Input
                     size="small"
                     value={form.location}
-                    placeholder="家附近 / Taipei"
+                    placeholder="附近 / Taipei"
                     prefix={<MapPin size={14} strokeWidth={3} />}
                     onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
                   />
@@ -288,14 +318,15 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </div>
         </section>
 
-        {openPanel === 'images' ?
+        {resolvedOpenPanel === 'images' ?
           <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图片，第一张会作为封面</strong>
-              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={remainingImages === 0} onClick={() => openMediaLibrary('gallery')}>
+              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图片；第一张会作为封面</strong>
+              <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={!canAddImages} onClick={() => openMediaLibrary('gallery')}>
                 图片库
               </Button>
             </div>
+            {hasVideos ? <p className="text-[11px] font-black text-[#c27d5a]">已上传视频，删除视频后才能继续上传图片。</p> : null}
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {imageUrls.map((url, index) => (
                 <div
@@ -320,7 +351,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 </div>
               ))}
 
-              {remainingImages > 0 ?
+              {canAddImages ?
                 <AdminCloudinaryUploader
                   token={token}
                   purpose="post-image"
@@ -346,14 +377,15 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
           </section>
         : null}
 
-        {openPanel === 'videos' ?
+        {resolvedOpenPanel === 'videos' ?
           <section className="island-admin-compose-panel grid gap-3 border-t border-[#c4b89e]/18 py-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 个视频；视频文章仍需至少 1 张封面图</strong>
-              <Button type="default" size="small" htmlType="button" icon={<Clapperboard size={14} strokeWidth={3} />} disabled={remainingVideos === 0} onClick={() => openMediaLibrary('videos')}>
+              <strong className="text-[10px] font-black text-[#9f927d]"># 最多 1 个视频；视频和图片只能二选一；有视频时不需要封面图</strong>
+              <Button type="default" size="small" htmlType="button" icon={<Clapperboard size={14} strokeWidth={3} />} disabled={!canAddVideos} onClick={() => openMediaLibrary('videos')}>
                 视频库
               </Button>
             </div>
+            {hasImages ? <p className="text-[11px] font-black text-[#c27d5a]">已上传图片，删除图片后才能继续上传视频。</p> : null}
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
               {videoUrls.map((url, index) => (
                 <div
@@ -363,7 +395,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
                   <span className="island-admin-compose-image-overlay" aria-hidden="true" />
                   <span className="absolute bottom-2 left-2 z-[2] inline-flex items-center rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-white">
-                    Video {index + 1}
+                    视频 {index + 1}
                   </span>
                   <button
                     className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
@@ -376,14 +408,13 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                 </div>
               ))}
 
-              {remainingVideos > 0 ?
+              {canAddVideos ?
                 <AdminCloudinaryUploader
                   token={token}
                   purpose="post-video"
                   resourceType="video"
                   accept="video/*"
                   assetLabel="视频"
-                  multiple
                   maxFiles={remainingVideos}
                   onUploaded={(asset) => addVideo(asset.secureUrl)}
                   renderTrigger={({ disabled, uploading, open }) => (

@@ -32,9 +32,10 @@ export interface IslandGalleryItemProps extends Omit<HTMLAttributes<HTMLElement>
   contentClassName?: string
 }
 
-type IslandGalleryImageProps = {
+type IslandGalleryMediaProps = {
   src: string
   alt: string
+  mediaType: IslandGalleryItemMediaType
   className?: string
 }
 
@@ -115,7 +116,7 @@ export function IslandGalleryItem({
   const body = (
     <>
       <div className={cn('island-gallery-item__media', `island-gallery-item__media--${ratio}`)}>
-        <IslandGalleryImage key={imageSrc} className={imageClassName} src={imageSrc} alt={imageAlt} />
+        <IslandGalleryMedia key={`${mediaType}-${imageSrc}`} className={imageClassName} src={imageSrc} alt={imageAlt} mediaType={mediaType} />
         <div className="island-gallery-item__shade" />
 
         {(markerIcon || (!pinned && corner)) ? (
@@ -164,12 +165,28 @@ export function IslandGalleryItem({
   )
 }
 
-function IslandGalleryImage({ src, alt, className }: IslandGalleryImageProps) {
-  const [loaded, setLoaded] = useState(() => loadedGalleryImages.has(src))
+function IslandGalleryMedia({ src, alt, mediaType, className }: IslandGalleryMediaProps) {
+  const [loaded, setLoaded] = useState(() => mediaType === 'video' || loadedGalleryImages.has(src))
 
   function handleLoad() {
     loadedGalleryImages.add(src)
     setLoaded(true)
+  }
+
+  if (mediaType === 'video') {
+    return (
+      <>
+        <span className={cn('island-gallery-item__placeholder', loaded && 'is-loaded')} aria-hidden="true" />
+        <video
+          className={cn('island-gallery-item__image', loaded && 'is-loaded', className)}
+          src={src}
+          muted
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={() => setLoaded(true)}
+        />
+      </>
+    )
   }
 
   return (
