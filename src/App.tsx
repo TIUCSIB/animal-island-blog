@@ -16,15 +16,7 @@ const defaultMusicConfig: MusicConfig = {
   platform: 'netease',
   sourceType: 'song',
   musicId: '473403185',
-  tracks: [
-    {
-      title: 'ふたつの影',
-      author: 'Famishin / 春風まゆき',
-      pic: 'https://p1.music.126.net/UtBzZyeeHb84vRQXWoH48A==/19019352137357551.jpg',
-      url: 'https://music.030456.xyz/api?server=netease&type=url&id=473403185',
-      lrc: 'https://music.030456.xyz/api?server=netease&type=lrc&id=473403185',
-    },
-  ],
+  tracks: [],
 }
 
 function readStoredBoolean(key: string) {

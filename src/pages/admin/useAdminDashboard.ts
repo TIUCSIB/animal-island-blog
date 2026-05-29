@@ -464,6 +464,24 @@ export function useAdminDashboard() {
     showStatus({ type: 'info', text: '已退出后台。' })
   }
 
+  function forceRelogin(nextAccount: string) {
+    clearAdminSession()
+    queryClient.removeQueries({ queryKey: queryKeys.adminProfileRoot })
+    setToken('')
+    setHasRefreshToken(false)
+    setAdminProfile(null)
+    setAuthChecking(false)
+    setAccountForm({
+      account: toAccountInputValue(nextAccount),
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    })
+    setSelectedId(null)
+    setForm(createEmptyForm())
+    openLoginModal()
+  }
+
   function handleSectionChange(section: AdminSection) {
     setActiveSection(section)
 
@@ -635,17 +653,8 @@ export function useAdminDashboard() {
         currentPassword,
         newPassword: newPassword || undefined,
       })
-
-      setAdminProfile(profile)
-      setAccountForm({
-        account: toAccountInputValue(profile.account),
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      })
-      queryClient.setQueryData(queryKeys.adminProfile(token), profile)
-      window.dispatchEvent(new Event('island-admin-auth-change'))
-      showStatus({ type: 'success', text: '账号信息已更新。' })
+      forceRelogin(profile.account)
+      showStatus({ type: 'success', text: 'Account or password updated. Please sign in again.' })
     } catch (error) {
       showStatus({ type: 'error', text: getErrorMessage(error) })
     } finally {

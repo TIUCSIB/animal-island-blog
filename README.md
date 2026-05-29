@@ -167,15 +167,16 @@ VITE_TURNSTILE_SITE_KEY=
 
 > 注意：后端现在不会再回退到默认后台密码。未配置 `ADMIN_PASSWORD` 时，管理员登录和本地 JSON API 都会直接报错。
 
-| 变量名                     |           是否必填 | 说明                                               |
-| -------------------------- | -----------------: | -------------------------------------------------- |
-| `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                       |
-| `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`               |
-| `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                               |
-| `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                              |
-| `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                 |
-| `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                              |
-| `CLOUDINARY_UPLOAD_FOLDER` |                 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog` |
+| 变量名                     |           是否必填 | 说明                                                        |
+| -------------------------- | -----------------: | ----------------------------------------------------------- |
+| `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                                |
+| `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`                        |
+| `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                                        |
+| `MUSIC_API_BASE_URL`       |                 No | Music API base URL. Default: `https://music.030456.xyz/api` |
+| `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                                       |
+| `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                          |
+| `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                                       |
+| `CLOUDINARY_UPLOAD_FOLDER` |                 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog`          |
 
 示例：
 
@@ -183,6 +184,7 @@ VITE_TURNSTILE_SITE_KEY=
 ADMIN_PASSWORD=replace-with-a-strong-password
 TURNSTILE_ENABLED=false
 TURNSTILE_SECRET_KEY=
+MUSIC_API_BASE_URL=https://meting-api-omega.vercel.app/
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret

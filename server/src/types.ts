@@ -1,6 +1,7 @@
 export type WorkerEnv = {
   DB: D1Database
   ADMIN_PASSWORD?: string
+  MUSIC_API_BASE_URL?: string
   TURNSTILE_ENABLED?: string
   TURNSTILE_SECRET_KEY?: string
   CLOUDINARY_CLOUD_NAME?: string

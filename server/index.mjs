@@ -12,7 +12,19 @@ const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY ?? ''
 const sessionToken = randomBytes(32).toString('hex')
 const dataFile = process.env.POSTS_FILE ? resolve(process.env.POSTS_FILE) : join(__dirname, 'data', 'posts.json')
 const musicFile = process.env.MUSIC_FILE ? resolve(process.env.MUSIC_FILE) : join(__dirname, 'data', 'music.json')
-const musicApiBaseUrl = 'https://music.030456.xyz/api'
+const defaultMusicApiBaseUrl = 'https://music.030456.xyz/api'
+const musicApiBaseUrl = process.env.MUSIC_API_BASE_URL?.trim() || defaultMusicApiBaseUrl
+
+function createMusicApiUrl(type, id) {
+  const url = new URL(musicApiBaseUrl)
+
+  url.searchParams.set('server', 'netease')
+  url.searchParams.set('type', type)
+  url.searchParams.set('id', id)
+
+  return url.toString()
+}
+
 const defaultMusic = {
   enabled: true,
   platform: 'netease',
@@ -23,8 +35,8 @@ const defaultMusic = {
       title: 'ふたつの影',
       author: 'Famishin / 春風まゆき',
       pic: 'https://p1.music.126.net/UtBzZyeeHb84vRQXWoH48A==/19019352137357551.jpg',
-      url: 'https://music.030456.xyz/api?server=netease&type=url&id=473403185',
-      lrc: 'https://music.030456.xyz/api?server=netease&type=lrc&id=473403185',
+      url: createMusicApiUrl('url', '473403185'),
+      lrc: createMusicApiUrl('lrc', '473403185'),
     },
   ],
 }
@@ -112,11 +124,16 @@ async function readMusic() {
 
   const raw = await readFile(musicFile, 'utf8')
   const music = JSON.parse(raw)
+  const tracks = Array.isArray(music.tracks) ? music.tracks : defaultMusic.tracks
 
   return {
     ...defaultMusic,
     ...music,
-    tracks: Array.isArray(music.tracks) ? music.tracks : defaultMusic.tracks,
+    tracks: tracks.map((track) => ({
+      ...track,
+      url: music.sourceType === 'song' ? createMusicApiUrl('url', cleanText(music.musicId) || defaultMusic.musicId) : track.url,
+      lrc: music.sourceType === 'song' ? createMusicApiUrl('lrc', cleanText(music.musicId) || defaultMusic.musicId) : track.lrc,
+    })),
   }
 }
 

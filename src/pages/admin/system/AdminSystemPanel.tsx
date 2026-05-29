@@ -60,22 +60,22 @@ export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLogg
             <span>{systemChecks.length ? '最近一次系统检查结果' : '点击右上角「检查」开始检测'}</span>
           </div>
 
-          {systemChecks.length ? (
+          {systemChecks.length ?
             <div className="island-admin-check-list">
               {systemChecks.map((item) => (
                 <div key={item.id} className={getCheckClassName(item.status)}>
                   <span className="island-admin-check-item__dot" aria-hidden="true" />
                   <div>
                     <strong>{item.label}</strong>
-                    {item.detail ? <small>{item.detail}</small> : null}
+                    {item.detail ?
+                      <small>{item.detail}</small>
+                    : null}
                   </div>
                   <em>{item.value}</em>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="island-admin-check-panel__empty">会检查 API 心跳、文章数据、站点资料、音乐配置和登录 token 是否有效。</p>
-          )}
+          : <p className="island-admin-check-panel__empty">会检查 API 心跳、文章数据、站点资料、音乐配置和登录 token 是否有效。</p>}
         </div>
 
         <form className="island-admin-account-form" onSubmit={onSaveAccount}>
@@ -102,7 +102,7 @@ export function AdminSystemPanel({ accountForm, adminProfile, postsCount, isLogg
               <Input
                 type="password"
                 value={accountForm.currentPassword}
-                placeholder={adminProfile?.initialized ? '当前后台密码' : '默认 island-admin'}
+                placeholder="当前后台密码"
                 prefix={<KeyRound size={15} strokeWidth={3} />}
                 onChange={(event) => setAccountForm((current) => ({ ...current, currentPassword: event.target.value }))}
               />

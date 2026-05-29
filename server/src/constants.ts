@@ -4,7 +4,7 @@ export const CONFIG_ID = 'default'
 export const ADMIN_USER_ID = 'owner'
 export const SITE_PROFILE_ID = 'default'
 export const ABOUT_PAGE_ID = 'default'
-export const MUSIC_API_BASE_URL = 'https://music.030456.xyz/api'
+export const DEFAULT_MUSIC_API_BASE_URL = 'https://music.030456.xyz/api'
 export const ACCESS_TOKEN_MAX_AGE_SECONDS = 60 * 15
 export const REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 export const PASSWORD_HASH_ITERATIONS = 100_000
@@ -65,18 +65,31 @@ export const defaultAboutContent: AboutContent = {
   ],
 }
 
-export const defaultMusic = {
-  enabled: true,
-  platform: 'netease' as const,
-  sourceType: 'song' as const,
-  musicId: '473403185',
-  tracks: [
-    {
-      title: 'ふたつの影',
-      author: 'Famishin / 春風まゆき',
-      pic: 'https://p1.music.126.net/UtBzZyeeHb84vRQXWoH48A==/19019352137357551.jpg',
-      url: 'https://music.030456.xyz/api?server=netease&type=url&id=473403185',
-      lrc: 'https://music.030456.xyz/api?server=netease&type=lrc&id=473403185',
-    },
-  ] satisfies MusicTrack[],
+export function createMusicApiUrl(baseUrl: string, type: string, id: string) {
+  const safeBaseUrl = baseUrl.trim() || DEFAULT_MUSIC_API_BASE_URL
+  const url = new URL(safeBaseUrl)
+
+  url.searchParams.set('server', 'netease')
+  url.searchParams.set('type', type)
+  url.searchParams.set('id', id)
+
+  return url.toString()
+}
+
+export function createDefaultMusic(baseUrl = DEFAULT_MUSIC_API_BASE_URL) {
+  return {
+    enabled: true,
+    platform: 'netease' as const,
+    sourceType: 'song' as const,
+    musicId: '473403185',
+    tracks: [
+      {
+        title: 'Default Track',
+        author: 'Famishin / Harukaze Mayuki',
+        pic: 'https://p1.music.126.net/UtBzZyeeHb84vRQXWoH48A==/19019352137357551.jpg',
+        url: createMusicApiUrl(baseUrl, 'url', '473403185'),
+        lrc: createMusicApiUrl(baseUrl, 'lrc', '473403185'),
+      },
+    ] satisfies MusicTrack[],
+  }
 }

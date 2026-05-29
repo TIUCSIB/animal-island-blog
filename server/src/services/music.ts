@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 
-import { CONFIG_ID, defaultMusic, MUSIC_API_BASE_URL } from '../constants'
-import { getDb } from '../db'
+import { CONFIG_ID, createDefaultMusic, createMusicApiUrl, DEFAULT_MUSIC_API_BASE_URL } from '../constants'
+import { getDb, getEnv } from '../db'
 import { musicConfigs, musicTracks } from '../db/schema'
 import { HttpError } from '../http'
 import { normalizeMusicTrack } from '../normalizers'
@@ -15,8 +15,12 @@ type MusicConfigInput = {
   musicId?: unknown
 }
 
+function getMusicApiBaseUrl() {
+  return cleanText(getEnv().MUSIC_API_BASE_URL) || DEFAULT_MUSIC_API_BASE_URL
+}
+
 async function fetchMusicTracks(sourceType: MusicSourceType, musicId: string) {
-  const url = new URL(MUSIC_API_BASE_URL)
+  const url = new URL(getMusicApiBaseUrl())
 
   url.searchParams.set('server', 'netease')
   url.searchParams.set('type', sourceType)
@@ -43,9 +47,10 @@ export async function getMusicConfig() {
   const db = getDb()
   const config = await db.select().from(musicConfigs).where(eq(musicConfigs.id, CONFIG_ID)).get()
 
-  if (!config) return defaultMusic
+  if (!config) return createDefaultMusic(getMusicApiBaseUrl())
 
   const tracks = await db.select().from(musicTracks).where(eq(musicTracks.configId, CONFIG_ID)).orderBy(asc(musicTracks.sortOrder)).all()
+  const musicApiBaseUrl = getMusicApiBaseUrl()
 
   return {
     enabled: config.enabled,
@@ -56,8 +61,8 @@ export async function getMusicConfig() {
       title: track.title,
       author: track.author,
       pic: track.pic,
-      url: track.url,
-      lrc: track.lrc,
+      url: config.sourceType === 'song' ? createMusicApiUrl(musicApiBaseUrl, 'url', config.musicId) : track.url,
+      lrc: config.sourceType === 'song' ? createMusicApiUrl(musicApiBaseUrl, 'lrc', config.musicId) : track.lrc,
     })),
     updatedAt: config.updatedAt,
   }
