@@ -1,182 +1,430 @@
-﻿# animal-island-blog
+# shlii-web
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-ElysiaJS-F38020?logo=cloudflare)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)
 
-一个基于 **React 19**、**TypeScript**、**Vite 8**、**Tailwind CSS 4**、**animal-island-ui** 和 **ElysiaJS + Cloudflare D1** 的小岛风图片博客。
+一个小岛风的图片博客 / 个人站项目，前端使用 **React 19 + TypeScript + Vite**，后端使用 **ElysiaJS + Cloudflare Workers + Cloudflare D1**，媒体资源使用 **Cloudinary**。
 
-## 概览
+---
 
-**animal-island-blog** 是一个以"小岛"为主题的图片博客 / 个人画廊，具有沉浸感的小岛 UI 交互体验。访客可以浏览照片画廊、阅读文章，管理员可以发布内容、管理站点配置。
+## 1. 项目简介
 
-### 功能
+这个项目包含两部分：
 
-- **照片画廊** — 无限滚动瀑布流图片展示，支持图片/视频内容
-- **文章详情** — 响应式桌面/移动端双布局
-- **小岛模式** — 沉浸式交互开关，开启后显示浮动菜单、音乐播放器、登录入口
-- **音乐播放器** — 支持网易云音乐，在页面角落浮动播放
-- **管理后台** — 完整的后台管理：文章编辑器（Tiptap）、媒体资源管理（Cloudinary）、站点配置、关于页编辑
-- **认证系统** — JWT 令牌认证 + Refresh Token
-- **Cloudflare D1 数据库** — 高性能全球化 SQLite，Drizzle ORM 管理
+- **前端站点**：负责首页、关于页、文章详情页、管理后台 UI
+- **后端 API**：负责文章、关于页、站点资料、管理员登录、媒体上传签名等接口
 
-## 技术栈
+推荐的生产部署架构：
+
+- **前端**：Cloudflare Pages
+- **API**：Cloudflare Workers
+- **数据库**：Cloudflare D1
+- **媒体资源**：Cloudinary
+- **人机验证（可选）**：Cloudflare Turnstile
+
+---
+
+## 2. 功能概览
+
+- 首页图片 / 视频画廊
+- 文章详情页
+- 关于页
+- 小岛风交互 UI
+- 后台登录
+- 后台文章管理
+- 后台站点资料管理
+- 后台关于页管理
+- 后台音乐配置
+- Cloudinary 媒体上传与资源管理
+
+---
+
+## 3. 技术栈
 
 ### 前端
 
-| 技术 | 用途 |
-|---|---|
-| React 19 | UI 框架 + React Compiler 自动优化 |
-| TypeScript | 类型安全 |
-| Vite 8 | 构建工具 + HMR |
-| Tailwind CSS 4 | 原子化 CSS |
-| animal-island-ui | 小岛主题 UI 组件库 |
-| TanStack React Query 5 | 服务端状态管理 |
-| Zustand 5 | 客户端状态管理 |
-| Tiptap 3 | 富文本编辑器 |
-| Lucide | 图标库 |
-| Geist | 字体 |
+- React 19
+- TypeScript
+- Vite 8
+- Tailwind CSS 4
+- React Router
+- TanStack React Query
+- Zustand
+- Tiptap
 
 ### 后端
 
-| 技术 | 用途 |
-|---|---|
-| Cloudflare Workers | 无服务器运行时 |
-| ElysiaJS 1.4 | Web 框架 |
-| Drizzle ORM 0.45 | 数据库 ORM |
-| Cloudflare D1 | 无服务器 SQLite 数据库 |
-| Cloudinary | 图片/视频托管 |
-| Cloudflare Turnstile | 人机验证 |
+- Cloudflare Workers
+- ElysiaJS
+- Drizzle ORM
+- Cloudflare D1
 
-## 快速开始
+### 第三方服务
+
+- Cloudinary
+- Cloudflare Turnstile（可选）
+
+---
+
+## 4. 目录结构
+
+```txt
+shlii-web/
+├── public/                     静态资源
+├── server/                     后端 API
+│   ├── drizzle/migrations/     D1 / Drizzle 迁移文件
+│   ├── src/routes/             API 路由
+│   ├── src/services/           业务逻辑
+│   ├── src/db/                 数据库 schema
+│   └── index.mjs               本地 JSON API 回退方案
+├── src/                        React 前端
+│   ├── components/             通用组件
+│   ├── pages/                  页面级组件
+│   ├── routes/                 路由配置
+│   ├── lib/                    API / 工具函数
+│   └── data/                   本地默认数据
+├── wrangler.api.jsonc          Worker / D1 配置
+├── vite.config.ts              Vite 配置
+└── README.md
+```
+
+---
+
+## 5. 本地开发
 
 ### 环境要求
 
-- Node.js >= 20
-- npm 或 pnpm
+- Node.js 20+
+- npm
 
-### 安装
+### 安装依赖
 
 ```bash
-git clone https://github.com/TIUCSIB/animal-island-blog.git
-cd animal-island-blog
 npm install
 ```
 
-### 本地开发
+### 启动开发环境
 
-需要同时启动前端和服务端：
+需要开两个终端：
 
 ```bash
-# 终端 1：启动前端（Vite HMR，默认 http://localhost:5173）
+# 终端 1：前端
 npm run dev
+```
 
-# 终端 2：启动 API 服务（Cloudflare Worker，默认 http://localhost:8787）
+```bash
+# 终端 2：后端 Worker 本地调试
 npm run dev:api
 ```
 
-前端通过 Vite proxy 将 `/api` 请求转发到 API 服务。
+默认地址：
 
-### 构建
+- 前端：`http://localhost:5173`
+- API：`http://localhost:8787`
 
-```bash
-npm run build
-npm run preview    # 预览生产构建
-```
+本地开发时，Vite 会把 `/api` 请求代理到 `http://localhost:8787`。
 
-### 代码检查
+### 本地检查
 
 ```bash
 npm run lint
-```
-
-## 项目结构
-
-```
-animal-island-blog/
-├── src/                          # React 前端源码
-│   ├── App.tsx                   # 根组件
-│   ├── main.tsx                  # 入口文件
-│   ├── pages/                    # 页面组件
-│   │   ├── HomePage.tsx          # 首页（画廊）
-│   │   ├── AboutPage.tsx         # 关于页
-│   │   ├── AdminPage.tsx         # 管理后台
-│   │   ├── PostDetailPage.tsx    # 文章详情
-│   │   └── NotFoundPage.tsx      # 404 页面
-│   ├── components/               # 组件
-│   │   ├── island/               # 小岛主题组件
-│   │   └── ui/                   # UI 基础组件
-│   ├── routes/                   # React Router 配置
-│   ├── stores/                   # Zustand 状态管理
-│   ├── lib/                      # 工具函数 & API 客户端
-│   └── data/                     # 本地数据 & 类型定义
-├── server/                       # 后端 API（Cloudflare Worker）
-│   ├── src/
-│   │   ├── worker.ts             # Elysia Worker 入口
-│   │   ├── routes/               # API 路由
-│   │   ├── services/             # 业务逻辑
-│   │   ├── db/                   # D1 数据库 Schema
-│   │   └── ...
-│   ├── drizzle/                  # Drizzle 迁移文件
-│   └── index.mjs                 # 本地 JSON API 回退方案
-├── public/                       # 静态资源
-└── dist/                         # 构建输出（不纳入版本控制）
-```
-
-## 部署
-
-### 前端（Cloudflare Pages / 静态托管）
-
-```bash
 npm run build
 ```
 
-构建产物位于 `dist/` 目录，可部署到 Cloudflare Pages、Vercel 或任意静态托管服务。
+---
 
-### API（Cloudflare Workers + D1）
+## 6. 环境变量
+
+这个项目分为两类环境变量：
+
+- **前端变量**：构建时注入，变量名必须以 `VITE_` 开头
+- **后端变量**：给 Cloudflare Worker 使用
+
+### 6.1 前端环境变量
+
+本地开发放在 `.env.local`，部署到 Cloudflare Pages 时配置到 Pages 的环境变量里。
+
+| 变量名 | 是否必填 | 说明 |
+|---|---:|---|
+| `VITE_API_BASE_URL` | 是 | 线上 API 地址，例如 `https://shlii-api.your-subdomain.workers.dev` |
+| `VITE_ENABLE_TURNSTILE` | 否 | 是否启用 Turnstile，填 `true` 或 `false` |
+| `VITE_TURNSTILE_SITE_KEY` | 否 | Turnstile 前端 Site Key |
+
+示例：
+
+```env
+VITE_API_BASE_URL=https://shlii-api.your-subdomain.workers.dev
+VITE_ENABLE_TURNSTILE=false
+VITE_TURNSTILE_SITE_KEY=
+```
+
+### 6.2 后端环境变量
+
+本地开发可放到 `.dev.vars`，线上建议通过 `wrangler secret put` 或 Cloudflare Dashboard 配置。
+
+| 变量名 | 是否必填 | 说明 |
+|---|---:|---|
+| `ADMIN_PASSWORD` | 是 | 初始后台密码 |
+| `TURNSTILE_ENABLED` | 否 | 是否启用 Turnstile，`true` / `false` |
+| `TURNSTILE_SECRET_KEY` | 否 | Turnstile Secret Key |
+| `CLOUDINARY_CLOUD_NAME` | 管理后台上传时必填 | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | 管理后台上传时必填 | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | 管理后台上传时必填 | Cloudinary API secret |
+| `CLOUDINARY_UPLOAD_FOLDER` | 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog` |
+
+示例：
+
+```env
+ADMIN_PASSWORD=replace-with-a-strong-password
+TURNSTILE_ENABLED=false
+TURNSTILE_SECRET_KEY=
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+CLOUDINARY_UPLOAD_FOLDER=shlii
+```
+
+---
+
+## 7. 推荐上线方案
+
+推荐使用下面这套组合：
+
+1. **Cloudflare D1**：存文章、站点配置、关于页、管理员信息
+2. **Cloudflare Workers**：部署 API
+3. **Cloudflare Pages**：部署前端静态站点
+4. **Cloudinary**：存图片和视频
+5. **Turnstile（可选）**：保护后台登录
+
+这是当前项目最贴合现有代码结构的部署方式。
+
+---
+
+## 8. 上线流程（Cloudflare Pages + Workers + D1）
+
+下面是一套可以直接照着走的流程。
+
+### 第 1 步：安装依赖并登录 Cloudflare
+
+```bash
+npm install
+npx wrangler login
+```
+
+### 第 2 步：创建 D1 数据库
+
+```bash
+npx wrangler d1 create animal-island-db
+```
+
+执行后你会拿到一个 `database_id`。
+
+把它填到根目录的 `wrangler.api.jsonc` 里：
+
+```jsonc
+{
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "animal-island-db",
+      "database_id": "替换成你自己的 database_id",
+      "migrations_dir": "server/drizzle/migrations"
+    }
+  ]
+}
+```
+
+### 第 3 步：配置 Worker secrets
+
+至少先配后台密码：
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD --config wrangler.api.jsonc
+```
+
+如果你要开启媒体上传，再继续配置：
+
+```bash
+npx wrangler secret put CLOUDINARY_CLOUD_NAME --config wrangler.api.jsonc
+npx wrangler secret put CLOUDINARY_API_KEY --config wrangler.api.jsonc
+npx wrangler secret put CLOUDINARY_API_SECRET --config wrangler.api.jsonc
+```
+
+如果你要启用 Turnstile，再配置：
+
+```bash
+npx wrangler secret put TURNSTILE_SECRET_KEY --config wrangler.api.jsonc
+```
+
+`TURNSTILE_ENABLED` 可以保留在 `wrangler.api.jsonc` 的 `vars` 里，也可以在 Dashboard 里设置成 `true` / `false`。
+
+### 第 4 步：执行生产数据库迁移
+
+```bash
+npm run db:migrate:remote
+```
+
+这一步会把 `server/drizzle/migrations/` 中的表结构同步到 D1。
+
+### 第 5 步：部署 API
 
 ```bash
 npm run deploy:api
 ```
 
-需要配置以下环境变量 / secrets：
+部署成功后，你会拿到一个 Worker 地址，例如：
 
-| 变量 | 说明 |
-|---|---|
-| `ADMIN_PASSWORD` | 管理员密码（默认 `island-admin`） |
-| `JWT_SECRET` | JWT 签名密钥 |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary 云名 |
-| `CLOUDINARY_API_KEY` | Cloudinary API 密钥 |
-| `CLOUDINARY_API_SECRET` | Cloudinary API 密钥 |
-| `TURNSTILE_SECRET` | Turnstile 验证密钥（可选） |
-
-### 数据库迁移
-
-```bash
-# 本地 D1 迁移
-npm run db:generate     # 生成迁移文件
-npm run db:migrate:local # 应用到本地 D1
-
-# 生产 D1 迁移
-npm run db:migrate:remote
+```txt
+https://shlii-api.your-subdomain.workers.dev
 ```
 
-## 环境变量
+记住这个地址，前端要用。
 
-复制 `.env.local.example` 为 `.env.local` 并填入配置：
+### 第 6 步：部署前端到 Cloudflare Pages
+
+在 Cloudflare Pages 新建项目，连接这个仓库，构建配置填写：
+
+| 配置项 | 值 |
+|---|---|
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node version | `20` 或更高 |
+
+然后在 Pages 的环境变量里添加：
 
 ```env
-ADMIN_PASSWORD=your-admin-password
-JWT_SECRET=your-jwt-secret
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-TURNSTILE_SITE_KEY=your-turnstile-site-key
-TURNSTILE_SECRET=your-turnstile-secret
+VITE_API_BASE_URL=https://shlii-api.your-subdomain.workers.dev
+VITE_ENABLE_TURNSTILE=false
+VITE_TURNSTILE_SITE_KEY=
 ```
 
-## License
+如果你启用了 Turnstile，把后两项改成真实值。
+
+### 第 7 步：确认 SPA 路由重写
+
+项目里已经有：
+
+```txt
+public/_redirects
+```
+
+内容是：
+
+```txt
+/* /index.html 200
+```
+
+它可以保证 `/about`、`/posts/:postId`、`/admin` 这类前端路由在静态托管下正常刷新访问。
+
+### 第 8 步：绑定自定义域名
+
+建议至少配置两个域名：
+
+- 前端：`www.your-domain.com`
+- API：`api.your-domain.com`
+
+如果你给 Worker 绑定了自定义域名，记得同步更新前端的：
+
+```env
+VITE_API_BASE_URL=https://api.your-domain.com
+```
+
+然后重新触发一次前端构建部署。
+
+### 第 9 步：上线后验收
+
+至少检查下面这些页面和能力：
+
+- `/`
+- `/about`
+- `/admin`
+- 文章详情页
+- 后台登录
+- 文章新增 / 编辑 / 删除
+- 关于页保存
+- 站点资料保存
+- 音乐配置保存
+- 图片 / 视频上传（如果启用了 Cloudinary）
+
+---
+
+## 9. 发布前检查清单
+
+建议正式上线前逐项确认：
+
+- [ ] `npm run lint` 通过
+- [ ] `npm run build` 通过
+- [ ] `wrangler.api.jsonc` 中已填入正确的 D1 `database_id`
+- [ ] Worker secrets 已配置
+- [ ] `VITE_API_BASE_URL` 已指向线上 API
+- [ ] 如启用 Turnstile，前后端 key 已分别配置
+- [ ] 如启用上传，Cloudinary 已配置
+- [ ] 前端域名、API 域名都可访问
+- [ ] `/about`、`/posts/:postId`、`/admin` 刷新不 404
+
+---
+
+## 10. 常用命令
+
+```bash
+npm run dev                # 启动前端开发环境
+npm run dev:api            # 启动 Worker 本地调试
+npm run dev:api:json       # 启动本地 JSON API 回退方案
+npm run build              # 生产构建
+npm run preview            # 预览构建结果
+npm run lint               # ESLint 检查
+npm run db:generate        # 生成 Drizzle migration
+npm run db:migrate:local   # 应用本地 D1 migration
+npm run db:migrate:remote  # 应用线上 D1 migration
+npm run deploy:api         # 部署 Worker API
+```
+
+---
+
+## 11. 补充说明
+
+### 1）为什么前端和 API 推荐分开部署？
+
+因为当前项目结构本身就是：
+
+- 前端是标准 Vite 静态站
+- 后端是独立的 Cloudflare Worker
+
+这样拆开部署最简单，也最符合当前代码。
+
+### 2）为什么线上必须配置 `VITE_API_BASE_URL`？
+
+因为本地开发时有 Vite 代理：
+
+```txt
+/api -> http://localhost:8787
+```
+
+但线上静态站没有这个本地代理，所以前端必须明确知道线上 API 的完整地址。
+
+### 3）Cloudinary 是必须的吗？
+
+如果你只看静态内容，暂时不是必须。
+
+如果你要在后台上传图片 / 视频，它就是必须的。
+
+### 4）Turnstile 是必须的吗？
+
+不是。
+
+如果你暂时不需要后台登录防刷，可以先关闭：
+
+```env
+VITE_ENABLE_TURNSTILE=false
+TURNSTILE_ENABLED=false
+```
+
+---
+
+## 12. License
 
 MIT
