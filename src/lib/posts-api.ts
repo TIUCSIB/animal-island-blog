@@ -279,12 +279,12 @@ async function requestJson<T>(path: string, init: ApiRequestInit = {}) {
 }
 
 export async function fetchGalleryPosts(signal?: AbortSignal) {
-  const data = await fetchGalleryPostsPage(1, 6, signal)
+  const data = await fetchGalleryPostsPage(1, 8, signal)
 
   return data.posts
 }
 
-export async function fetchGalleryPostsPage(page = 1, pageSize = 6, signal?: AbortSignal) {
+export async function fetchGalleryPostsPage(page = 1, pageSize = 8, signal?: AbortSignal) {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),

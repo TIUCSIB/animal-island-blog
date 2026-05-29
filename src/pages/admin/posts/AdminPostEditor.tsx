@@ -222,7 +222,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             }
           />
 
-          <div className="island-admin-compose-bottom mt-1 flex flex-wrap items-center justify-between gap-3">
+          <div className="island-admin-compose-bottom mt-1 flex flex-wrap items-center justify-between gap-3 pt-1">
             <div className="flex flex-wrap items-center gap-2 text-[#9f927d]">
               <button
                 className={[iconButtonClass, resolvedOpenPanel === 'images' && activeIconButtonClass].filter(Boolean).join(' ')}
@@ -233,13 +233,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               >
                 <Image size={17} strokeWidth={2.8} />
               </button>
-              <button
-                className={iconButtonClass}
-                type="button"
-                aria-label="Open image library"
-                disabled={!canAddImages}
-                onClick={() => openMediaLibrary('gallery')}
-              >
+              <button className={iconButtonClass} type="button" aria-label="Open image library" disabled={!canAddImages} onClick={() => openMediaLibrary('gallery')}>
                 <Images size={17} strokeWidth={2.8} />
               </button>
               <button
@@ -324,28 +318,32 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong className="text-[10px] font-black text-[#9f927d]"># 最多 9 张图片；第一张会作为封面</strong>
               <Button type="default" size="small" htmlType="button" icon={<Images size={14} strokeWidth={3} />} disabled={!canAddImages} onClick={() => openMediaLibrary('gallery')}>
-                图片库              </Button>
+                图片库{' '}
+              </Button>
             </div>
-            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
+            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(3,68px)] justify-start gap-2">
               {imageUrls.map((url, index) => (
-                <div
-                  key={url}
-                  className="island-admin-compose-image-tile relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]"
-                >
+                <div key={url} className="group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] border-[#fff8ec] bg-[#f8f8f0]">
                   <img className="size-full object-cover" src={url} alt={index === 0 ? '封面图片' : `文章图片 ${index + 1}`} />
-                  <span className="island-admin-compose-image-overlay" aria-hidden="true" />
+                  <span
+                    className="absolute inset-0 z-1 bg-linear-180 from-[#564226]/6 to-[#564226]/18 bg-[#19c8b9]/10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none"
+                    aria-hidden="true"
+                  />
                   {index === 0 ?
-                    <span className="island-admin-compose-cover-badge absolute" aria-label="封面图片">
+                    <span
+                      className="absolute left-0 top-0 z-2 grid size-[22px] place-items-center rounded-br-[12px] border-0 bg-linear-135 from-[#f7cd67] to-[#ffe39b] p-0 text-[#7a5420] shadow-[0_1px_0_rgba(169,117,24,0.22)]"
+                      aria-label="封面图片"
+                    >
                       <Star size={10} strokeWidth={3} fill="currentColor" />
                     </span>
                   : null}
                   <button
-                    className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
+                    className="absolute right-[4px] top-[4px] z-2 grid size-[18px] scale-78 place-items-center rounded-full bg-[#fffdf7]/94 text-[#c94444] opacity-0 shadow-none transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100"
                     type="button"
                     aria-label="移除图片"
                     onClick={() => removeImage(url)}
                   >
-                    <X size={13} strokeWidth={3} />
+                    <X size={11} strokeWidth={3} />
                   </button>
                 </div>
               ))}
@@ -360,14 +358,14 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   onUploaded={(asset) => addImage(asset.secureUrl)}
                   renderTrigger={({ disabled, uploading, open }) => (
                     <button
-                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[14px] border-[1.5px] border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
                       type="button"
                       disabled={disabled}
                       onClick={open}
                     >
                       {uploading ?
                         <span className="text-xs font-black">上传中...</span>
-                      : <Plus size={30} strokeWidth={2.8} />}
+                      : <Plus size={22} strokeWidth={2.8} />}
                     </button>
                   )}
                 />
@@ -381,23 +379,24 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong className="text-[10px] font-black text-[#9f927d]"># 最多 1 个视频</strong>
               <Button type="default" size="small" htmlType="button" icon={<Clapperboard size={14} strokeWidth={3} />} disabled={!canAddVideos} onClick={() => openMediaLibrary('videos')}>
-                视频库              </Button>
+                视频库{' '}
+              </Button>
             </div>
-            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(auto-fill,minmax(86px,1fr))] gap-3">
+            <div className="island-admin-compose-image-grid grid grid-cols-[repeat(3,68px)] justify-start gap-2">
               {videoUrls.map((url) => (
-                <div
-                  key={url}
-                  className="island-admin-compose-image-tile relative aspect-square overflow-hidden rounded-[22px] border-2 border-[#fff8ec] bg-[#f8f8f0] shadow-[0_3px_0_rgba(196,184,158,0.58)]"
-                >
+                <div key={url} className="group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] border-[#fff8ec] bg-[#f8f8f0]">
                   <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
-                  <span className="island-admin-compose-image-overlay" aria-hidden="true" />
+                  <span
+                    className="absolute inset-0 z-1 bg-linear-180 from-[#564226]/6 to-[#564226]/18 bg-[#19c8b9]/10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none"
+                    aria-hidden="true"
+                  />
                   <button
-                    className="island-admin-compose-image-remove absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-white/86 text-[#c94444] shadow-[0_2px_0_rgba(196,184,158,0.42)]"
+                    className="absolute right-[4px] top-[4px] z-2 grid size-[18px] scale-78 place-items-center rounded-full bg-[#fffdf7]/94 text-[#c94444] opacity-0 shadow-none transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100"
                     type="button"
                     aria-label="移除视频"
                     onClick={() => removeVideo(url)}
                   >
-                    <X size={13} strokeWidth={3} />
+                    <X size={11} strokeWidth={3} />
                   </button>
                 </div>
               ))}
@@ -413,14 +412,14 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   onUploaded={(asset) => addVideo(asset.secureUrl)}
                   renderTrigger={({ disabled, uploading, open }) => (
                     <button
-                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[22px] border-2 border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[14px] border-[1.5px] border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
                       type="button"
                       disabled={disabled}
                       onClick={open}
                     >
                       {uploading ?
                         <span className="text-xs font-black">上传中...</span>
-                      : <Plus size={30} strokeWidth={2.8} />}
+                      : <Plus size={22} strokeWidth={2.8} />}
                     </button>
                   )}
                 />
@@ -432,4 +431,3 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     </form>
   )
 }
-

@@ -511,13 +511,13 @@ export function useAdminDashboard() {
     setSaving(true)
 
     try {
-      const savedPost = isCreating ? await createGalleryPost(token, payload) : await updateGalleryPost(token, selectedPost!.id, payload)
-
       if (isCreating) {
+        await createGalleryPost(token, payload)
         setSelectedId(null)
         setForm(createEmptyForm())
         await loadPosts(1)
       } else {
+        await updateGalleryPost(token, selectedPost!.id, payload)
         handleClosePostEditor()
         await loadPosts(safePostsPagination.page)
       }

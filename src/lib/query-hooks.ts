@@ -4,7 +4,7 @@ import type { GalleryPost } from '@/data/gallery'
 import { fetchAboutContent, fetchAdminProfile, fetchGalleryPostById, fetchGalleryPostsPage, fetchMusicConfig, fetchSiteProfile } from '@/lib/posts-api'
 import { queryKeys } from '@/lib/query-client'
 
-const HOME_POST_PAGE_SIZE = 6
+const HOME_POST_PAGE_SIZE = 8
 
 export function useSiteProfileQuery() {
   return useQuery({

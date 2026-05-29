@@ -41,7 +41,51 @@ export function usePostDetailPage() {
   const isCompact = useMediaQuery('(max-width: 699px)')
   const isIntercepted = Boolean(routeState?.intercepted) && !isCompact
   const [mediaState, setMediaState] = useState(() => ({ postId, index: 0 }))
-  const [mediaRatios, setMediaRatios] = useState<Record<string, number>>({})
+  const [mediaRatios, setMediaRatios] = useState<Record<string, number>>(() => {
+    const initialPost = routeState?.post ?? cachedPost
+    if (!initialPost) return {}
+
+    const firstSrc = initialPost.videos?.length
+      ? initialPost.videos[0]
+      : (initialPost.images?.length ? initialPost.images[0] : initialPost.imageSrc)
+    if (!firstSrc) return {}
+
+    if (initialPost.videos?.length) {
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.src = firstSrc
+
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        return { [firstSrc]: video.videoWidth / video.videoHeight }
+      }
+
+      video.onloadedmetadata = () => {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          setMediaRatios((current) => {
+            if (current[firstSrc]) return current
+            return { ...current, [firstSrc]: video.videoWidth / video.videoHeight }
+          })
+        }
+      }
+
+      return {}
+    }
+
+    const img = new Image()
+    img.src = firstSrc
+    if (img.complete && img.naturalWidth > 0) {
+      return { [firstSrc]: img.naturalWidth / img.naturalHeight }
+    }
+
+    img.onload = () => {
+      setMediaRatios((current) => {
+        if (current[firstSrc]) return current
+        return { ...current, [firstSrc]: img.naturalWidth / img.naturalHeight }
+      })
+    }
+
+    return {}
+  })
   const [mobileMediaControlState, setMobileMediaControlState] = useState(() => ({ postId, visible: false }))
   const mobileMediaControlTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mobileSwipeStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -160,17 +204,27 @@ export function usePostDetailPage() {
   }
 
   useEffect(() => {
-    mediaItems
-      .filter((item) => item.type === 'image')
-      .forEach((item) => {
-        if (mediaRatios[item.src]) return
+    mediaItems.forEach((item) => {
+      if (mediaRatios[item.src]) return
 
+      if (item.type === 'image') {
         const image = new Image()
         image.src = item.src
         image.onload = () => {
           recordMediaRatio(item.src, image.naturalWidth, image.naturalHeight)
         }
-      })
+        return
+      }
+
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.src = item.src
+      video.onloadedmetadata = () => {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          recordMediaRatio(item.src, video.videoWidth, video.videoHeight)
+        }
+      }
+    })
   }, [mediaItems, mediaRatios])
 
   useEffect(() => {
@@ -201,9 +255,11 @@ export function usePostDetailPage() {
       }
     : undefined
 
+  const mobileMediaHeight = Math.round(Math.min(viewport.width * (frameRatio || 1), mobileMediaMaxHeight))
+
   const mobileMediaStyle: CSSProperties = {
-    aspectRatio: String(frameRatio || 1),
-    maxHeight: `${Math.round(mobileMediaMaxHeight)}px`,
+    height: `${mobileMediaHeight}px`,
+    maxHeight: `${mobileMediaMaxHeight}px`,
   }
 
   return {
