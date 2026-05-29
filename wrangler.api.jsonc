@@ -4,7 +4,6 @@
   "main": "server/src/worker.ts",
   "compatibility_date": "2026-05-23",
   "vars": {
-    "ADMIN_PASSWORD": "island-admin",
     "TURNSTILE_ENABLED": "true",
   },
   "d1_databases": [
