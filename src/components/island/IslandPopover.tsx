@@ -10,9 +10,10 @@ export type IslandPopoverProps = {
   onOpenChange: (open: boolean) => void
   className?: string
   contentClassName?: string
+  placement?: 'top' | 'bottom'
 }
 
-export function IslandPopover({ open, trigger, children, onOpenChange, className, contentClassName }: IslandPopoverProps) {
+export function IslandPopover({ open, trigger, children, onOpenChange, className, contentClassName, placement = 'top' }: IslandPopoverProps) {
   const rootRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
@@ -43,7 +44,8 @@ export function IslandPopover({ open, trigger, children, onOpenChange, className
       {open ? (
         <span
           className={cn(
-            'absolute bottom-[calc(100%+10px)] left-1/2 z-30 grid w-72 -translate-x-1/2 gap-3 rounded-[22px] border-2 border-[#c4b89e]/60 bg-[#fffdf7]/95 p-3 text-[#725d42] shadow-[0_5px_0_rgba(212,201,180,0.72),0_18px_36px_rgba(61,52,40,0.14)] backdrop-blur',
+            placement === 'top' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]',
+            'absolute left-1/2 z-30 grid w-72 -translate-x-1/2 gap-3 rounded-[22px] border-2 border-[#c4b89e]/60 bg-[#fffdf7]/95 p-3 text-[#725d42] shadow-[0_5px_0_rgba(212,201,180,0.72),0_18px_36px_rgba(61,52,40,0.14)] backdrop-blur',
             contentClassName,
           )}
           role="dialog"
