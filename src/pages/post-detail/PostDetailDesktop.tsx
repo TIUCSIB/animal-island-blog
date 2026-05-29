@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, MapPin, MoreHorizontal, X } from 'lucide-react'
 
-import { IslandAvatar, IslandBadge, IslandPostContent } from '@/components/island'
+import { IslandAvatar, IslandBadge, IslandPostContent, IslandVideoPlayer } from '@/components/island'
 import { cn } from '@/lib/utils'
 import { Gallery } from '@/pages/components/Gallery'
 import { SiteFooter } from '@/pages/components/SiteFooter'
@@ -21,20 +21,18 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
 
   return (
     <article
-      className="relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)]"
+      className="relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)] transition-[width,height] duration-200 ease-out"
       style={detail.desktopArticleStyle}
       aria-label={post.title}
     >
       <section className="group/media relative min-h-0 min-w-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]">
         <div className="relative flex size-full items-center justify-center overflow-hidden">
           {detail.activeMedia?.type === 'video' ?
-            <video
+            <IslandVideoPlayer
               key={detail.activeMedia.src}
-              className={cn('block size-full', detail.lockCarouselFrame ? 'object-cover' : 'object-contain')}
               src={detail.activeMedia.src}
-              controls
-              playsInline
-              onLoadedMetadata={(event) => detail.recordMediaRatio(detail.activeMedia!.src, event.currentTarget.videoWidth, event.currentTarget.videoHeight)}
+              lockFrame={detail.lockCarouselFrame}
+              onRatioReady={(src, w, h) => detail.recordMediaRatio(src, w, h)}
             />
           : <img
               key={detail.activeMedia?.src ?? post.imageSrc}

@@ -19,7 +19,7 @@ export function SiteLayout() {
   const siteProfile = siteProfileQuery.data ?? defaultSiteProfile
 
   return (
-    <div className="m-auto flex min-h-dvh max-w-2xl flex-col px-5 pt-7.5">
+    <div className="m-auto flex min-h-dvh max-w-3xl flex-col px-5 pt-7.5">
       {isAboutPage ?
         <Button className="island-about-page__back w-fit" type="primary" size="small" onClick={() => navigate('/')}>
           ← 返回首页

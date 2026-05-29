@@ -59,15 +59,6 @@ export function usePostDetailPage() {
         return { [firstSrc]: video.videoWidth / video.videoHeight }
       }
 
-      video.onloadedmetadata = () => {
-        if (video.videoWidth > 0 && video.videoHeight > 0) {
-          setMediaRatios((current) => {
-            if (current[firstSrc]) return current
-            return { ...current, [firstSrc]: video.videoWidth / video.videoHeight }
-          })
-        }
-      }
-
       return {}
     }
 
@@ -75,13 +66,6 @@ export function usePostDetailPage() {
     img.src = firstSrc
     if (img.complete && img.naturalWidth > 0) {
       return { [firstSrc]: img.naturalWidth / img.naturalHeight }
-    }
-
-    img.onload = () => {
-      setMediaRatios((current) => {
-        if (current[firstSrc]) return current
-        return { ...current, [firstSrc]: img.naturalWidth / img.naturalHeight }
-      })
     }
 
     return {}

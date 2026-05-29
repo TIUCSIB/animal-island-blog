@@ -55,10 +55,10 @@ export function Gallery({ siteProfile }: GalleryProps) {
   return (
     <>
       {posts.length > 0 ?
-        <IslandGalleryGrid className="island-home-gallery-grid mt-4" minItemWidth="180px" gap="0px">
+        <IslandGalleryGrid className="island-home-gallery-grid mt-4 rounded-sm overflow-hidden" minItemWidth="180px" gap="1px">
           {posts.map((post) => {
             const mediaType = post.mediaType === 'video' || (post.videos?.length ?? 0) > 0 ? 'video' : 'image'
-            const coverSrc = mediaType === 'video' ? (post.videos?.[0] || '') : (post.imageSrc || '')
+            const coverSrc = mediaType === 'video' ? post.videos?.[0] || '' : post.imageSrc || ''
             const imageCount = post.images?.filter(Boolean).length ?? (post.imageSrc ? 1 : 0)
 
             return (
@@ -93,11 +93,7 @@ export function Gallery({ siteProfile }: GalleryProps) {
       : null}
 
       {showEmptyState ?
-        <IslandEmptyState
-          className="mt-4"
-          icon="🌱"
-          title={postsQuery.isError ? '文章读取失败' : '空空的小岛'}
-        />
+        <IslandEmptyState className="mt-4" icon="🌱" title={postsQuery.isError ? '文章读取失败' : '空空的小岛'} />
       : null}
 
       {posts.length > 0 && (hasNextPage || isFetchingNextPage) ?

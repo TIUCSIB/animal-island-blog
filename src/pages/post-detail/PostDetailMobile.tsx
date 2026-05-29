@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 
-import { IslandAvatar, IslandBadge, IslandPostContent } from '@/components/island'
+import { IslandAvatar, IslandBadge, IslandPostContent, IslandVideoPlayer } from '@/components/island'
 import { cn } from '@/lib/utils'
 
 import { mobileContentClass, mobileSwitchButtonClass } from './post-detail.styles'
@@ -40,20 +40,18 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
       </section>
 
       <section
-        className="relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]"
+        className="relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)] transition-[height] duration-200 ease-out"
         style={detail.mobileMediaStyle}
         onPointerCancel={detail.handleMobileMediaPointerCancel}
         onPointerDown={detail.handleMobileMediaPointerDown}
         onPointerUp={detail.handleMobileMediaPointerUp}
       >
         {detail.activeMedia?.type === 'video' ?
-          <video
+          <IslandVideoPlayer
             key={detail.activeMedia.src}
-            className={cn('block size-full', detail.lockCarouselFrame ? 'object-cover' : 'object-contain')}
             src={detail.activeMedia.src}
-            controls
-            playsInline
-            onLoadedMetadata={(event) => detail.recordMediaRatio(detail.activeMedia!.src, event.currentTarget.videoWidth, event.currentTarget.videoHeight)}
+            lockFrame={detail.lockCarouselFrame}
+            onRatioReady={(src, w, h) => detail.recordMediaRatio(src, w, h)}
           />
         : <img
             key={detail.activeMedia?.src ?? post.imageSrc}
