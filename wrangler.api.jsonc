@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "animal-island-db",
-      "database_id": "b28cb71f-3c13-4d49-996f-7322882355da",
+      "database_id": "你的_D1_database_ID", // 用 `npx wrangler d1 create animal-island-db` 创建后替换
       "migrations_dir": "server/drizzle/migrations",
     },
   ],
