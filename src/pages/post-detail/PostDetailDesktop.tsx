@@ -22,7 +22,7 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
   return (
     <article
       className={cn('relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)]', )}
-      style={detail.desktopArticleStyle}
+      style={{ backgroundColor: '#fff9f0', ...detail.desktopArticleStyle }}
       aria-label={post.title}
     >
       <section className="group/media relative min-h-0 min-w-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]">

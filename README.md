@@ -1,4 +1,4 @@
-# Animal Island Blog
+# 🏝️ Animal Island Blog
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript)
@@ -6,11 +6,11 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)
 
-一个小岛风的图片博客 / 个人站项目，前端使用 **React 19 + TypeScript + Vite**，后端使用 **ElysiaJS + Cloudflare Workers + Cloudflare D1**，媒体资源使用 **Cloudinary**。
+一个小岛风的图片博客 / 个人站项目，前端使用 **React 19 + TypeScript + Vite**，后端使用 **ElysiaJS + Cloudflare Workers + Cloudflare D1**，媒体资源使用 **Cloudinary**，UI 组件库使用 **animal-island-ui**。
 
 ---
 
-## 1. 项目简介
+## 📖 1. 项目简介
 
 这个项目包含两部分：
 
@@ -27,22 +27,23 @@
 
 ---
 
-## 2. 功能概览
+## ✨ 2. 功能概览
 
-- 首页图片 / 视频画廊
-- 文章详情页
-- 关于页
-- 小岛风交互 UI
-- 后台登录
-- 后台文章管理
-- 后台站点资料管理
-- 后台关于页管理
-- 后台音乐配置
-- Cloudinary 媒体上传与资源管理
+- 🖼️ 首页图片 / 视频画廊（瀑布流布局，无限滚动加载）
+- 📄 文章详情页（桌面端弹窗 + 移动端全屏，封面比例自动适配）
+- 🏠 关于页（折叠信息、联系方式、技术栈展示）
+- 🎵 背景音乐播放器（网易云音源，支持歌单和单曲）
+- 🔐 后台登录（支持 Cloudflare Turnstile 人机验证）
+- 📝 后台文章管理（富文本编辑器、图片库、视频库、标签、置顶）
+- 👤 后台站点资料管理（头像、昵称、签名、在线状态）
+- 📋 后台关于页管理（可折叠问答、联系方式排序）
+- 🎶 后台音乐配置（歌曲 ID / 歌单 ID 切换）
+- ☁️ Cloudinary 媒体上传与资源管理（图片库、视频库、删除）
+- 🎨 小岛风交互 UI（自定义光标、浮动菜单、Toast 通知）
 
 ---
 
-## 3. 技术栈
+## 🛠️ 3. 技术栈
 
 ### 前端
 
@@ -50,26 +51,30 @@
 - TypeScript
 - Vite 8
 - Tailwind CSS 4
+- **animal-island-ui** — 自研小岛风 UI 组件库（Button、Input、Modal、Switch、Loading、Cursor 等）
 - React Router
 - TanStack React Query
-- Zustand
-- Tiptap
+- Zustand（状态管理）
+- Tiptap（富文本编辑器）
+- Lucide React（图标）
+- tw-animate-css（动画工具）
 
 ### 后端
 
 - Cloudflare Workers
-- ElysiaJS
+- ElysiaJS（轻量 Web 框架）
 - Drizzle ORM
-- Cloudflare D1
+- Cloudflare D1（SQLite 数据库）
 
 ### 第三方服务
 
-- Cloudinary
-- Cloudflare Turnstile（可选）
+- Cloudinary（图片 / 视频 CDN 存储与管理）
+- Cloudflare Turnstile（可选人机验证）
+- 网易云音乐 API（背景音乐音源）
 
 ---
 
-## 4. 目录结构
+## 📁 4. 目录结构
 
 ```txt
 shlii-web/
@@ -81,24 +86,27 @@ shlii-web/
 │   ├── src/db/                 数据库 schema
 │   └── index.mjs               本地 JSON API 回退方案
 ├── src/                        React 前端
-│   ├── components/             通用组件
+│   ├── components/             通用组件（island/ 下为小岛风组件）
 │   ├── pages/                  页面级组件
+│   │   ├── post-detail/        文章详情页逻辑
+│   │   └── admin/              后台管理页面
 │   ├── routes/                 路由配置
 │   ├── lib/                    API / 工具函数
 │   └── data/                   本地默认数据
-├── wrangler.api.jsonc          Worker / D1 配置
+├── wrangler.jsonc              前端 Workers Sites 配置
+├── wrangler.api.jsonc          后端 Worker / D1 配置
 ├── vite.config.ts              Vite 配置
 └── README.md
 ```
 
 ---
 
-## 5. 本地开发
+## 🚀 5. 本地开发
 
 ### 环境要求
 
 - Node.js 20+
-- npm
+- npm 或 pnpm
 
 ### 安装依赖
 
@@ -136,7 +144,7 @@ npm run build
 
 ---
 
-## 6. 环境变量
+## ⚙️ 6. 环境变量
 
 这个项目分为两类环境变量：
 
@@ -149,14 +157,14 @@ npm run build
 
 | 变量名                    | 是否必填 | 说明                                                               |
 | ------------------------- | -------: | ------------------------------------------------------------------ |
-| `VITE_API_BASE_URL`       |       是 | 线上 API 地址，例如 `https://shlii-api.your-subdomain.workers.dev` |
+| `VITE_API_BASE_URL`       |       是 | 线上 API 地址，例如 `https://api.your-domain.com`                 |
 | `VITE_ENABLE_TURNSTILE`   |       否 | 是否启用 Turnstile，填 `true` 或 `false`                           |
 | `VITE_TURNSTILE_SITE_KEY` |       否 | Turnstile 前端 Site Key                                            |
 
 示例：
 
 ```env
-VITE_API_BASE_URL=https://shlii-api.your-subdomain.workers.dev
+VITE_API_BASE_URL=https://api.your-domain.com
 VITE_ENABLE_TURNSTILE=false
 VITE_TURNSTILE_SITE_KEY=
 ```
@@ -165,14 +173,14 @@ VITE_TURNSTILE_SITE_KEY=
 
 本地开发可放到 `.dev.vars`，线上建议通过 `wrangler secret put` 或 Cloudflare Dashboard 配置。
 
-> 注意：后端现在不会再回退到默认后台密码。未配置 `ADMIN_PASSWORD` 时，管理员登录和本地 JSON API 都会直接报错。
+> ⚠️ 注意：后端现在不会再回退到默认后台密码。未配置 `ADMIN_PASSWORD` 时，管理员登录和本地 JSON API 都会直接报错。
 
 | 变量名                     |           是否必填 | 说明                                                        |
 | -------------------------- | -----------------: | ----------------------------------------------------------- |
 | `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                                |
 | `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`                        |
 | `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                                        |
-| `MUSIC_API_BASE_URL`       |                 No | Music API base URL. Default: `https://music.030456.xyz/api` |
+| `MUSIC_API_BASE_URL`       |                 否 | Music API base URL，默认 `https://music.030456.xyz/api`     |
 | `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                                       |
 | `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                          |
 | `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                                       |
@@ -184,7 +192,7 @@ VITE_TURNSTILE_SITE_KEY=
 ADMIN_PASSWORD=replace-with-a-strong-password
 TURNSTILE_ENABLED=false
 TURNSTILE_SECRET_KEY=
-MUSIC_API_BASE_URL=https://meting-api-omega.vercel.app/
+MUSIC_API_BASE_URL=https://music.030456.xyz/api
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
@@ -193,7 +201,7 @@ CLOUDINARY_UPLOAD_FOLDER=shlii
 
 ---
 
-## 7. 推荐上线方案
+## 🌐 7. 推荐上线方案
 
 推荐使用下面这套组合：
 
@@ -207,7 +215,7 @@ CLOUDINARY_UPLOAD_FOLDER=shlii
 
 ---
 
-## 8. 上线流程（Cloudflare Pages + Workers + D1）
+## 📦 8. 上线流程（Cloudflare Pages + Workers + D1）
 
 下面是一套可以直接照着走的流程。
 
@@ -282,7 +290,7 @@ npm run deploy:api
 部署成功后，你会拿到一个 Worker 地址，例如：
 
 ```txt
-https://shlii-api.your-subdomain.workers.dev
+https://api.your-domain.com
 ```
 
 记住这个地址，前端要用。
@@ -301,7 +309,7 @@ https://shlii-api.your-subdomain.workers.dev
 然后在 Pages 的环境变量里添加：
 
 ```env
-VITE_API_BASE_URL=https://shlii-api.your-subdomain.workers.dev
+VITE_API_BASE_URL=https://api.your-domain.com
 VITE_ENABLE_TURNSTILE=false
 VITE_TURNSTILE_SITE_KEY=
 ```
@@ -325,6 +333,35 @@ VITE_API_BASE_URL=https://api.your-domain.com
 
 ---
 
-## 10. License
+## 💡 9. 后续功能建议
+
+### 🎯 优先级高
+
+- **文章评论系统**：支持游客评论（Turnstile 验证）或接入第三方评论（如 Giscus）
+- **文章搜索**：支持按标题、标签、内容关键词搜索
+- **图片懒加载 + 渐进式加载**：画廊和详情页的图片添加骨架屏和模糊占位，提升首屏体验
+- **SEO 优化**：添加 meta tags、Open Graph 协议、Sitemap，让文章能被搜索引擎收录
+- **RSS 订阅**：生成 RSS feed，方便读者通过 RSS 阅读器订阅
+
+### 🎯 优先级中
+
+- **文章分类 / 专栏**：支持按主题分组浏览，而不只是按时间线
+- **文章点赞 / 收藏**：轻量的互动功能，用 D1 存储计数
+- **深色模式**：跟随系统或手动切换，提升夜间浏览体验
+- **国际化（i18n）**：中英文切换，扩大受众范围
+- **图片 Exif 信息展示**：拍摄时间、相机型号、GPS 地点等
+- **文章分享卡片**：生成带封面图的分享卡片，适配微信 / Twitter 等社交平台
+
+### 🎯 优先级低
+
+- **PWA 支持**：离线缓存、添加到主屏幕、推送通知
+- **阅读统计**：UV / PV 计数、阅读时长统计
+- **相邻文章导航**：详情页底部显示上一篇 / 下一篇
+- **批量导入**：支持从 Markdown 文件或 JSON 批量导入历史文章
+- **Webhook 通知**：新文章发布时自动通知到 Telegram / 飞书 / Discord
+
+---
+
+## 📄 10. License
 
 MIT
