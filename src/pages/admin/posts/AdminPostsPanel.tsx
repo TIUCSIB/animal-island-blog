@@ -113,15 +113,18 @@ export function AdminPostsPanel({
           setForm((current) => {
             const hasImages = getPostImageUrls(current.imagesText).length > 0
             const hasVideos = getPostVideoUrls(current.videosText).length > 0
+            const isFirstMedia = !hasImages && !hasVideos
 
             return isVideoLibrary ?
               hasImages ? current : {
                 ...current,
                 videosText: appendPostVideoUrl(current.videosText, asset.secureUrl),
+                ...(isFirstMedia && asset.width && asset.height ? { coverWidth: asset.width, coverHeight: asset.height } : {}),
               }
             : hasVideos ? current : {
                 ...current,
                 imagesText: appendPostImageUrl(current.imagesText, asset.secureUrl),
+                ...(isFirstMedia && asset.width && asset.height ? { coverWidth: asset.width, coverHeight: asset.height } : {}),
               }
           })
         }
