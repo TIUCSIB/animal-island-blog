@@ -50,12 +50,12 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
           <IslandVideoPlayer
             key={detail.activeMedia.src}
             src={detail.activeMedia.src}
-            lockFrame={detail.lockCarouselFrame}
+            lockFrame
             onRatioReady={(src, w, h) => detail.recordMediaRatio(src, w, h)}
           />
         : <img
             key={detail.activeMedia?.src ?? post.imageSrc}
-            className={cn('block size-full', detail.lockCarouselFrame ? 'object-cover' : 'object-contain')}
+            className={cn('block size-full', 'object-cover')}
             src={detail.activeMedia?.src ?? post.imageSrc}
             alt={post.title}
             draggable={false}

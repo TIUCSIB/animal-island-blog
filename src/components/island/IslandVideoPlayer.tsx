@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { Maximize, Minimize, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -21,6 +21,7 @@ export function IslandVideoPlayer({ src, className, lockFrame = false, onRatioRe
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [showControls, setShowControls] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const clearHideTimer = useCallback(() => {
     if (hideTimerRef.current) {
@@ -86,6 +87,24 @@ export function IslandVideoPlayer({ src, className, lockFrame = false, onRatioRe
     const s = Math.floor(seconds % 60)
     return `${m}:${s.toString().padStart(2, '0')}`
   }
+
+  function toggleFullscreen() {
+    const container = videoRef.current?.closest('.group')
+    if (!container) return
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      container.requestFullscreen()
+    }
+  }
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
 
@@ -215,6 +234,20 @@ export function IslandVideoPlayer({ src, className, lockFrame = false, onRatioRe
             {muted ?
               <VolumeX aria-hidden="true" size={16} strokeWidth={2.4} />
             : <Volume2 aria-hidden="true" size={16} strokeWidth={2.4} />}
+          </button>
+
+          <button
+            className="grid size-8 shrink-0 place-items-center rounded-full text-white/80 transition-colors hover:bg-white/15 hover:text-white active:bg-white/10"
+            type="button"
+            aria-label={isFullscreen ? '退出全屏' : '全屏'}
+            onClick={(event) => {
+              event.stopPropagation()
+              toggleFullscreen()
+            }}
+          >
+            {isFullscreen ?
+              <Minimize aria-hidden="true" size={16} strokeWidth={2.4} />
+            : <Maximize aria-hidden="true" size={16} strokeWidth={2.4} />}
           </button>
         </div>
       </div>

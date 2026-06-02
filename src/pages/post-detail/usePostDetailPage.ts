@@ -248,7 +248,7 @@ export function usePostDetailPage() {
     : 660
   const availableLeftWidth = Math.max(360, viewport.width - desktopRightWidth - desktopOuterGap)
   const computedLeftWidth = Math.max(320, Math.min(availableLeftWidth, widthCap, Math.round(desktopHeight * frameRatio)))
-  const mobileMediaMaxHeight = Math.max(300, Math.min(frameRatio < 0.82 ? viewport.height * 0.54 : viewport.height * 0.62, 520))
+  const mobileMediaMaxHeight = Math.max(300, frameRatio < 0.82 ? viewport.height * 0.85 : Math.min(viewport.height * 0.62, 520))
 
   const desktopArticleStyle: CSSProperties | undefined =
     !isCompact ?
@@ -259,7 +259,7 @@ export function usePostDetailPage() {
       }
     : undefined
 
-  const mobileMediaHeight = Math.round(Math.min(viewport.width * (frameRatio || 1), mobileMediaMaxHeight))
+  const mobileMediaHeight = Math.round(Math.min(viewport.width / (frameRatio || 1), mobileMediaMaxHeight))
 
   const mobileMediaStyle: CSSProperties = {
     height: `${mobileMediaHeight}px`,

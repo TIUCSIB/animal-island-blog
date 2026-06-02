@@ -55,7 +55,7 @@ export function Gallery({ siteProfile }: GalleryProps) {
   return (
     <>
       {posts.length > 0 ?
-        <IslandGalleryGrid className="island-home-gallery-grid mt-4 rounded-sm overflow-hidden" minItemWidth="180px" gap="1px">
+        <IslandGalleryGrid className="island-home-gallery-grid mt-4  md:rounded-sm overflow-hidden" minItemWidth="180px" gap="1px">
           {posts.map((post) => {
             const mediaType = post.mediaType === 'video' || (post.videos?.length ?? 0) > 0 ? 'video' : 'image'
             const coverSrc = mediaType === 'video' ? post.videos?.[0] || '' : post.imageSrc || ''
