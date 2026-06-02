@@ -92,8 +92,9 @@ export function usePostDetailPage() {
   const activeMedia = mediaItems[activeMediaIndex]
   const activeMediaRatio = activeMedia ? mediaRatios[activeMedia.src] : undefined
   const firstMediaRatio = mediaItems[0] ? mediaRatios[mediaItems[0].src] : undefined
-  const ratioResolved = !mediaItems.length || mediaRatios[mediaItems[0].src] !== undefined
-  const frameRatio = firstMediaRatio ?? activeMediaRatio ?? 1
+  const coverFrameRatio = (post?.coverWidth && post?.coverHeight) ? post.coverWidth / post.coverHeight : undefined
+  const ratioResolved = !mediaItems.length || firstMediaRatio !== undefined
+  const frameRatio = firstMediaRatio ?? activeMediaRatio ?? coverFrameRatio ?? 1
   const displayLocation = post?.location?.trim()
   const lockCarouselFrame = mediaItems.length > 1
   const mobileMediaControlsVisible = isCompact && mediaItems.length > 1 && mobileMediaControlState.postId === postId && mobileMediaControlState.visible
