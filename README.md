@@ -51,7 +51,7 @@
 - TypeScript
 - Vite 8
 - Tailwind CSS 4
-- **animal-island-ui** — 自研小岛风 UI 组件库（Button、Input、Modal、Switch、Loading、Cursor 等）
+- animal-island-ui
 - React Router
 - TanStack React Query
 - Zustand（状态管理）
@@ -155,11 +155,11 @@ npm run build
 
 本地开发放在 `.env.local`，部署到 Cloudflare Pages 时配置到 Pages 的环境变量里。
 
-| 变量名                    | 是否必填 | 说明                                                               |
-| ------------------------- | -------: | ------------------------------------------------------------------ |
-| `VITE_API_BASE_URL`       |       是 | 线上 API 地址，例如 `https://api.your-domain.com`                 |
-| `VITE_ENABLE_TURNSTILE`   |       否 | 是否启用 Turnstile，填 `true` 或 `false`                           |
-| `VITE_TURNSTILE_SITE_KEY` |       否 | Turnstile 前端 Site Key                                            |
+| 变量名                    | 是否必填 | 说明                                              |
+| ------------------------- | -------: | ------------------------------------------------- |
+| `VITE_API_BASE_URL`       |       是 | 线上 API 地址，例如 `https://api.your-domain.com` |
+| `VITE_ENABLE_TURNSTILE`   |       否 | 是否启用 Turnstile，填 `true` 或 `false`          |
+| `VITE_TURNSTILE_SITE_KEY` |       否 | Turnstile 前端 Site Key                           |
 
 示例：
 
@@ -175,16 +175,16 @@ VITE_TURNSTILE_SITE_KEY=
 
 > ⚠️ 注意：后端现在不会再回退到默认后台密码。未配置 `ADMIN_PASSWORD` 时，管理员登录和本地 JSON API 都会直接报错。
 
-| 变量名                     |           是否必填 | 说明                                                        |
-| -------------------------- | -----------------: | ----------------------------------------------------------- |
-| `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                                |
-| `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`                        |
-| `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                                        |
-| `MUSIC_API_BASE_URL`       |                 否 | Music API base URL，默认 `https://music.030456.xyz/api`     |
-| `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                                       |
-| `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                          |
-| `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                                       |
-| `CLOUDINARY_UPLOAD_FOLDER` |                 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog`          |
+| 变量名                     |           是否必填 | 说明                                                    |
+| -------------------------- | -----------------: | ------------------------------------------------------- |
+| `ADMIN_PASSWORD`           |                 是 | 初始后台密码                                            |
+| `TURNSTILE_ENABLED`        |                 否 | 是否启用 Turnstile，`true` / `false`                    |
+| `TURNSTILE_SECRET_KEY`     |                 否 | Turnstile Secret Key                                    |
+| `MUSIC_API_BASE_URL`       |                 否 | Music API base URL，默认 `https://music.030456.xyz/api` |
+| `CLOUDINARY_CLOUD_NAME`    | 管理后台上传时必填 | Cloudinary cloud name                                   |
+| `CLOUDINARY_API_KEY`       | 管理后台上传时必填 | Cloudinary API key                                      |
+| `CLOUDINARY_API_SECRET`    | 管理后台上传时必填 | Cloudinary API secret                                   |
+| `CLOUDINARY_UPLOAD_FOLDER` |                 否 | Cloudinary 上传目录前缀，默认 `animal-island-blog`      |
 
 示例：
 
