@@ -30,6 +30,8 @@ export type PostForm = {
   videosText: string
   tagsText: string
   pinned: boolean
+  coverWidth: number
+  coverHeight: number
 }
 
 export type MusicForm = {

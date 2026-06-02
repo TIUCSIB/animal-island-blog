@@ -35,6 +35,8 @@ function serializePosts(postRows: PostRow[], assetRows: PostAssetRow[], tagRows:
       time: post.createdAt,
       tags: tagRows.filter((tag) => tag.postId === post.id).map((tag) => tag.tag),
       pinned: post.pinned,
+      coverWidth: post.coverWidth ?? undefined,
+      coverHeight: post.coverHeight ?? undefined,
     } satisfies GalleryPost
   })
 }
@@ -146,6 +148,8 @@ export async function createPost(input: unknown) {
     location: post.location,
     time: post.time,
     imageSrc: post.imageSrc,
+    coverWidth: post.coverWidth ?? null,
+    coverHeight: post.coverHeight ?? null,
     pinned: Boolean(post.pinned),
     createdAt: now,
     updatedAt: now,
@@ -171,6 +175,8 @@ export async function updatePost(id: string, input: unknown) {
       location: post.location,
       time: post.time,
       imageSrc: post.imageSrc,
+      coverWidth: post.coverWidth ?? null,
+      coverHeight: post.coverHeight ?? null,
       pinned: Boolean(post.pinned),
       updatedAt: new Date().toISOString(),
     })

@@ -21,7 +21,7 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
 
   return (
     <article
-      className="relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)] transition-[width,height] duration-200 ease-out"
+      className={cn('relative z-10 grid overflow-hidden rounded-[8px] bg-[#fff9f0] shadow-[0_6px_0_rgba(205,186,160,0.88),0_24px_80px_rgba(94,78,56,0.22)]', detail.ratioResolved && 'transition-[width,height] duration-200 ease-out')}
       style={detail.desktopArticleStyle}
       aria-label={post.title}
     >

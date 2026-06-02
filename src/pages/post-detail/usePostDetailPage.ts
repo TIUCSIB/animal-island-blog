@@ -50,6 +50,10 @@ export function usePostDetailPage() {
       : (initialPost.images?.length ? initialPost.images[0] : initialPost.imageSrc)
     if (!firstSrc) return {}
 
+    if (initialPost.coverWidth && initialPost.coverHeight) {
+      return { [firstSrc]: initialPost.coverWidth / initialPost.coverHeight }
+    }
+
     if (initialPost.videos?.length) {
       const video = document.createElement('video')
       video.preload = 'metadata'
@@ -88,6 +92,7 @@ export function usePostDetailPage() {
   const activeMedia = mediaItems[activeMediaIndex]
   const activeMediaRatio = activeMedia ? mediaRatios[activeMedia.src] : undefined
   const firstMediaRatio = mediaItems[0] ? mediaRatios[mediaItems[0].src] : undefined
+  const ratioResolved = !mediaItems.length || mediaRatios[mediaItems[0].src] !== undefined
   const frameRatio = firstMediaRatio ?? activeMediaRatio ?? 1
   const displayLocation = post?.location?.trim()
   const lockCarouselFrame = mediaItems.length > 1
@@ -219,6 +224,20 @@ export function usePostDetailPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!post || !post.coverWidth || !post.coverHeight) return
+
+    const firstSrc = post.videos?.length
+      ? post.videos[0]
+      : (post.images?.length ? post.images[0] : post.imageSrc)
+    if (!firstSrc) return
+
+    setMediaRatios((current) => {
+      if (current[firstSrc]) return current
+      return { ...current, [firstSrc]: post.coverWidth! / post.coverHeight! }
+    })
+  }, [post])
+
   const desktopHeight = Math.max(620, Math.min(860, viewport.height - 72))
   const desktopRightWidth = Math.min(410, Math.max(380, Math.round(viewport.width * 0.25)))
   const desktopOuterGap = isIntercepted ? 168 : 104
@@ -264,6 +283,7 @@ export function usePostDetailPage() {
     displayLocation,
     lockCarouselFrame,
     mobileMediaControlsVisible,
+    ratioResolved,
     desktopArticleStyle,
     mobileMediaStyle,
     closeDetail,

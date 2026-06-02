@@ -251,6 +251,8 @@ function normalizePost(input, posts, currentId) {
     time,
     tags,
     pinned: Boolean(input.pinned),
+    coverWidth: Number(input.coverWidth) || undefined,
+    coverHeight: Number(input.coverHeight) || undefined,
   }
 }
 

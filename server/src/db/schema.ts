@@ -70,6 +70,8 @@ export const posts = sqliteTable('posts', {
   location: text('location').notNull().default(''),
   time: text('time').notNull(),
   imageSrc: text('image_src').notNull(),
+  coverWidth: integer('cover_width'),
+  coverHeight: integer('cover_height'),
   pinned: integer('pinned', { mode: 'boolean' }).notNull().default(false),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),

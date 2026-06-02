@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEventHandler } from 'react'
 import type { Editor, JSONContent } from '@tiptap/core'
 import { Button, Card, Input, Switch } from 'animal-island-ui'
@@ -96,13 +96,17 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     : hasImages ? 'images'
     : openPanel
 
-  function addImage(url: string) {
+  function addImage(url: string, width?: number, height?: number) {
     setForm((current) => {
       if (getPostVideoUrls(current.videosText).length > 0) return current
+
+      const currentImages = getPostImageUrls(current.imagesText)
+      const isFirstImage = currentImages.length === 0
 
       return {
         ...current,
         imagesText: appendPostImageUrl(current.imagesText, url),
+        ...(isFirstImage && width && height ? { coverWidth: width, coverHeight: height } : {}),
       }
     })
   }
@@ -114,13 +118,17 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     }))
   }
 
-  function addVideo(url: string) {
+  function addVideo(url: string, width?: number, height?: number) {
     setForm((current) => {
       if (getPostImageUrls(current.imagesText).length > 0) return current
+
+      const currentVideos = getPostVideoUrls(current.videosText)
+      const isFirstVideo = currentVideos.length === 0
 
       return {
         ...current,
         videosText: appendPostVideoUrl(current.videosText, url),
+        ...(isFirstVideo && width && height ? { coverWidth: width, coverHeight: height } : {}),
       }
     })
   }
@@ -173,6 +181,40 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     setOpenPanel(mode === 'videos' ? 'videos' : 'images')
     onOpenMediaLibrary(mode)
   }
+
+  // Auto-detect cover dimensions when editing an existing post without them
+  useEffect(() => {
+    if (form.coverWidth && form.coverHeight) return
+
+    const firstMedia = hasVideos ? videoUrls[0] : imageUrls[0]
+    if (!firstMedia) return
+
+    if (hasVideos) {
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+      video.src = firstMedia
+      video.onloadedmetadata = () => {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          setForm((current) => {
+            if (current.coverWidth && current.coverHeight) return current
+            return { ...current, coverWidth: video.videoWidth, coverHeight: video.videoHeight }
+          })
+        }
+      }
+      return
+    }
+
+    const img = document.createElement('img')
+    img.src = firstMedia
+    img.onload = () => {
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        setForm((current) => {
+          if (current.coverWidth && current.coverHeight) return current
+          return { ...current, coverWidth: img.naturalWidth, coverHeight: img.naturalHeight }
+        })
+      }
+    }
+  }, [form.coverWidth, form.coverHeight, hasVideos, videoUrls, imageUrls, setForm])
 
   const iconButtonClass = 'island-admin-compose-icon'
   const activeIconButtonClass = 'island-admin-compose-icon--active'
@@ -355,7 +397,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   assetLabel="图片"
                   multiple
                   maxFiles={remainingImages}
-                  onUploaded={(asset) => addImage(asset.secureUrl)}
+                  onUploaded={(asset) => addImage(asset.secureUrl, asset.width, asset.height)}
                   renderTrigger={({ disabled, uploading, open }) => (
                     <button
                       className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[14px] border-[1.5px] border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"
@@ -409,7 +451,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
                   accept="video/*"
                   assetLabel="视频"
                   maxFiles={remainingVideos}
-                  onUploaded={(asset) => addVideo(asset.secureUrl)}
+                  onUploaded={(asset) => addVideo(asset.secureUrl, asset.width, asset.height)}
                   renderTrigger={({ disabled, uploading, open }) => (
                     <button
                       className="island-admin-compose-upload-tile grid aspect-square w-full place-items-center rounded-[14px] border-[1.5px] border-dashed border-[#c4b89e]/70 bg-[#fffdf7]/52 text-[#9f927d] transition hover:border-[#82d5bb] hover:bg-[#e6f9f6]/60 hover:text-[#117f77] disabled:cursor-not-allowed disabled:opacity-50"

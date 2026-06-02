@@ -13,6 +13,8 @@ export function createEmptyForm(): PostForm {
     videosText: '',
     tagsText: '',
     pinned: false,
+    coverWidth: 0,
+    coverHeight: 0,
   }
 }
 
@@ -41,6 +43,8 @@ export function postToForm(post: GalleryPost): PostForm {
     videosText: joinList(post.videos),
     tagsText: post.tags.join('，'),
     pinned: Boolean(post.pinned),
+    coverWidth: post.coverWidth ?? 0,
+    coverHeight: post.coverHeight ?? 0,
   }
 }
 
@@ -61,6 +65,8 @@ export function formToPost(form: PostForm): GalleryPost {
     mediaType: videos.length > 0 ? 'video' : 'image',
     tags: splitList(form.tagsText),
     pinned: form.pinned,
+    coverWidth: form.coverWidth || undefined,
+    coverHeight: form.coverHeight || undefined,
   }
 }
 

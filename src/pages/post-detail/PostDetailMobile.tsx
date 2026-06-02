@@ -40,7 +40,7 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
       </section>
 
       <section
-        className="relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)] transition-[height] duration-200 ease-out"
+        className={cn('relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]', detail.ratioResolved && 'transition-[height] duration-200 ease-out')}
         style={detail.mobileMediaStyle}
         onPointerCancel={detail.handleMobileMediaPointerCancel}
         onPointerDown={detail.handleMobileMediaPointerDown}

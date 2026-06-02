@@ -12,6 +12,8 @@ export const PostBody = t.Object({
   time: t.Optional(t.String()),
   tags: t.Optional(t.Array(t.String())),
   pinned: t.Optional(t.Boolean()),
+  coverWidth: t.Optional(t.Number()),
+  coverHeight: t.Optional(t.Number()),
 })
 
 export const SiteProfileBody = t.Object({

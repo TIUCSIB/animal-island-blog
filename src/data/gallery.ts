@@ -4,6 +4,8 @@ export type GalleryPost = {
   images?: string[]
   videos?: string[]
   mediaType?: 'image' | 'video'
+  coverWidth?: number
+  coverHeight?: number
   title: string
   content: string
   location: string

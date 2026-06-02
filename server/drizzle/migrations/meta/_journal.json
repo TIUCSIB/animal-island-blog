@@ -43,6 +43,13 @@
       "when": 1779587129515,
       "tag": "0005_watery_martin_li",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780395926952,
+      "tag": "0006_add_cover_dimensions",
+      "breakpoints": true
     }
   ]
 }
