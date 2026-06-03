@@ -1769,7 +1769,8 @@
   max-width: 100%;
   gap: 6px;
   overflow-x: auto;
-  padding: 0 1px 3px;
+  padding: 3px 1px 3px;
+
   scrollbar-width: none;
 }
 

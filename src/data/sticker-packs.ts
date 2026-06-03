@@ -12,7 +12,7 @@ export type AdminStickerPack = {
 export const stickerPacks: AdminStickerPack[] = [
   {
     id: 'zhihu',
-    label: '知乎表情',
+    label: '知乎',
     stickers: [
       { alt: '感谢', src: '/stickers/zhihu/01.png' },
       { alt: '哇', src: '/stickers/zhihu/02.png' },
@@ -76,7 +76,7 @@ export const stickerPacks: AdminStickerPack[] = [
   },
   {
     id: 'bilibili',
-    label: 'B站表情',
+    label: 'B站',
     stickers: [
       { alt: "doge_金箍", src: "/stickers/bilibili/aadaca1895e09c5596fc6365192ec93a23718cf0.png" },
       { alt: "笑哭", src: "/stickers/bilibili/c3043ba94babf824dea03ce500d0e73763bf4f40.png" },
