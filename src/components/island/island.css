@@ -2813,13 +2813,11 @@
 }
 
 .island-app--footer-animated .island-page-footer {
-  will-change: transform;
   box-shadow: 0 10px 16px rgba(25, 200, 185, 0.16);
   animation: island-footer-float 3.2s ease-in-out infinite;
 }
 
 .island-app--footer-animated .island-page-footer > * {
-  will-change: transform;
   width: calc(100% + 160px);
   margin-left: -80px;
   background-repeat: repeat-x;
@@ -2829,7 +2827,6 @@
 }
 
 :where(.island-app--footer-animated .island-page-footer)::after {
-  will-change: transform, opacity;
   opacity: 0.7;
   animation: island-footer-shimmer 3.2s ease-in-out infinite;
 }
@@ -2847,55 +2844,55 @@
 
 @keyframes island-footer-sea {
   0% {
-    transform: translateX(0) translateY(0) scaleX(1.04);
+    transform: translateX(0) translateY(0) ;
   }
 
   8.33% {
-    transform: translateX(-60px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-60px) translateY(1.5px) ;
   }
 
   16.67% {
-    transform: translateX(-120px) translateY(2px) scaleX(1.04);
+    transform: translateX(-120px) translateY(2px) ;
   }
 
   25% {
-    transform: translateX(-180px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-180px) translateY(1.5px) ;
   }
 
   33.33% {
-    transform: translateX(-240px) translateY(0) scaleX(1.04);
+    transform: translateX(-240px) translateY(0) ;
   }
 
   41.67% {
-    transform: translateX(-300px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-300px) translateY(1.5px) ;
   }
 
   50% {
-    transform: translateX(-360px) translateY(2px) scaleX(1.04);
+    transform: translateX(-360px) translateY(2px) ;
   }
 
   58.33% {
-    transform: translateX(-420px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-420px) translateY(1.5px) ;
   }
 
   66.67% {
-    transform: translateX(-480px) translateY(0) scaleX(1.04);
+    transform: translateX(-480px) translateY(0) ;
   }
 
   75% {
-    transform: translateX(-540px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-540px) translateY(1.5px) ;
   }
 
   83.33% {
-    transform: translateX(-600px) translateY(2px) scaleX(1.04);
+    transform: translateX(-600px) translateY(2px) ;
   }
 
   91.67% {
-    transform: translateX(-660px) translateY(1.5px) scaleX(1.04);
+    transform: translateX(-660px) translateY(1.5px) ;
   }
 
   100% {
-    transform: translateX(-720px) translateY(0) scaleX(1.04);
+    transform: translateX(-720px) translateY(0) ;
   }
 }
 
