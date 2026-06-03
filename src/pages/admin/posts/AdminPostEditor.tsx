@@ -458,6 +458,7 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
               {videoUrls.map((url) => (
                 <div
                     key={url}
+                    className="group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] border-[#fff8ec] bg-[#f8f8f0]"
                   >
                   <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
                   <span
