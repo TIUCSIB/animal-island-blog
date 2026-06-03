@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Editor } from '@tiptap/core'
 import CharacterCount from '@tiptap/extension-character-count'
@@ -399,7 +399,21 @@ const TEXT_COLORS = ['#725d42', '#19a99d', '#c88916', '#c94444', '#3d3428']
 const BG_COLORS = ['#fff8ec', '#e6f9f6', '#fff0b8', '#ffe0df', '#f3f0e8']
 
 function ColorPickerButton({ label, type, editor, isOpen, onToggle }: ColorPickerButtonProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const colors = type === 'text' ? TEXT_COLORS : BG_COLORS
+
+  const currentColor = (editor?.getAttributes('textStyle') as { color?: string; backgroundColor?: string })[type === 'text' ? 'color' : 'backgroundColor']?.toLowerCase() ?? ''
+
+  useEffect(() => {
+    if (!isOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        onToggle()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen, onToggle])
 
   function applyColor(color: string) {
     if (!editor) return
@@ -422,7 +436,7 @@ function ColorPickerButton({ label, type, editor, isOpen, onToggle }: ColorPicke
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <ToolbarButton label={label} onClick={onToggle}>
         {type === 'text' ? (
           <span style={{ fontFamily: 'inherit', fontWeight: 950, fontSize: '16px', color: '#725d42' }}>A</span>
@@ -432,10 +446,10 @@ function ColorPickerButton({ label, type, editor, isOpen, onToggle }: ColorPicke
       </ToolbarButton>
       {isOpen ? (
         <div className="island-admin-tiptap-bubble" style={{ position: 'absolute', left: 0, top: '100%', marginTop: 4, zIndex: 50, padding: '6px 8px' }}>
-          <div className="island-admin-tiptap-bubble__row">
-            <span className="island-admin-tiptap-bubble__label">{label}</span>
+          <div className="island-admin-tiptap-bubble__row" style={{ flexWrap: 'nowrap', gap: 4 }}>
+            
             <button
-              className="island-admin-tiptap-swatch island-admin-tiptap-swatch--clear"
+              className={['island-admin-tiptap-swatch island-admin-tiptap-swatch--clear', !currentColor && 'island-admin-tiptap-swatch--active'].filter(Boolean).join(' ')}
               type="button"
               title="清除"
               onMouseDown={(e) => { e.preventDefault(); clearColor() }}
@@ -445,7 +459,7 @@ function ColorPickerButton({ label, type, editor, isOpen, onToggle }: ColorPicke
             {colors.map((c) => (
               <button
                 key={c}
-                className="island-admin-tiptap-swatch"
+                className={['island-admin-tiptap-swatch', currentColor === c.toLowerCase() && 'island-admin-tiptap-swatch--active'].filter(Boolean).join(' ')}
                 type="button"
                 title={c}
                 style={{ '--swatch-color': c } as React.CSSProperties}
