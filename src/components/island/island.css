@@ -2753,29 +2753,28 @@
 
 :where(.island-app--island-mode) {
   background: rgb(204 255 221);
+  overflow: hidden;
 }
+
+
+
+
 
 :where(.island-app--island-mode) > .island-app__bg {
   position: absolute;
-  top: -200px;
-  left: -100px;
-  right: -100px;
-  bottom: -200px;
+  top: -400px;
+  left: -400px;
+  width: calc(100% + 800px);
+  height: calc(100% + 800px);
   z-index: -1;
   background: url('/images/home-bg.webp') center / 400px auto repeat;
-  transform: translate(0, 0);
   animation: island-app-bg-flow 80s linear infinite;
   pointer-events: none;
 }
 
 @keyframes island-app-bg-flow {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  100% {
-    transform: translate(-400px, -400px);
-  }
+  from { transform: translate(0, 0); }
+  to { transform: translate(-400px, -400px); }
 }
 
 :where(.island-page-footer) {
@@ -2830,8 +2829,8 @@
 }
 
 .island-app--footer-animated .island-page-footer > * {
-  width: calc(100% + 720px);
-  margin-left: -360px;
+  width: calc(100% + 1440px);
+  margin-left: -720px;
   background-repeat: repeat-x;
   background-position: 0 center;
   background-size: 720px auto;
@@ -2855,57 +2854,8 @@
 }
 
 @keyframes island-footer-sea {
-  0% {
-    transform: translateX(0) translateY(0) ;
-  }
-
-  8.33% {
-    transform: translateX(-60px) translateY(1.5px) ;
-  }
-
-  16.67% {
-    transform: translateX(-120px) translateY(2px) ;
-  }
-
-  25% {
-    transform: translateX(-180px) translateY(1.5px) ;
-  }
-
-  33.33% {
-    transform: translateX(-240px) translateY(0) ;
-  }
-
-  41.67% {
-    transform: translateX(-300px) translateY(1.5px) ;
-  }
-
-  50% {
-    transform: translateX(-360px) translateY(2px) ;
-  }
-
-  58.33% {
-    transform: translateX(-420px) translateY(1.5px) ;
-  }
-
-  66.67% {
-    transform: translateX(-480px) translateY(0) ;
-  }
-
-  75% {
-    transform: translateX(-540px) translateY(1.5px) ;
-  }
-
-  83.33% {
-    transform: translateX(-600px) translateY(2px) ;
-  }
-
-  91.67% {
-    transform: translateX(-660px) translateY(1.5px) ;
-  }
-
-  100% {
-    transform: translateX(-720px) translateY(0) ;
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-720px); }
 }
 
 @keyframes island-footer-shimmer {
