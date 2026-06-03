@@ -2813,11 +2813,13 @@
 }
 
 .island-app--footer-animated .island-page-footer {
-  filter: drop-shadow(0 10px 16px rgba(25, 200, 185, 0.16));
+  will-change: transform;
+  box-shadow: 0 10px 16px rgba(25, 200, 185, 0.16);
   animation: island-footer-float 3.2s ease-in-out infinite;
 }
 
 .island-app--footer-animated .island-page-footer > * {
+  will-change: transform, background-position;
   width: calc(100% + 160px);
   margin-left: -80px;
   background-repeat: repeat-x;
@@ -2829,6 +2831,7 @@
 }
 
 :where(.island-app--footer-animated .island-page-footer)::after {
+  will-change: transform, opacity;
   opacity: 0.7;
   animation: island-footer-shimmer 3.2s ease-in-out infinite;
 }
