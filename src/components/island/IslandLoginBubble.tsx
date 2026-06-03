@@ -12,21 +12,17 @@ export interface IslandLoginBubbleProps {
   onLogout?: () => void
 }
 
-export function IslandLoginBubble({
-  userName,
-  musicEnabled = false,
-  className,
-  onAboutClick,
-  onMusicClick,
-  onLoginClick,
-  onLogout,
-}: IslandLoginBubbleProps) {
+export function IslandLoginBubble({ userName, musicEnabled = false, className, onAboutClick, onMusicClick, onLoginClick, onLogout }: IslandLoginBubbleProps) {
   const signedIn = Boolean(userName)
 
   return (
     <aside className={['island-login-bubble', signedIn && 'island-login-bubble--signed-in', className].filter(Boolean).join(' ')} aria-live="polite">
       <div className="island-login-bubble__avatar" aria-hidden="true">
-        {musicEnabled ? '🎵' : signedIn ? '🐾' : '🌿'}
+        {musicEnabled ?
+          '🎵'
+        : signedIn ?
+          '🐾'
+        : '🌿'}
       </div>
 
       <div className="island-login-bubble__content">
@@ -40,7 +36,6 @@ export function IslandLoginBubble({
         <div className="island-login-bubble__menu">
           <button className="island-login-bubble__action" type="button" onClick={onAboutClick}>
             <span aria-hidden="true">🍃</span>
-            关于
           </button>
 
           <button className={['island-login-bubble__action', musicEnabled && 'island-login-bubble__action--active'].filter(Boolean).join(' ')} type="button" onClick={onMusicClick}>
@@ -48,27 +43,26 @@ export function IslandLoginBubble({
             音乐
           </button>
 
-          {signedIn ? (
+          {signedIn ?
             <button className="island-login-bubble__action" type="button" onClick={onLogout}>
               <span aria-hidden="true">🐾</span>
               退出
             </button>
-          ) : (
-            <button className="island-login-bubble__action" type="button" onClick={onLoginClick}>
+          : <button className="island-login-bubble__action" type="button" onClick={onLoginClick}>
               <span aria-hidden="true">🔑</span>
               登录
             </button>
-          )}
+          }
         </div>
       </div>
 
-      {musicEnabled ? (
+      {musicEnabled ?
         <div className="island-login-bubble__notes" aria-hidden="true">
           <span>♪</span>
           <span>♬</span>
           <span>♫</span>
         </div>
-      ) : null}
+      : null}
     </aside>
   )
 }

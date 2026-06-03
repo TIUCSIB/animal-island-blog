@@ -1,4 +1,5 @@
 import { Button, Loading } from 'animal-island-ui'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 import { PostDetailDesktop } from '@/pages/post-detail/PostDetailDesktop'
 import { PostDetailMobile } from '@/pages/post-detail/PostDetailMobile'
@@ -6,6 +7,8 @@ import { usePostDetailPage } from '@/pages/post-detail/usePostDetailPage'
 
 export default function PostDetailPage() {
   const detail = usePostDetailPage()
+
+  useDocumentTitle(detail.post?.title || '')
 
   if (detail.isPending) {
     return (

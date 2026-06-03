@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useOutlet } from 'react-router'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useQueryClient } from '@tanstack/react-query'
 import { Cursor } from 'animal-island-ui'
 import { emitIslandToast, IslandFloatingMenu, IslandFloatingSwitch, IslandLoginModal, IslandMusicPlayer, IslandToastViewport } from '@/components/island'
@@ -28,6 +29,7 @@ function readStoredAdminToken() {
 }
 
 export default function App() {
+  useDocumentTitle()
   const navigate = useNavigate()
   const location = useLocation()
   const outlet = useOutlet()

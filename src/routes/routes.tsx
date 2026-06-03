@@ -19,26 +19,29 @@ export const routes: RouteObject[] = [
           {
             index: true,
             element: <HomePage />,
-            
-            
+            handle: { title: '小岛的生活' },
           },
           {
             path: 'about',
             element: <AboutPage />,
+            handle: { title: '关于小岛' },
           },
         ],
       },
       {
         path: '404',
         element: <NotFoundPage />,
+        handle: { title: '页面走丢了' },
       },
       {
         path: 'posts/:postId',
         element: <PostDetailPage />,
+        handle: { title: '' },
       },
       {
         path: 'admin',
         element: <AdminPage />,
+        handle: { title: '小岛后台管理' },
       },
       {
         path: '*',

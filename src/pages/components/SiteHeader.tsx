@@ -27,7 +27,6 @@ export function SiteHeader({ profile, typewriterTrigger }: SiteHeaderProps) {
           src={profile.avatarUrl}
           name={profile.nickname}
           alt={profile.nickname}
-          title={isAboutPage ? '返回首页' : '查看关于页面'}
           aria-label={isAboutPage ? '返回首页' : '查看关于页面'}
           className="row-span-2 size-30 shrink-0 max-md:row-span-1 max-md:size-18"
           shape="circle"
