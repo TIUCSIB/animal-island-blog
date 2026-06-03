@@ -2062,8 +2062,8 @@
 
 .island-admin-tiptap-swatch {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   place-items: center;
   padding: 0;
   border: 2px solid rgba(196, 184, 158, 0.62);
@@ -2072,9 +2072,10 @@
   box-shadow: 0 2px 0 rgba(189, 174, 160, 0.46);
   color: #9f927d;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 950;
   line-height: 1;
+  flex-shrink: 0;
   transition:
     border-color 0.18s ease,
     box-shadow 0.18s ease,

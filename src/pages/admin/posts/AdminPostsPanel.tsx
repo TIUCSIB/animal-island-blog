@@ -9,6 +9,7 @@ import { AdminPostTable } from './AdminPostTable'
 import { appendPostImageUrl, appendPostVideoUrl, getPostImageUrls, getPostVideoUrls } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
+import { emitIslandToast } from '@/components/island'
 
 type AdminPostsPanelMode = 'write' | 'manage'
 
@@ -31,6 +32,8 @@ type AdminPostsPanelProps = {
   onDeletePost: (post: GalleryPost) => void
   onSave: FormEventHandler<HTMLFormElement>
 }
+
+const MAX_POST_IMAGES = 9
 
 export function AdminPostsPanel({
   mode,
@@ -108,7 +111,32 @@ export function AdminPostsPanel({
         purpose={isVideoLibrary ? 'post-video' : 'post-image'}
         resourceType={isVideoLibrary ? 'video' : 'image'}
         currentUrls={isVideoLibrary ? currentVideoUrls : currentImageUrls}
+        multiSelect={!isVideoLibrary}
         onClose={() => setMediaLibraryMode(null)}
+        onSelectMultiple={isVideoLibrary ? undefined : (selectedAssets) => {
+          const remaining = MAX_POST_IMAGES - getPostImageUrls(form.imagesText).length
+          if (remaining <= 0) {
+            emitIslandToast({ type: 'info', title: '已达到最多 9 张图片' })
+            return
+          }
+          const toAdd = selectedAssets.slice(0, remaining)
+          if (selectedAssets.length > remaining) {
+            emitIslandToast({ type: 'info', title: `只能再添加 ${remaining} 张，已自动截取前 ${remaining} 张` })
+          }
+          setForm((current) => {
+            const hasImages = getPostImageUrls(current.imagesText).length > 0
+            const isFirstMedia = !hasImages
+            let text = current.imagesText
+            let firstCover = {}
+            toAdd.forEach((asset, i) => {
+              text = appendPostImageUrl(text, asset.secureUrl)
+              if (isFirstMedia && i === 0 && asset.width && asset.height) {
+                firstCover = { coverWidth: asset.width, coverHeight: asset.height }
+              }
+            })
+            return { ...current, imagesText: text, ...firstCover }
+          })
+        }}
         onSelect={(asset) =>
           setForm((current) => {
             const hasImages = getPostImageUrls(current.imagesText).length > 0

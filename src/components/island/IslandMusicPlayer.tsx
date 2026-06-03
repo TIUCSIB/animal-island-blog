@@ -125,9 +125,7 @@ function getRandomTrackIndex(length: number, currentIndex = -1) {
 function getRandomTrackIndexExceptUrl(trackList: IslandMusicTrack[], currentUrl?: string) {
   if (trackList.length <= 1) return 0
 
-  const availableIndexes = trackList
-    .map((track, index) => (track.url && track.url !== currentUrl ? index : -1))
-    .filter((index) => index >= 0)
+  const availableIndexes = trackList.map((track, index) => (track.url && track.url !== currentUrl ? index : -1)).filter((index) => index >= 0)
 
   if (availableIndexes.length === 0) return getRandomTrackIndex(trackList.length)
 
@@ -147,10 +145,7 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
   const [position, setPosition] = useState<PlayerPosition>(() => readStoredPosition())
   const positionRef = useRef(position)
   const [activeTrackIndex, setActiveTrackIndex] = useState(0)
-  const trackList = useMemo(
-    () => tracks?.filter((track) => track.url) ?? (src ? [{ title, author: subtitle, pic: coverSrc, url: src }] : []),
-    [coverSrc, src, subtitle, title, tracks],
-  )
+  const trackList = useMemo(() => tracks?.filter((track) => track.url) ?? (src ? [{ title, author: subtitle, pic: coverSrc, url: src }] : []), [coverSrc, src, subtitle, title, tracks])
   const activeTrack = trackList[activeTrackIndex] ?? trackList[0]
   const currentSrc = activeTrack?.url
   const currentCoverSrc = activeTrack?.pic || coverSrc
@@ -402,7 +397,7 @@ export function IslandMusicPlayer({ open, src, coverSrc = DEFAULT_COVER, title =
   return (
     <aside
       ref={playerRef}
-      className={['island-music-player', playing && 'island-music-player--playing'].filter(Boolean).join(' ')}
+      className={['island-music-player ', playing && 'island-music-player--playing'].filter(Boolean).join(' ')}
       style={{ left: position.x, top: position.y }}
       aria-label={audioReady ? `${currentTitle} ${currentSubtitle} 音乐播放器` : '音乐不可播放'}
       onPointerDown={handlePointerDown}

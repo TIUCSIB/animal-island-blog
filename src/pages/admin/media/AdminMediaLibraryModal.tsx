@@ -19,8 +19,10 @@ type AdminMediaLibraryModalProps = {
   resourceType?: CloudinaryResourceType
   currentUrl?: string
   currentUrls?: string[]
+  multiSelect?: boolean
   onClose: () => void
   onSelect: (asset: CloudinaryUploadAsset) => void
+  onSelectMultiple?: (assets: CloudinaryUploadAsset[]) => void
 }
 
 export function AdminMediaLibraryModal({
@@ -34,8 +36,10 @@ export function AdminMediaLibraryModal({
   resourceType = 'image',
   currentUrl,
   currentUrls = [],
+  multiSelect = false,
   onClose,
   onSelect,
+  onSelectMultiple,
 }: AdminMediaLibraryModalProps) {
   const [assets, setAssets] = useState<CloudinaryUploadAsset[]>([])
   const [nextCursor, setNextCursor] = useState('')
@@ -43,6 +47,7 @@ export function AdminMediaLibraryModal({
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<CloudinaryUploadAsset | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const selectedUrlSet = useMemo(() => new Set([currentUrl, ...currentUrls].filter(Boolean)), [currentUrl, currentUrls])
   const isVideoLibrary = resourceType === 'video'
   const headerIcon = isVideoLibrary ? <Clapperboard size={17} strokeWidth={3} /> : <Images size={17} strokeWidth={3} />
@@ -81,12 +86,35 @@ export function AdminMediaLibraryModal({
   useEffect(() => {
     if (!open) return
 
+    setSelectedIds(new Set())
+
     const timer = window.setTimeout(() => {
       void loadAssets()
     }, 0)
 
     return () => window.clearTimeout(timer)
   }, [loadAssets, open])
+
+  function toggleSelect(asset: CloudinaryUploadAsset) {
+    const key = asset.publicId || asset.secureUrl
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }
+
+  function confirmMultiSelect() {
+    const selected = assets.filter((a) => selectedIds.has(a.publicId || a.secureUrl))
+    if (selected.length > 0 && onSelectMultiple) {
+      onSelectMultiple(selected)
+    }
+    onClose()
+  }
 
   async function handleConfirmDelete() {
     if (!deleteTarget) return
@@ -130,33 +158,42 @@ export function AdminMediaLibraryModal({
 
           {error ? <p className="island-admin-avatar-library__message island-admin-avatar-library__message--error">{error}</p> : null}
 
-          {!error && loading && assets.length === 0 ?
+          {!error && loading && assets.length === 0 ? (
             <div className="island-admin-avatar-library__loading">
               <LoaderCircle size={20} strokeWidth={3} />
               正在读取{title}...
             </div>
-          : null}
+          ) : null}
 
           {!loading && !error && assets.length === 0 ? <p className="island-admin-avatar-library__message">{emptyText}</p> : null}
 
-          {assets.length > 0 ?
+          {assets.length > 0 ? (
             <div className="island-admin-avatar-library__grid">
               {assets.map((asset) => {
+                const key = asset.publicId || asset.secureUrl
                 const active = selectedUrlSet.has(asset.secureUrl)
+                const checked = selectedIds.has(key)
 
                 return (
-                  <div key={asset.publicId || asset.secureUrl} className={['island-admin-avatar-library__item', active && 'island-admin-avatar-library__item--active'].filter(Boolean).join(' ')}>
+                  <div key={key} className={['island-admin-avatar-library__item', active && 'island-admin-avatar-library__item--active', multiSelect && checked && 'island-admin-avatar-library__item--selected'].filter(Boolean).join(' ')}>
                     <button
                       className="island-admin-avatar-library__select relative overflow-hidden"
                       type="button"
                       onClick={() => {
-                        onSelect(asset)
-                        onClose()
+                        if (multiSelect) {
+                          toggleSelect(asset)
+                        } else {
+                          onSelect(asset)
+                          onClose()
+                        }
                       }}
                     >
-                      {isVideoLibrary ?
+                      {isVideoLibrary ? (
                         <video className="h-full w-full rounded-[20px] object-cover" src={asset.secureUrl} muted playsInline preload="metadata" />
-                      : <img src={asset.secureUrl} alt={assetLabel} />}
+                      ) : <img src={asset.secureUrl} alt={assetLabel} />}
+                      {multiSelect && checked ? (
+                        <span className="absolute right-2 top-2 z-10 grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-[#19c8b9] text-[10px] font-black text-white shadow-md">✓</span>
+                      ) : null}
                     </button>
                     <button className="island-admin-avatar-library__delete" type="button" aria-label={`删除${assetLabel}`} onClick={() => setDeleteTarget(asset)}>
                       <Trash2 size={13} strokeWidth={3} />
@@ -165,18 +202,27 @@ export function AdminMediaLibraryModal({
                 )
               })}
             </div>
-          : null}
+          ) : null}
 
-          {nextCursor ?
+          {nextCursor ? (
             <div className="island-admin-avatar-library__more">
               <span>已加载 {assets.length} 个</span>
               <Button type="default" size="small" htmlType="button" loading={loading} onClick={() => void loadAssets(nextCursor)}>
                 加载更多
               </Button>
             </div>
-          : null}
+          ) : null}
 
           {!nextCursor && assets.length > 0 ? <p className="island-admin-avatar-library__count">已加载全部 {assets.length} 个</p> : null}
+
+          {multiSelect && selectedIds.size > 0 ? (
+            <div className="island-admin-avatar-library__more">
+              <span>已选中 {selectedIds.size} 个</span>
+              <Button type="primary" size="small" htmlType="button" onClick={confirmMultiSelect}>
+                确认
+              </Button>
+            </div>
+          ) : null}
         </div>
       </Modal>
 
