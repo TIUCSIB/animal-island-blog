@@ -157,7 +157,8 @@ export default function App() {
   }
 
   return (
-    <section className={['island-app', isIslandMode && 'island-app--island-mode', visibleMusicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
+    <section className={['island-app', isIslandMode && 'island-app--island-mode', isIslandMode && 'island-app--footer-animated', visibleMusicEnabled && 'island-app--music-on'].filter(Boolean).join(' ')}>
+      {isIslandMode ? <div className="island-app__bg" aria-hidden="true" /> : null}
       <Cursor>
         {shouldKeepBackgroundOutlet && cachedOutlet ? cachedOutlet : outlet}
         {shouldKeepBackgroundOutlet ?

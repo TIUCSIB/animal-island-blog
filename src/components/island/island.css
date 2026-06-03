@@ -2750,6 +2750,43 @@
 
 
 
+
+:where(.island-app--island-mode) {
+  background: rgb(204 255 221);
+}
+
+:where(.island-app--island-mode) > .island-app__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('/images/home-bg.webp') center / 400px auto repeat;
+  transform: translate(0, 0);
+  animation: island-app-bg-flow 80s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes island-app-bg-flow {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-40px, -60px);
+  }
+
+  50% {
+    transform: translate(-80px, -120px);
+  }
+
+  75% {
+    transform: translate(-40px, -180px);
+  }
+
+  100% {
+    transform: translate(0, -240px);
+  }
+}
+
 :where(.island-page-footer) {
   position: relative;
   isolation: isolate;
