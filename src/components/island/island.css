@@ -2819,15 +2819,13 @@
 }
 
 .island-app--footer-animated .island-page-footer > * {
-  will-change: transform, background-position;
+  will-change: transform;
   width: calc(100% + 160px);
   margin-left: -80px;
   background-repeat: repeat-x;
   background-position: 0 center;
   background-size: 720px auto;
-  animation:
-    island-footer-marquee 12s linear infinite,
-    island-footer-wave 3.4s ease-in-out infinite;
+  animation: island-footer-sea 12s linear infinite;
 }
 
 :where(.island-app--footer-animated .island-page-footer)::after {
@@ -2847,24 +2845,57 @@
   }
 }
 
-@keyframes island-footer-marquee {
+@keyframes island-footer-sea {
   0% {
-    background-position-x: 0;
+    transform: translateX(0) translateY(0) scaleX(1.04);
   }
 
-  100% {
-    background-position-x: -720px;
+  8.33% {
+    transform: translateX(-60px) translateY(1.5px) scaleX(1.04);
   }
-}
 
-@keyframes island-footer-wave {
-  0%,
-  100% {
-    transform: translateY(0) scaleX(1.04);
+  16.67% {
+    transform: translateX(-120px) translateY(2px) scaleX(1.04);
+  }
+
+  25% {
+    transform: translateX(-180px) translateY(1.5px) scaleX(1.04);
+  }
+
+  33.33% {
+    transform: translateX(-240px) translateY(0) scaleX(1.04);
+  }
+
+  41.67% {
+    transform: translateX(-300px) translateY(1.5px) scaleX(1.04);
   }
 
   50% {
-    transform: translateY(2px) scaleX(1.04);
+    transform: translateX(-360px) translateY(2px) scaleX(1.04);
+  }
+
+  58.33% {
+    transform: translateX(-420px) translateY(1.5px) scaleX(1.04);
+  }
+
+  66.67% {
+    transform: translateX(-480px) translateY(0) scaleX(1.04);
+  }
+
+  75% {
+    transform: translateX(-540px) translateY(1.5px) scaleX(1.04);
+  }
+
+  83.33% {
+    transform: translateX(-600px) translateY(2px) scaleX(1.04);
+  }
+
+  91.67% {
+    transform: translateX(-660px) translateY(1.5px) scaleX(1.04);
+  }
+
+  100% {
+    transform: translateX(-720px) translateY(0) scaleX(1.04);
   }
 }
 
