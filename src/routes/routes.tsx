@@ -19,7 +19,7 @@ export const routes: RouteObject[] = [
           {
             index: true,
             element: <HomePage />,
-            handle: { title: '小岛的生活' },
+            handle: { title: '小岛 · 生活' },
           },
           {
             path: 'about',

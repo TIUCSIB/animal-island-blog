@@ -96,7 +96,7 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
         : null}
       </section>
 
-      <section className="flex flex-col bg-[rgba(255,250,242,0.72)] px-3.5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-3.5">
+      <section className="flex min-h-0 flex-1 flex-col bg-[rgba(255,250,242,0.72)] px-3.5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-3.5">
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-start gap-x-2 gap-y-1 text-[14px] text-[#5f4d39]">
             <span className="font-semibold">{post.title}</span>
