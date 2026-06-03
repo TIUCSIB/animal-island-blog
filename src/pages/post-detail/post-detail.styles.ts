@@ -13,8 +13,8 @@ export const islandSwitchButtonClass = [
   'hover:shadow-[0_7px_0_rgba(190,174,152,0.96),0_22px_40px_rgba(24,20,16,0.28)]',
   'hover:scale-[1.18]',
   'hover:text-[#4a3525]',
-  'active:translate-y-[4px] active:scale-[0.88]',
-  'active:shadow-[0_1px_0_rgba(190,174,152,0.8),0_4px_10px_rgba(24,20,16,0.12)]',
+  'active:translate-y-[1px]',
+  'active:shadow-[0_2px_0_rgba(190,174,152,0.88),0_8px_16px_rgba(24,20,16,0.14)]',
   'active:duration-75',
 ].join(' ')
 

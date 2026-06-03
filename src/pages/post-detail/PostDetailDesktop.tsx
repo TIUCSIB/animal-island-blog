@@ -187,7 +187,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
 
         {detail.previousPost ?
           <button
-            className={cn('fixed left-6 top-1/2 z-[95] hidden size-6 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
+            className={cn('fixed left-6 top-1/2 z-[95] hidden size-8 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
             type="button"
             aria-label="上一篇文章"
             onClick={() => detail.switchPost(detail.previousPost!)}
@@ -203,7 +203,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
 
         {detail.nextPost ?
           <button
-            className={cn('fixed right-6 top-1/2 z-[95] hidden size-6 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
+            className={cn('fixed right-6 top-1/2 z-[95] hidden size-8 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
             type="button"
             aria-label="下一篇文章"
             onClick={() => detail.switchPost(detail.nextPost!)}
