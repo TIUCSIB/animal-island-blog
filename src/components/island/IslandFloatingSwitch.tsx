@@ -37,10 +37,7 @@ export function IslandFloatingSwitch({
   }
 
   return (
-    <div
-      className={['island-floating-switch', currentChecked && 'island-floating-switch--checked', className].filter(Boolean).join(' ')}
-      onClick={() => handleChange(!currentChecked)}
-    >
+    <div className={['island-floating-switch', currentChecked && 'island-floating-switch--checked', className].filter(Boolean).join(' ')} onClick={() => handleChange(!currentChecked)}>
       <span className="island-floating-switch__label">{currentChecked ? checkedLabel : uncheckedLabel}</span>
       <span className="island-floating-switch__control" onClick={(event) => event.stopPropagation()}>
         <Switch size="small" checked={currentChecked} checkedChildren={checkedChildren} unCheckedChildren={unCheckedChildren} onChange={handleChange} />
