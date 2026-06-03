@@ -2757,7 +2757,10 @@
 
 :where(.island-app--island-mode) > .island-app__bg {
   position: absolute;
-  inset: 0;
+  top: -200px;
+  left: -100px;
+  right: -100px;
+  bottom: -200px;
   z-index: -1;
   background: url('/images/home-bg.webp') center / 400px auto repeat;
   transform: translate(0, 0);
@@ -2770,20 +2773,8 @@
     transform: translate(0, 0);
   }
 
-  25% {
-    transform: translate(-40px, -60px);
-  }
-
-  50% {
-    transform: translate(-80px, -120px);
-  }
-
-  75% {
-    transform: translate(-40px, -180px);
-  }
-
   100% {
-    transform: translate(0, -240px);
+    transform: translate(-400px, -400px);
   }
 }
 
@@ -2839,8 +2830,8 @@
 }
 
 .island-app--footer-animated .island-page-footer > * {
-  width: calc(100% + 160px);
-  margin-left: -80px;
+  width: calc(100% + 720px);
+  margin-left: -360px;
   background-repeat: repeat-x;
   background-position: 0 center;
   background-size: 720px auto;
