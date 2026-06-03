@@ -2748,23 +2748,7 @@
     rgb(204 255 221);
 }
 
-:where(.island-app--island-mode) {
-  animation: island-app-bg-flow 80s linear infinite;
-}
 
-@keyframes island-app-bg-flow {
-  0% {
-    background-position: 0 0;
-  }
-
-  50% {
-    background-position: 180px 260px;
-  }
-
-  100% {
-    background-position: 360px 520px;
-  }
-}
 
 :where(.island-page-footer) {
   position: relative;
