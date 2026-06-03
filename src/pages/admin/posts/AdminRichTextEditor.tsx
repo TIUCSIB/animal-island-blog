@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Editor } from '@tiptap/core'
 import CharacterCount from '@tiptap/extension-character-count'
@@ -10,12 +10,10 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import { BackgroundColor, TextStyle } from '@tiptap/extension-text-style'
 import Underline from '@tiptap/extension-underline'
-import { Markdown } from '@tiptap/markdown'
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { Bold, Braces, ChevronDown, ChevronUp, Code2, Heading1, Heading2, Heading3, Image, Italic, Link2, List, ListChecks, ListOrdered, Minus, Pilcrow, Quote, Strikethrough, UnderlineIcon } from 'lucide-react'
 
-import { AdminRichTextColorMenu } from './AdminRichTextColorMenu'
 
 type AdminRichTextEditorProps = {
   value: string
@@ -27,9 +25,6 @@ type AdminRichTextEditorProps = {
   }
 }
 
-type MarkdownEditor = Editor & {
-  getMarkdown: () => string
-}
 
 type InlineMark = 'bold' | 'italic' | 'strike' | 'code' | 'underline'
 
@@ -73,8 +68,8 @@ function hasNamedMark(marks: readonly { type: { name: string } }[] | null | unde
   return Boolean(marks?.some((storedMark) => storedMark.type.name === mark))
 }
 
-function readMarkdown(editor: Editor) {
-  return (editor as MarkdownEditor).getMarkdown().trimEnd()
+function readHTML(editor: Editor) {
+  return editor.getHTML().trimEnd()
 }
 
 function readTextLength(editor: Editor) {
@@ -118,6 +113,7 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
   const [expanded, setExpanded] = useState(false)
   const [textLength, setTextLength] = useState(0)
   const [toolbarVersion, refreshToolbar] = useState(0)
+  const [openColorPicker, setOpenColorPicker] = useState<'text' | 'bg' | null>(null)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -147,10 +143,7 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
       CharacterCount.configure({
         limit: maxLength,
       }),
-      Markdown,
     ],
-    content: value || '',
-    contentType: 'markdown',
     editorProps: {
       attributes: {
         class: 'island-admin-tiptap-content',
@@ -167,7 +160,7 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
             if (!nextEditor || syncingRef.current) return
 
             setTextLength(readTextLength(nextEditor))
-            onChange(readMarkdown(nextEditor))
+            onChange(readHTML(nextEditor))
           })
           return false
         },
@@ -179,7 +172,7 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
       setTextLength(nextTextLength)
       if (!composingRef.current && nextTextLength === 0) normalizeEmptyEditor(nextEditor)
       if (composingRef.current) return
-      if (!syncingRef.current) onChange(readMarkdown(nextEditor))
+      if (!syncingRef.current) onChange(readHTML(nextEditor))
     },
     onCreate: ({ editor: nextEditor }) => {
       editorRef.current = nextEditor
@@ -207,10 +200,10 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
     if (composingRef.current) return
 
     const nextValue = value || ''
-    if (readMarkdown(editor) === nextValue.trimEnd()) return
+    if (readHTML(editor) === nextValue.trimEnd()) return
 
     syncingRef.current = true
-    editor.commands.setContent(nextValue, { contentType: 'markdown' })
+    editor.commands.setContent(nextValue)
     setTextLength(readTextLength(editor))
     queueMicrotask(() => {
       syncingRef.current = false
@@ -354,12 +347,13 @@ export function AdminRichTextEditor({ value, maxLength = 200, placeholder = '这
             <ToolbarButton label="正文图片" onClick={setImage}>
               <Image size={16} strokeWidth={2.8} />
             </ToolbarButton>
+            <ColorPickerButton label="字色" type="text" editor={editor} isOpen={openColorPicker === 'text'} onToggle={() => setOpenColorPicker((p) => p === 'text' ? null : 'text')} />
+            <ColorPickerButton label="底色" type="bg" editor={editor} isOpen={openColorPicker === 'bg'} onToggle={() => setOpenColorPicker((p) => p === 'bg' ? null : 'bg')} />
           </div>
         ) : null}
       </div>
 
       <div className="island-admin-tiptap-shell">
-        <AdminRichTextColorMenu editor={editor} />
         <EditorContent editor={editor} />
         <span className={['island-admin-tiptap-count', textLength > maxLength && 'island-admin-tiptap-count--over'].filter(Boolean).join(' ')}>
           {textLength} / {maxLength}
@@ -390,5 +384,77 @@ function ToolbarButton({ active, label, children, onClick }: ToolbarButtonProps)
     >
       {children}
     </button>
+  )
+}
+
+type ColorPickerButtonProps = {
+  label: string
+  type: 'text' | 'bg'
+  editor: Editor | null
+  isOpen: boolean
+  onToggle: () => void
+}
+
+const TEXT_COLORS = ['#725d42', '#19a99d', '#c88916', '#c94444', '#3d3428']
+const BG_COLORS = ['#fff8ec', '#e6f9f6', '#fff0b8', '#ffe0df', '#f3f0e8']
+
+function ColorPickerButton({ label, type, editor, isOpen, onToggle }: ColorPickerButtonProps) {
+  const colors = type === 'text' ? TEXT_COLORS : BG_COLORS
+
+  function applyColor(color: string) {
+    if (!editor) return
+    if (type === 'text') {
+      editor.chain().focus().setColor(color).run()
+    } else {
+      editor.chain().focus().setBackgroundColor(color).run()
+    }
+    onToggle()
+  }
+
+  function clearColor() {
+    if (!editor) return
+    if (type === 'text') {
+      editor.chain().focus().unsetColor().removeEmptyTextStyle().run()
+    } else {
+      editor.chain().focus().unsetBackgroundColor().removeEmptyTextStyle().run()
+    }
+    onToggle()
+  }
+
+  return (
+    <div className="relative">
+      <ToolbarButton label={label} onClick={onToggle}>
+        {type === 'text' ? (
+          <span style={{ fontFamily: 'inherit', fontWeight: 950, fontSize: '16px', color: '#725d42' }}>A</span>
+        ) : (
+          <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 4, border: '2px solid #c4b89e', background: '#fff0b8' }} />
+        )}
+      </ToolbarButton>
+      {isOpen ? (
+        <div className="island-admin-tiptap-bubble" style={{ position: 'absolute', left: 0, top: '100%', marginTop: 4, zIndex: 50, padding: '6px 8px' }}>
+          <div className="island-admin-tiptap-bubble__row">
+            <span className="island-admin-tiptap-bubble__label">{label}</span>
+            <button
+              className="island-admin-tiptap-swatch island-admin-tiptap-swatch--clear"
+              type="button"
+              title="清除"
+              onMouseDown={(e) => { e.preventDefault(); clearColor() }}
+            >
+              &times;
+            </button>
+            {colors.map((c) => (
+              <button
+                key={c}
+                className="island-admin-tiptap-swatch"
+                type="button"
+                title={c}
+                style={{ '--swatch-color': c } as React.CSSProperties}
+                onMouseDown={(e) => { e.preventDefault(); applyColor(c) }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   )
 }

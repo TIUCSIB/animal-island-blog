@@ -229,13 +229,13 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       <Card className="island-admin-editor__card overflow-visible">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="island-admin-editor__eyebrow">{isWriteMode ? '\u5199\u6587\u7ae0' : '\u7f16\u8f91\u6587\u7ae0'}</span>
+            <span className="island-admin-editor__eyebrow">{isWriteMode ? '写文章' : '编辑文章'}</span>
             <h2>
               {compact ?
                 isWriteMode ?
-                  '\u65b0\u7684\u5c0f\u5c9b\u8bb0\u5f55'
-                : '\u7f16\u8f91\u5c0f\u5c9b\u8bb0\u5f55'
-              : form.title || (isWriteMode ? '\u65b0\u7684\u5c0f\u5c9b\u8bb0\u5f55' : '\u672a\u547d\u540d\u8bb0\u5f55')}
+                  '新的小岛记录'
+                : '编辑小岛记录'
+              : '新的小岛记录'}
             </h2>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
