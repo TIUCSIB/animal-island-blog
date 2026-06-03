@@ -860,7 +860,8 @@
   box-shadow: none !important;
   cursor: default !important;
   transition: none !important;
-}
+
+  align-items: start;}
 
 .island-admin-post-edit-modal .island-admin-editor--compact .island-admin-editor__card:hover {
   transform: none !important;
@@ -897,7 +898,8 @@
   border-radius: 18px;
   background: rgba(255, 253, 247, 0.72);
   box-shadow: none;
-}
+
+  height: fit-content;}
 
 .island-admin-post-edit-modal .island-admin-editor--compact .island-admin-compose-box [class*='animal-wrapper'] {
   min-height: 32px;

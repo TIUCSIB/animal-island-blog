@@ -74,7 +74,7 @@ export function AdminPostEditModal({ post, form, token, saving, setForm, onClose
             onOpenMediaLibrary={onOpenMediaLibrary}
             onSave={onSave}
             compact
-            showDeleteAction={false}
+            showDeleteAction={true}
           />
         </div>
       </section>

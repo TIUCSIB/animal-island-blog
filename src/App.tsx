@@ -181,7 +181,7 @@ export default function App() {
             onAdminClick={openAdminPage}
           />
         : null}
-        {isIslandMode && !isPostDetailPage ?
+        {!isPostDetailPage ?
             <IslandFloatingSwitch
               checked={isIslandMode}
               uncheckedLabel="小憩中"
