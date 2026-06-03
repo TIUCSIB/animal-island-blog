@@ -165,6 +165,19 @@ export default function App() {
             {outlet}
           </div>
         : null}
+        <IslandFloatingSwitch
+              checked={isIslandMode}
+              uncheckedLabel="小憩中"
+              checkedLabel={isAdminSignedIn ? '已登岛' : '营业中'}
+              unCheckedChildren="OFF"
+              checkedChildren="ON"
+              onChange={handleIslandModeChange}
+            />
+            <IslandMusicPlayer
+              tracks={musicConfig.tracks}
+              open={visibleMusicEnabled}
+              onClose={() => setMusicEnabled(false)}
+            />
         {isIslandMode && !isPostDetailPage ?
           <IslandFloatingMenu
             signedIn={isAdminSignedIn}

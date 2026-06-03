@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { ChevronLeft, ChevronRight, MapPin, MoreHorizontal, X } from 'lucide-react'
 
 import { IslandAvatar, IslandBadge, IslandPostContent, IslandVideoPlayer } from '@/components/island'
@@ -153,6 +154,19 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
 }
 
 export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'ArrowLeft' && detail.previousPost) {
+        detail.switchPost(detail.previousPost)
+      } else if (e.key === 'ArrowRight' && detail.nextPost) {
+        detail.switchPost(detail.nextPost)
+      } else if (e.key === 'Escape') {
+        detail.closeDetail()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [detail.previousPost, detail.nextPost, detail.switchPost, detail.closeDetail])
   if (detail.isIntercepted) {
     return (
       <div className="min-h-dvh ">

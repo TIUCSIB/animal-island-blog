@@ -22,7 +22,7 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
         <button className="grid size-9 place-items-center text-[#715d46] " type="button" aria-label="返回" onClick={detail.closeDetail}>
           <ArrowLeft aria-hidden="true" size={22} strokeWidth={2.6} />
         </button>
-        <strong className="text-[17px] font-semibold text-[#5f4d39]">帖子</strong>
+        <strong className="text-[17px] font-semibold text-[#5f4d39]">时间碎片</strong>
         <div className="size-9" aria-hidden="true" />
       </header>
 
@@ -40,19 +40,14 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
       </section>
 
       <section
-        className={cn('relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]', )}
+        className={cn('relative w-full shrink-0 overflow-hidden bg-[linear-gradient(180deg,#f9f0de_0%,#e9ddc6_100%)]')}
         style={detail.mobileMediaStyle}
         onPointerCancel={detail.handleMobileMediaPointerCancel}
         onPointerDown={detail.handleMobileMediaPointerDown}
         onPointerUp={detail.handleMobileMediaPointerUp}
       >
         {detail.activeMedia?.type === 'video' ?
-          <IslandVideoPlayer
-            key={detail.activeMedia.src}
-            src={detail.activeMedia.src}
-            lockFrame
-            onRatioReady={(src, w, h) => detail.recordMediaRatio(src, w, h)}
-          />
+          <IslandVideoPlayer key={detail.activeMedia.src} src={detail.activeMedia.src} lockFrame onRatioReady={(src, w, h) => detail.recordMediaRatio(src, w, h)} />
         : <img
             key={detail.activeMedia?.src ?? post.imageSrc}
             className={cn('block size-full', 'object-cover')}
