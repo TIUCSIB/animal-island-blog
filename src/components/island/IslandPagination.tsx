@@ -69,17 +69,20 @@ export function IslandPagination({ page, pageSize, total, onPageChange, classNam
   }
 
   return (
-    <nav className={cn('flex flex-wrap items-center justify-end gap-2 pt-1 text-xs font-black text-[#725d42]', className)} aria-label="分页">
-      {showTotal ? <span className="whitespace-nowrap rounded-full border-2 border-[#c4b89e]/60 bg-[#fff8ec]/70 px-3 py-1 shadow-[0_2px_0_rgba(212,201,180,0.62)]">共 {total} 条</span> : null}
+    <nav className={cn('flex flex-wrap items-center justify-end gap-2 pt-1 pb-2 text-xs font-black text-[#725d42]', className)} aria-label="分页">
+      {showTotal ?
+        <span className="whitespace-nowrap rounded-full border-2 border-[#c4b89e]/60 bg-[#fff8ec]/70 px-3 py-1 shadow-[0_2px_0_rgba(212,201,180,0.62)]">共 {total} 条</span>
+      : null}
 
       <Button type="default" size="small" htmlType="button" disabled={!hasPrev} aria-label="上一页" icon={<ChevronLeft size={14} strokeWidth={3} />} onClick={() => onPageChange(currentPage - 1)} />
 
       <div className="flex flex-wrap items-center gap-1">
         {items.map((item, index) =>
-          item === 'ellipsis' ? (
-            <span key={`ellipsis-${index}`} className="px-1 text-[#9f927d]">...</span>
-          ) : (
-            <Button
+          item === 'ellipsis' ?
+            <span key={`ellipsis-${index}`} className="px-1 text-[#9f927d]">
+              ...
+            </span>
+          : <Button
               key={item}
               className={item === currentPage ? '!border-[#82d5bb] !bg-[#e6f9f6] !text-[#117f77] !shadow-[0_2px_0_rgba(90,158,30,0.28)]' : undefined}
               type="default"
@@ -89,8 +92,7 @@ export function IslandPagination({ page, pageSize, total, onPageChange, classNam
               onClick={() => onPageChange(item)}
             >
               {item}
-            </Button>
-          ),
+            </Button>,
         )}
       </div>
 
