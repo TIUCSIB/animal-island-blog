@@ -59,3 +59,11 @@ export function formatPostDate(value: string) {
     day: '2-digit',
   })
 }
+
+export function reorderPostImages(currentText: string, fromIndex: number, toIndex: number): string {
+  const urls = getPostMediaUrls(currentText)
+  if (fromIndex < 0 || fromIndex >= urls.length || toIndex < 0 || toIndex >= urls.length) return currentText
+  const [moved] = urls.splice(fromIndex, 1)
+  urls.splice(toIndex, 0, moved)
+  return urls.join('\n')
+}

@@ -19,6 +19,8 @@ export const routes: RouteObject[] = [
           {
             index: true,
             element: <HomePage />,
+            
+            
           },
           {
             path: 'about',

@@ -9,7 +9,7 @@ import type { GalleryPost } from '@/data/gallery'
 import { AdminCloudinaryUploader } from '../media/AdminCloudinaryUploader'
 import { AdminRichTextEditor } from './AdminRichTextEditor'
 import { AdminStickerPanel, type AdminSticker } from './AdminStickerPanel'
-import { appendPostImageUrl, appendPostVideoUrl, getPostImageUrls, getPostVideoUrls, MAX_POST_IMAGES, MAX_POST_VIDEOS, removePostImageUrl, removePostVideoUrl } from './post-media-utils'
+import { appendPostImageUrl, appendPostVideoUrl, getPostImageUrls, getPostVideoUrls, MAX_POST_IMAGES, MAX_POST_VIDEOS, removePostImageUrl, removePostVideoUrl, reorderPostImages } from './post-media-utils'
 import type { PostMediaLibraryMode } from './post-media-utils'
 import type { PostForm, SetPostForm } from '../types'
 
@@ -78,6 +78,8 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
     return getPostVideoUrls(form.videosText).length > 0 ? 'videos' : 'images'
   })
   const [openPopover, setOpenPopover] = useState<'emoji' | 'settings' | null>(null)
+  const dragIndexRef = useRef<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const richEditorRef = useRef<Editor | null>(null)
   const rawImageUrls = getPostImageUrls(form.imagesText).slice(0, MAX_POST_IMAGES)
   const videoUrls = getPostVideoUrls(form.videosText).slice(0, MAX_POST_VIDEOS)
@@ -116,6 +118,26 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
       ...current,
       imagesText: removePostImageUrl(current.imagesText, url),
     }))
+  }
+
+  function handleImageDragStart(index: number) {
+    dragIndexRef.current = index
+  }
+
+  function handleImageDrop(dropIndex: number) {
+    const fromIndex = dragIndexRef.current
+    dragIndexRef.current = null
+    setDragOverIndex(null)
+    if (fromIndex === null || fromIndex === dropIndex) return
+    setForm((current) => ({
+      ...current,
+      imagesText: reorderPostImages(current.imagesText, fromIndex, dropIndex),
+    }))
+  }
+
+  function handleImageDragEnd() {
+    dragIndexRef.current = null
+    setDragOverIndex(null)
   }
 
   function addVideo(url: string, width?: number, height?: number) {
@@ -365,7 +387,15 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             </div>
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(3,68px)] justify-start gap-2">
               {imageUrls.map((url, index) => (
-                <div key={url} className="group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] border-[#fff8ec] bg-[#f8f8f0]">
+                <div
+                    key={url}
+                    draggable
+                    className={["group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] bg-[#f8f8f0] transition-all duration-200 ease-out", dragOverIndex === index ? "border-[#19c8b9] scale-105 shadow-[0_0_0_2px_rgba(25,200,185,0.3)]" : "border-[#fff8ec]"].join(" ")}
+                    onDragStart={(e) => { handleImageDragStart(index); e.currentTarget.style.opacity = "0.4"; e.currentTarget.style.transform = "scale(0.95)"; }}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverIndex(index) }}
+                    onDrop={() => handleImageDrop(index)}
+                    onDragEnd={(e) => { handleImageDragEnd(); e.currentTarget.style.opacity = ""; e.currentTarget.style.transform = ""; }}
+                  >
                   <img className="size-full object-cover" src={url} alt={index === 0 ? '封面图片' : `文章图片 ${index + 1}`} />
                   <span
                     className="absolute inset-0 z-1 bg-linear-180 from-[#564226]/6 to-[#564226]/18 bg-[#19c8b9]/10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none"
@@ -426,7 +456,9 @@ export function AdminPostEditor({ isWriteMode, selectedPost, form, token, saving
             </div>
             <div className="island-admin-compose-image-grid grid grid-cols-[repeat(3,68px)] justify-start gap-2">
               {videoUrls.map((url) => (
-                <div key={url} className="group relative aspect-square overflow-hidden rounded-[14px] border-[1.5px] border-[#fff8ec] bg-[#f8f8f0]">
+                <div
+                    key={url}
+                  >
                   <video className="size-full object-cover" src={url} muted playsInline preload="metadata" />
                   <span
                     className="absolute inset-0 z-1 bg-linear-180 from-[#564226]/6 to-[#564226]/18 bg-[#19c8b9]/10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 pointer-events-none"
