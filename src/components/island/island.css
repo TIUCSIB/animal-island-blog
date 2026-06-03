@@ -1448,6 +1448,16 @@
   }
 }
 
+@keyframes island-switch-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.42), 0 0 4px 1px rgba(25, 200, 185, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.42), 0 0 10px 4px rgba(25, 200, 185, 0.6);
+  }
+}
+
 @media (width <= 520px) {
   :where(.island-gallery-animal-modal [class*='animal-modalClipped']) {
     padding: 22px 20px 20px;
@@ -3567,6 +3577,8 @@
 
 :where(.island-floating-switch--checked .island-floating-switch__label)::before {
   background: #19c8b9;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.42), 0 0 6px 2px rgba(25, 200, 185, 0.5);
+  animation: island-switch-pulse 2s ease-in-out infinite;
 }
 
 @media (width <= 520px) {
