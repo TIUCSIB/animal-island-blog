@@ -180,7 +180,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
           </div>
         </div>
 
-        <div className="fixed inset-0 z-[80] " />
+        <div className="fixed inset-0 z-[80] " style={{ animation: "island-detail-backdrop-in 0.28s ease both" }} />
         <button className={cn('fixed right-5 top-5 z-[110] size-8', islandSwitchButtonClass)} type="button" aria-label="关闭详情" onClick={detail.closeDetail}>
           <X aria-hidden="true" size={24} strokeWidth={2.6} />
         </button>
@@ -196,9 +196,9 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
           </button>
         : null}
 
-        <div className="fixed inset-0 z-[90] grid place-items-center p-4">
+        <div className="fixed inset-0 z-[90] grid place-items-center p-4" style={{ animation: "island-detail-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both" }}>
           <button className="absolute inset-0 cursor-default bg-transparent" type="button" aria-label="关闭详情" onClick={detail.closeDetail} />
-          <DesktopDetailCard detail={detail} />
+          <DesktopDetailCard key={detail.post?.id} detail={detail} />
         </div>
 
         {detail.nextPost ?
@@ -216,7 +216,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-[radial-gradient(circle_at_top,#eefcf2_0%,#dff3e7_100%)] p-4">
+    <main className="grid min-h-dvh place-items-center bg-[radial-gradient(circle_at_top,#eefcf2_0%,#dff3e7_100%)] p-4" style={{ animation: "island-detail-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both" }}>
       <button className={cn('fixed right-5 top-5 z-[110] size-8', islandSwitchButtonClass)} type="button" aria-label="关闭详情" onClick={detail.closeDetail}>
         <X aria-hidden="true" size={24} strokeWidth={2.6} />
       </button>

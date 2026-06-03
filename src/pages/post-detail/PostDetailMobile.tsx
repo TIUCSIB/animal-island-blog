@@ -17,7 +17,7 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
   if (!post) return null
 
   return (
-    <main className="flex min-h-dvh flex-col bg-[radial-gradient(circle_at_top,#eefcf2_0%,#dff3e7_100%)] text-[#5f4d39]">
+    <main className="flex min-h-dvh flex-col bg-[radial-gradient(circle_at_top,#eefcf2_0%,#dff3e7_100%)] text-[#5f4d39]" style={{ animation: "island-detail-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both" }}>
       <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-[#d6eadf] bg-[rgba(245,252,246,0.92)] px-3 backdrop-blur-xl">
         <button className="grid size-9 place-items-center text-[#715d46] " type="button" aria-label="返回" onClick={detail.closeDetail}>
           <ArrowLeft aria-hidden="true" size={22} strokeWidth={2.6} />
@@ -96,7 +96,7 @@ export function PostDetailMobile({ detail }: PostDetailMobileProps) {
         : null}
       </section>
 
-      <section className="flex flex-1 flex-col bg-[rgba(255,250,242,0.72)] px-3.5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-3.5">
+      <section className="flex flex-col bg-[rgba(255,250,242,0.72)] px-3.5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-3.5">
         <div className="space-y-0.5">
           <div className="flex flex-wrap items-start gap-x-2 gap-y-1 text-[14px] text-[#5f4d39]">
             <span className="font-semibold">{post.title}</span>

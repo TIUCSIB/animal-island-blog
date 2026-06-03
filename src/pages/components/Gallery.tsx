@@ -98,7 +98,7 @@ export function Gallery({ siteProfile }: GalleryProps) {
 
       {posts.length > 0 && (hasNextPage || isFetchingNextPage) ?
         <div ref={loadMoreRef} className="mt-5 flex justify-center pb-2 text-xs font-black text-[#7db0a8]">
-          {isFetchingNextPage ? '小岛继续加载中...' : '继续往下滑，会出现新的记录'}
+          {isFetchingNextPage ? '小岛继续加载中...' : '继续往下滑，会出现新的地图刷新'}
         </div>
       : null}
     </>
