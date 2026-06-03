@@ -7,7 +7,7 @@ import { Gallery } from '@/pages/components/Gallery'
 import { SiteFooter } from '@/pages/components/SiteFooter'
 import { SiteHeader } from '@/pages/components/SiteHeader'
 
-import { islandSwitchButtonClass, lightContentClass } from './post-detail.styles'
+import { islandSwitchButtonClass, lightContentClass, postNavButtonClass } from './post-detail.styles'
 import { formatDate, formatDisplayTime } from './post-detail.utils'
 import type { UsePostDetailPageResult } from './usePostDetailPage'
 
@@ -48,8 +48,8 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
           {detail.activeMediaIndex > 0 ?
             <button
               className={cn(
-                'pointer-events-none absolute left-4 top-1/2 z-20 size-5 -translate-y-1/2 opacity-0 group-hover/media:pointer-events-auto group-hover/media:opacity-80',
-                islandSwitchButtonClass,
+                'pointer-events-none absolute left-4 top-1/2 z-20 size-7 -translate-y-1/2 opacity-0 group-hover/media:pointer-events-auto group-hover/media:opacity-80',
+                'grid place-items-center rounded-full border-[2px] border-[#fff8ed] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(244,233,210,0.98)_100%)] text-[#715d46] shadow-[0_4px_0_rgba(190,174,152,0.92),0_14px_26px_rgba(24,20,16,0.18)] transition-all duration-150 ease-out hover:bg-[linear-gradient(180deg,rgba(255,253,248,1)_0%,rgba(248,239,219,1)_100%)] hover:shadow-[0_7px_0_rgba(190,174,152,0.96),0_22px_40px_rgba(24,20,16,0.28)] hover:text-[#4a3525] active:shadow-[0_2px_0_rgba(190,174,152,0.88),0_8px_16px_rgba(24,20,16,0.14)]',
               )}
               type="button"
               aria-label="上一张"
@@ -62,8 +62,8 @@ function DesktopDetailCard({ detail }: PostDetailDesktopProps) {
           {detail.activeMediaIndex < detail.mediaItems.length - 1 ?
             <button
               className={cn(
-                'pointer-events-none absolute right-4 top-1/2 z-20 size-5 -translate-y-1/2 opacity-0 group-hover/media:pointer-events-auto group-hover/media:opacity-80',
-                islandSwitchButtonClass,
+                'pointer-events-none absolute right-4 top-1/2 z-20 size-7 -translate-y-1/2 opacity-0 group-hover/media:pointer-events-auto group-hover/media:opacity-80',
+                'grid place-items-center rounded-full border-[2px] border-[#fff8ed] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(244,233,210,0.98)_100%)] text-[#715d46] shadow-[0_4px_0_rgba(190,174,152,0.92),0_14px_26px_rgba(24,20,16,0.18)] transition-all duration-150 ease-out hover:bg-[linear-gradient(180deg,rgba(255,253,248,1)_0%,rgba(248,239,219,1)_100%)] hover:shadow-[0_7px_0_rgba(190,174,152,0.96),0_22px_40px_rgba(24,20,16,0.28)] hover:text-[#4a3525] active:shadow-[0_2px_0_rgba(190,174,152,0.88),0_8px_16px_rgba(24,20,16,0.14)]',
               )}
               type="button"
               aria-label="下一张"
@@ -187,7 +187,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
 
         {detail.previousPost ?
           <button
-            className={cn('fixed left-6 top-1/2 z-[95] hidden size-8 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
+            className={cn('fixed left-6 top-1/2 z-[95] hidden min-[1100px]:grid', 'size-10 -translate-y-1/2', postNavButtonClass)}
             type="button"
             aria-label="上一篇文章"
             onClick={() => detail.switchPost(detail.previousPost!)}
@@ -203,7 +203,7 @@ export function PostDetailDesktop({ detail }: PostDetailDesktopProps) {
 
         {detail.nextPost ?
           <button
-            className={cn('fixed right-6 top-1/2 z-[95] hidden size-8 -translate-y-1/2 min-[1100px]:grid', islandSwitchButtonClass)}
+            className={cn('fixed right-6 top-1/2 z-[95] hidden min-[1100px]:grid', 'size-10 -translate-y-1/2', postNavButtonClass)}
             type="button"
             aria-label="下一篇文章"
             onClick={() => detail.switchPost(detail.nextPost!)}

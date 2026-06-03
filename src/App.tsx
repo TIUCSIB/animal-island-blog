@@ -181,8 +181,7 @@ export default function App() {
             onAdminClick={openAdminPage}
           />
         : null}
-        {!isPostDetailPage ?
-          <>
+        {isIslandMode && !isPostDetailPage ?
             <IslandFloatingSwitch
               checked={isIslandMode}
               uncheckedLabel="小憩中"
@@ -191,13 +190,14 @@ export default function App() {
               checkedChildren="ON"
               onChange={handleIslandModeChange}
             />
+        : null}
             <IslandMusicPlayer
               tracks={musicConfig.tracks}
               open={visibleMusicEnabled}
               onClose={() => setMusicEnabled(false)}
             />
-            <IslandLoginModal open={loginOpen} onOpenChange={setLoginOpen} onLogin={handleLogin} />
-          </>
+        {!isPostDetailPage ?
+          <IslandLoginModal open={loginOpen} onOpenChange={setLoginOpen} onLogin={handleLogin} />
         : null}
         <IslandToastViewport />
       </Cursor>
